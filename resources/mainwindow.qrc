@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="images">
+    <file>annotated_heart_sample.png</file>
+    <file>3D_heart_sample.png</file>
+  </qresource>
+</RCC>
