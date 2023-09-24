@@ -1,7 +1,8 @@
 import sys
 from PySide2 import QtCore, QtOpenGL
 import moderngl as mgl
-from model import Triangle
+from model import *
+from camera import Camera
 
 
 class MyGLWidget(QtOpenGL.QGLWidget):
@@ -25,14 +26,17 @@ class MyGLWidget(QtOpenGL.QGLWidget):
 
     def mousePressEvent(self, e):
         super().mousePressEvent(e)
-        print(f'QGLWidget coordinates: ({e.x()}, {e.y()})')
+        print(f"QGLWidget coordinates: ({e.x()}, {e.y()})")
         if e.button() == QtCore.Qt.LeftButton:
             print("LeftButton is pressed")
 
     def initializeGL(self):
+        # create opengl context
         self.ctx = mgl.create_context()
-
-        self.scene = Triangle(self)
+        # camera
+        self.camera = Camera(self)
+        # scene
+        self.scene = Cube(self)
 
     def paintGL(self):
         self.ctx.clear(color=(0.08, 0.16, 0.18))
@@ -43,6 +47,11 @@ class MyGLWidget(QtOpenGL.QGLWidget):
         width = max(2, width)
         height = max(2, height)
         self.ctx.viewport = (0, 0, width, height)
+
+        self.WIN_SIZE = (width, height)
+        print(f"WIN_SIZE: {self.WIN_SIZE}")
+        self.aspect_ratio = self.WIN_SIZE[0] / self.WIN_SIZE[1]
+        self.camera.set_projection_matrix(aspect_ratio=self.aspect_ratio)
 
     # def free_resources(self):
     #     """Helper to clean up resources."""

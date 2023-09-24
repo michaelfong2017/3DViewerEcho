@@ -16,6 +16,7 @@ pip install moderngl
 # moderngl_window for testing
 pip install moderngl_window
 pip install PyOpenGL PyOpenGL_accelerate
+pip install PyGLM
 ```
 
 ```
