@@ -35,7 +35,7 @@
     <widget class="QWidget" name="scrollAreaWidgetContents_3">
      <property name="geometry">
       <rect>
-       <x>-742</x>
+       <x>0</x>
        <y>0</y>
        <width>2000</width>
        <height>352</height>
@@ -788,31 +788,6 @@
      </layout>
     </widget>
    </widget>
-   <widget class="QLabel" name="label_9">
-    <property name="geometry">
-     <rect>
-      <x>376</x>
-      <y>0</y>
-      <width>528</width>
-      <height>297</height>
-     </rect>
-    </property>
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-      <horstretch>0</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="pixmap">
-     <pixmap resource="resources/mainwindow.qrc">:/images/3D_heart_sample.png</pixmap>
-    </property>
-    <property name="scaledContents">
-     <bool>true</bool>
-    </property>
-   </widget>
    <widget class="QPushButton" name="pushButton_2">
     <property name="geometry">
      <rect>
@@ -954,6 +929,16 @@ in the current time frame</string>
 in all time frames</string>
     </property>
    </widget>
+   <widget class="MyGLWidget" name="openGLWidget">
+    <property name="geometry">
+     <rect>
+      <x>376</x>
+      <y>0</y>
+      <width>528</width>
+      <height>297</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -967,6 +952,13 @@ in all time frames</string>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MyGLWidget</class>
+   <extends>QOpenGLWidget</extends>
+   <header>myglwidget</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="resources/mainwindow.qrc"/>
  </resources>

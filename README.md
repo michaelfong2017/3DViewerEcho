@@ -4,9 +4,18 @@ python -m venv venv
 . venv/bin/activate
 ```
 
-```
+```bash
 pip install --upgrade pip
 pip install PySide2
+
+pip install numpy
+pip install Pillow
+pip install moderngl
+
+pip install moderngl
+# moderngl_window for testing
+pip install moderngl_window
+pip install PyOpenGL PyOpenGL_accelerate
 ```
 
 ```

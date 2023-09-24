@@ -12,6 +12,8 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
+from myglwidget import MyGLWidget
+
 import mainwindow_rc
 
 class Ui_MainWindow(object):
@@ -32,7 +34,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents_3 = QWidget()
         self.scrollAreaWidgetContents_3.setObjectName(u"scrollAreaWidgetContents_3")
-        self.scrollAreaWidgetContents_3.setGeometry(QRect(-742, 0, 2000, 352))
+        self.scrollAreaWidgetContents_3.setGeometry(QRect(0, 0, 2000, 352))
         sizePolicy1 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
@@ -344,16 +346,6 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addLayout(self.verticalLayout_2)
 
         self.scrollArea.setWidget(self.scrollAreaWidgetContents_3)
-        self.label_9 = QLabel(self.centralwidget)
-        self.label_9.setObjectName(u"label_9")
-        self.label_9.setGeometry(QRect(376, 0, 528, 297))
-        sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.label_9.sizePolicy().hasHeightForWidth())
-        self.label_9.setSizePolicy(sizePolicy2)
-        self.label_9.setPixmap(QPixmap(u":/images/3D_heart_sample.png"))
-        self.label_9.setScaledContents(True)
         self.pushButton_2 = QPushButton(self.centralwidget)
         self.pushButton_2.setObjectName(u"pushButton_2")
         self.pushButton_2.setGeometry(QRect(80, 60, 191, 41))
@@ -383,6 +375,9 @@ class Ui_MainWindow(object):
         self.pushButton_12.setGeometry(QRect(940, 210, 301, 51))
         self.pushButton_12.setFont(font)
         self.pushButton_12.setStyleSheet(u"font: 17px \"MS Shell Dlg 2\";")
+        self.openGLWidget = MyGLWidget(self.centralwidget)
+        self.openGLWidget.setObjectName(u"openGLWidget")
+        self.openGLWidget.setGeometry(QRect(376, 0, 528, 297))
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
@@ -424,7 +419,6 @@ class Ui_MainWindow(object):
         self.pushButton.setText(QCoreApplication.translate("MainWindow", u"Transverse Section at Tricuspid Valve Level", None))
         self.label.setText("")
         self.pushButton_20.setText(QCoreApplication.translate("MainWindow", u"Export as PNG", None))
-        self.label_9.setText("")
         self.pushButton_2.setText(QCoreApplication.translate("MainWindow", u"Import DICOM file", None))
         self.label_10.setText(QCoreApplication.translate("MainWindow", u"Select time frame:", None))
         self.pushButton_10.setText(QCoreApplication.translate("MainWindow", u"Save edited landmarks to the\n"
