@@ -30,18 +30,29 @@ class MyGLWidget(QtOpenGL.QGLWidget):
         if e.button() == QtCore.Qt.LeftButton:
             print("LeftButton is pressed")
 
+    def render(self):
+        self.ctx.clear(color=(0.08, 0.16, 0.18))
+        self.scene.render()
+
+    # In seconds
+    def get_time(self):
+        self.time = self.elapsed_timer.elapsed() * 0.001
+
     def initializeGL(self):
         # create opengl context
         self.ctx = mgl.create_context()
+        # create an object to help track time
+        self.time = 0
+        self.elapsed_timer = QtCore.QElapsedTimer()
+        self.elapsed_timer.start()
         # camera
         self.camera = Camera(self)
         # scene
         self.scene = Cube(self)
 
     def paintGL(self):
-        self.ctx.clear(color=(0.08, 0.16, 0.18))
-
-        self.scene.render()
+        self.get_time()
+        self.render()
 
     def resizeGL(self, width, height):
         width = max(2, width)
