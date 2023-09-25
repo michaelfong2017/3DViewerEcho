@@ -10,11 +10,6 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        self.glWidget = self.ui.openGLWidget
-        timer = QtCore.QTimer(self)
-        timer.timeout.connect(self.glWidget.updateGL)
-        timer.start(40)
-
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

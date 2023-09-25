@@ -3,6 +3,7 @@ from PySide2 import QtCore, QtOpenGL
 import moderngl as mgl
 from model import *
 from camera import Camera
+from keyeventhandler import KeyEventHandler
 
 
 class MyGLWidget(QtOpenGL.QGLWidget):
@@ -16,13 +17,20 @@ class MyGLWidget(QtOpenGL.QGLWidget):
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.setAcceptDrops(True)
 
+        self.delta_time = 40
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.updateGL)
+        self.timer.start(self.delta_time)
+
     def keyPressEvent(self, e):
-        print(e.key())
-        if e.key() == QtCore.Qt.Key_Q:
+        if e.key() == QtCore.Qt.Key_Escape:
             self.scene.destroy()
             sys.exit()
         else:
-            super().keyPressEvent(e)
+            KeyEventHandler().add_pressed_key(e.key())
+
+    def keyReleaseEvent(self, e):
+        KeyEventHandler().remove_pressed_key(e.key())
 
     def mousePressEvent(self, e):
         super().mousePressEvent(e)
@@ -39,8 +47,10 @@ class MyGLWidget(QtOpenGL.QGLWidget):
         self.time = self.elapsed_timer.elapsed() * 0.001
 
     def initializeGL(self):
-        # create opengl context
+        # detect and use existing opengl context
         self.ctx = mgl.create_context()
+        # self.ctx.front_face = 'cw'
+        self.ctx.enable(flags=mgl.DEPTH_TEST | mgl.CULL_FACE)
         # create an object to help track time
         self.time = 0
         self.elapsed_timer = QtCore.QElapsedTimer()
@@ -52,6 +62,7 @@ class MyGLWidget(QtOpenGL.QGLWidget):
 
     def paintGL(self):
         self.get_time()
+        self.camera.update()
         self.render()
 
     def resizeGL(self, width, height):
