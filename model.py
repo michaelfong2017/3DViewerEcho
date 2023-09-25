@@ -11,14 +11,16 @@ class Cube:
         self.shader_program = self.get_shader_program("default")
         self.vao = self.get_vao()
         self.m_model = self.get_model_matrix()
-        self.texture = self.get_texture(path='textures/img.png')
+        self.texture = self.get_texture(path="textures/img.png")
         self.on_init()
 
     def get_texture(self, path):
         image = QtGui.QImage(path)
         if image.isNull():
             return
-        image = image.convertToFormat(QtGui.QImage.Format_RGB888) # Convert image to RGB888 format
+        image = image.convertToFormat(
+            QtGui.QImage.Format_RGB888
+        )  # Convert image to RGB888 format
         image = image.mirrored(False, True)
         width = image.width()
         height = image.height()
@@ -37,7 +39,7 @@ class Cube:
 
     def on_init(self):
         # texture
-        self.shader_program['u_texture_0'] = 0
+        self.shader_program["u_texture_0"] = 0
         self.texture.use()
         # mvp
         self.shader_program["m_view"].write(self.app.camera.m_view)

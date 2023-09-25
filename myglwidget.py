@@ -4,6 +4,7 @@ import moderngl as mgl
 from model import *
 from camera import Camera
 from keyeventhandler import KeyEventHandler
+from arcball import ArcBallUtil
 
 
 class MyGLWidget(QtOpenGL.QGLWidget):
@@ -32,14 +33,30 @@ class MyGLWidget(QtOpenGL.QGLWidget):
     def keyReleaseEvent(self, e):
         KeyEventHandler().remove_pressed_key(e.key())
 
-    def mousePressEvent(self, e):
-        super().mousePressEvent(e)
-        print(f"QGLWidget coordinates: ({e.x()}, {e.y()})")
-        if e.button() == QtCore.Qt.LeftButton:
-            print("LeftButton is pressed")
+    # def mousePressEvent(self, e):
+    #     super().mousePressEvent(e)
+    #     print(f"QGLWidget coordinates: ({e.x()}, {e.y()})")
+    #     if e.button() == QtCore.Qt.LeftButton:
+    #         print("LeftButton is pressed")
+    def mousePressEvent(self, event):
+        if event.buttons() & QtCore.Qt.LeftButton:
+            self.arc_ball.onClickLeftDown(event.x(), event.y())
+
+    def mouseReleaseEvent(self, event):
+        if event.buttons() & QtCore.Qt.LeftButton:
+            self.arc_ball.onClickLeftUp()
+
+    def mouseMoveEvent(self, event):
+        if event.buttons() & QtCore.Qt.LeftButton:
+            self.arc_ball.onDrag(event.x(), event.y())
 
     def render(self):
         self.ctx.clear(color=(0.08, 0.16, 0.18))
+
+        self.arc_ball.Transform[3, :3] = (
+            -self.arc_ball.Transform[:3, :3].T @ self.center
+        )
+
         self.scene.render()
 
     # In seconds
@@ -51,6 +68,8 @@ class MyGLWidget(QtOpenGL.QGLWidget):
         self.ctx = mgl.create_context()
         # self.ctx.front_face = 'cw'
         self.ctx.enable(flags=mgl.DEPTH_TEST | mgl.CULL_FACE)
+        # init arcball
+        self.init_arcball()
         # create an object to help track time
         self.time = 0
         self.elapsed_timer = QtCore.QElapsedTimer()
@@ -59,6 +78,16 @@ class MyGLWidget(QtOpenGL.QGLWidget):
         self.camera = Camera(self)
         # scene
         self.scene = Cube(self)
+
+    def init_arcball(self):
+        self.arc_ball = ArcBallUtil(self.width(), self.height())
+        bbmin = np.array([-1.0, -1.0, -1.0])
+        bbmax = np.array([1.0, 1.0, 1.0])
+        self.center = 0.5 * (bbmax + bbmin)
+        self.scale = np.linalg.norm(bbmax - self.center)
+        print(self.center, self.scale)
+        self.arc_ball.Transform[:3, :3] /= self.scale
+        self.arc_ball.Transform[3, :3] = -self.center / self.scale
 
     def paintGL(self):
         self.get_time()
@@ -75,7 +104,5 @@ class MyGLWidget(QtOpenGL.QGLWidget):
         self.aspect_ratio = self.WIN_SIZE[0] / self.WIN_SIZE[1]
         self.camera.set_projection_matrix(aspect_ratio=self.aspect_ratio)
 
-    # def free_resources(self):
-    #     """Helper to clean up resources."""
-    #     self.makeCurrent()
-    #     glDeleteLists(self.shape1, 1)
+        self.arc_ball = ArcBallUtil(width, height)
+        print(self.camera.position)

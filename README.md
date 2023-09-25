@@ -17,6 +17,7 @@ pip install moderngl
 pip install moderngl_window
 pip install PyOpenGL PyOpenGL_accelerate
 pip install PyGLM
+pip install scipy
 ```
 
 ```
