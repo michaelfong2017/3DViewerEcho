@@ -18,6 +18,9 @@ pip install moderngl_window
 pip install PyOpenGL PyOpenGL_accelerate
 pip install PyGLM
 pip install scipy
+
+pip install vtk pydicom pynrrd
+pip install cupy-cuda11x
 ```
 
 ```
