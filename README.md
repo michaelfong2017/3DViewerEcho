@@ -23,6 +23,7 @@ pip install vtk pydicom pynrrd
 pip install cupy-cuda11x
 
 pip install requests
+pip install blosc
 ```
 
 ```

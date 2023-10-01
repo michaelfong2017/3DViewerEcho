@@ -9,6 +9,9 @@ from multiprocessing.pool import ThreadPool
 import random
 import time
 import requests
+import pickle
+import blosc
+import numpy as np
 
 
 class MainWindow(QMainWindow):
@@ -32,13 +35,20 @@ class MainWindow(QMainWindow):
             response = requests.post(url, files={"file": file})
 
         if response.status_code == 200:
-            data = response.json()
-            print("File size:", data["file_size"])
-            print("DICOM tags:", data["dicom_tags"])
+            compressed_data = response.content
+
+            # Decompress the received data
+            pickled_data = blosc.decompress(compressed_data)
+
+            # Deserialize the pickled data to a NumPy array
+            array_4d = pickle.loads(pickled_data)
+
+            # Process the deserialized array_4d as needed
+            print("Array shape:", array_4d.shape)
+            print("Array data:", array_4d)
         else:
             print("Error:", response.text)
-        
-            
+
         nrrd_data = dicom_to_nrrd(filepath)
 
         print(nrrd_data.shape)
