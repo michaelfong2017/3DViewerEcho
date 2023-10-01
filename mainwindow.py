@@ -22,14 +22,28 @@ class MainWindow(QMainWindow):
 
         self.ui.pushButton_2.clicked.connect(self.import_dicom)
 
-    def upload(self, frame):
+    def process_frame(self, frame, frame_index):
+        pickled_data = pickle.dumps(frame)
+        compressed_data = blosc.compress(pickled_data)
+
+        url = "http://localhost:8000/process_frame"
+        headers = {'Content-Type': 'application/octet-stream'}
+        response = requests.post(url, data=compressed_data, headers=headers)
+
+        if response.status_code == 200:
+            print("Data sent successfully.")
+        else:
+            print("Error:", response.text)
+        return frame_index
+
+    def thread_pool_test(self, frame, frame_index):
         r = random.randint(5, 7)
         time.sleep(r)
         print("Worker thread finishing")
-        return r
+        return (frame_index, r)
 
     def process_dicom(self, filepath):
-        url = "http://localhost:8000/files/"
+        url = "http://localhost:8000/process_dicom_file"
 
         with open(filepath, "rb") as file:
             response = requests.post(url, files={"file": file})
@@ -48,13 +62,11 @@ class MainWindow(QMainWindow):
             print("Array data:", array_4d)
         else:
             print("Error:", response.text)
+            # TODO alert user
+            return
 
-        nrrd_data = dicom_to_nrrd(filepath)
+        data_4d_padded = array_4d
 
-        print(nrrd_data.shape)
-
-        # pad the data to uniform shape. Pad entire 4d data for future use
-        data_4d_padded, _, max_length = pad4d(nrrd_data)
         print(data_4d_padded.shape)
 
         NUM_FRAMES = data_4d_padded.shape[0]
@@ -67,7 +79,8 @@ class MainWindow(QMainWindow):
             if i == 0:
                 print(data_3d_padded.shape)
 
-            results.append(pool.apply_async(self.upload, args=(data_3d_padded,)))
+            # results.append(pool.apply_async(self.thread_pool_test, args=(data_3d_padded,i)))
+            results.append(pool.apply_async(self.process_frame, args=(data_3d_padded,i,)))
 
         pool.close()
         pool.join()
