@@ -21,6 +21,8 @@ pip install scipy
 
 pip install vtk pydicom pynrrd
 pip install cupy-cuda11x
+
+pip install requests
 ```
 
 ```

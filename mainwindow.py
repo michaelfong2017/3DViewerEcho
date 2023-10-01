@@ -8,6 +8,7 @@ import threading
 from multiprocessing.pool import ThreadPool
 import random
 import time
+import requests
 
 
 class MainWindow(QMainWindow):
@@ -25,6 +26,19 @@ class MainWindow(QMainWindow):
         return r
 
     def process_dicom(self, filepath):
+        url = "http://localhost:8000/files/"
+
+        with open(filepath, "rb") as file:
+            response = requests.post(url, files={"file": file})
+
+        if response.status_code == 200:
+            data = response.json()
+            print("File size:", data["file_size"])
+            print("DICOM tags:", data["dicom_tags"])
+        else:
+            print("Error:", response.text)
+        
+            
         nrrd_data = dicom_to_nrrd(filepath)
 
         print(nrrd_data.shape)
