@@ -9,12 +9,10 @@ import nrrd
 from matplotlib import pyplot, cm
 from scipy import ndimage
 import time
-import cupyx.scipy.ndimage
-import cupy as cp
 from PIL import Image
 
 
-def dicom_to_nrrd(dicom_filePath):
+def dicom_to_array(dicom_filePath):
     t1 = time.perf_counter()
 
     ds = dicom.read_file(dicom_filePath, stop_before_pixels=True)
@@ -76,29 +74,29 @@ def dicom_to_nrrd(dicom_filePath):
     # if not os.path.exists(nrrd_save_path):
     #     os.makedirs(nrrd_save_path)
 
-    new_data_array = np.empty(
-        np.rint(image4D.shape * spacing4D).astype(int), dtype=np.float64
-    )
+    # new_data_array = np.empty(
+    #     np.rint(image4D.shape * spacing4D).astype(int), dtype=np.float64
+    # )
 
     # this takes longer then for-loop operation. this:5s. for-loop: 2.5s
     # new_data_array = cupyx.scipy.ndimage.zoom(cp.array(image4D), spacing4D).get()
-    for t in range(frames):  # new_data_array.shape[0]
-        # new_data_array[t,:,:,:] = ndimage.zoom(image4D[t,:,:,:], spacing4D[1:])
-        new_data_array[t, :, :, :] = cupyx.scipy.ndimage.zoom(
-            cp.array(image4D[t, :, :, :], dtype=cp.float64),
-            spacing4D[1:],
-            output=cp.float64,
-        ).get()
-        # print('frame ' + str(t) + ' normalized')
+    # for t in range(frames):  # new_data_array.shape[0]
+    #     new_data_array[t, :, :, :] = ndimage.zoom(image4D[t, :, :, :], spacing4D[1:])
+    #     # new_data_array[t, :, :, :] = cupyx.scipy.ndimage.zoom(
+    #     #     cp.array(image4D[t, :, :, :], dtype=cp.float64),
+    #     #     spacing4D[1:],
+    #     #     output=cp.float64,
+    #     # ).get()
+    #     # print('frame ' + str(t) + ' normalized')
 
-    new_data_array[new_data_array > 254.5] = 255
-    new_data_array[new_data_array < 0.5] = 0
-    new_data_array = new_data_array.astype(np.uint8)
+    # new_data_array[new_data_array > 254.5] = 255
+    # new_data_array[new_data_array < 0.5] = 0
+    # new_data_array = new_data_array.astype(np.uint8)
 
-    t3 = time.perf_counter()
-    print("time to normalize array: ", t3 - t2)
+    # t3 = time.perf_counter()
+    # print("time to normalize array: ", t3 - t2)
 
-    print("Nrrd obj: ", new_data_array.shape)
+    # print("Nrrd obj: ", new_data_array.shape)
 
     # for t in range(frames): #new_data_array.shape[0]
     #     nrrd.write(os.path.join(nrrd_save_path, 't_' + str(t)+'.seq.nrrd'), new_data_array[t,:,:,:])
@@ -106,7 +104,7 @@ def dicom_to_nrrd(dicom_filePath):
     # t35 = time.perf_counter()
     # print('time to save time slices: ', t35-t3)
 
-    return new_data_array
+    return image4D, spacing4D
 
 
 def pad4d(data: np.ndarray):
