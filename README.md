@@ -24,6 +24,8 @@ pip install cupy-cuda11x
 
 pip install requests
 pip install blosc
+
+pip install plotly
 ```
 
 ```
