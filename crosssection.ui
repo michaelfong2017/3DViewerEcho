@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>242</width>
+    <width>422</width>
     <height>300</height>
    </rect>
   </property>
@@ -34,20 +34,20 @@
      <item>
       <widget class="QPushButton" name="pushButton_13">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
        <property name="minimumSize">
         <size>
-         <width>240</width>
+         <width>420</width>
          <height>0</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>240</width>
+         <width>16777215</width>
          <height>16777215</height>
         </size>
        </property>
@@ -62,20 +62,20 @@
      <item>
       <widget class="QLabel" name="label_8">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
        <property name="minimumSize">
         <size>
-         <width>240</width>
+         <width>0</width>
          <height>240</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>240</width>
+         <width>16777215</width>
          <height>240</height>
         </size>
        </property>
@@ -86,27 +86,27 @@
         <pixmap resource="resources/mainwindow.qrc">:/images/annotated_heart_sample.png</pixmap>
        </property>
        <property name="scaledContents">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="pushButton_9">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
        <property name="minimumSize">
         <size>
-         <width>240</width>
+         <width>420</width>
          <height>0</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>240</width>
+         <width>16777215</width>
          <height>16777215</height>
         </size>
        </property>
