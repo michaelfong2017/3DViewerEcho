@@ -12,13 +12,13 @@ class DataManager:
             return
         self.__initialized = True
 
-        self.time_index_to_annotated_qimage = {}
+        self.frame_index_to_pred_result = {}
 
-    def get_annotated_qimage(self, time_index):
-        return self.time_index_to_annotated_qimage.get(time_index)
+    def get_pred_result(self, frame_index):
+        return self.frame_index_to_pred_result.get(frame_index)
 
-    def update_annotated_qimage(self, time_index, annotated_qimage):
-        self.time_index_to_annotated_qimage.update({time_index: annotated_qimage})
+    def update_pred_result(self, frame_index, pred_image, pred_rotated_coords):
+        self.frame_index_to_pred_result.update({frame_index: (pred_image, pred_rotated_coords)})
 
-    def remove_annotated_qimage(self, time_index):
-        self.time_index_to_annotated_qimage.pop(time_index)
+    def remove_pred_result(self, frame_index):
+        self.frame_index_to_pred_result.pop(frame_index)

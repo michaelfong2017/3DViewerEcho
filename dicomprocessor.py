@@ -1,5 +1,5 @@
-from PySide2.QtWidgets import QLabel
 from PySide2 import QtGui
+from ui_mainwindow import Ui_MainWindow
 
 from multiprocessing.pool import ThreadPool
 import random
@@ -13,7 +13,6 @@ import base64
 from formatconverter import dicom_to_array, pad4d
 from ReconstructPlane import FindVisualFromCoords, HandleRotations
 from PIL import Image
-from matplotlib import pyplot, cm
 import io
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from datamanager import DataManager
@@ -74,9 +73,16 @@ def thread_pool_test(frame, frame_index):
     print("Worker thread finishing")
     return (frame_index, r)
 
-def process_dicom(filepath):
+def process_dicom(filepath, ui: Ui_MainWindow):
     image4D, spacing4D = dicom_to_array(filepath)
     NUM_FRAMES = image4D.shape[0]
+
+    # ui slider BEGIN
+    ui.horizontalSlider.setMinimum(0)
+    ui.horizontalSlider.setMaximum(NUM_FRAMES - 1)
+    ui.label_12.setText("0")
+    ui.label_13.setText(str(NUM_FRAMES - 1))
+    # ui slider END
 
     print(image4D.shape)
     print(spacing4D.shape)
@@ -138,18 +144,7 @@ def process_dicom(filepath):
 
         frame_index, pred_image, pred_rotated_coords = result.get()
 
-        pyplot.figure(frame_index)
-        pyplot.imshow(pred_image,cmap='gray')
-        pyplot.scatter(pred_rotated_coords[:,0], pred_rotated_coords[:,1], c='red', marker='x')
-        
-        annotated_qimage = pyplot_to_qimage(pyplot.gcf())
-
-        # pixmap = QtGui.QPixmap.fromImage(annotated_qimage)
-        # label = QLabel()
-        # label.setPixmap(pixmap)
-        # label.show()
-
-        DataManager().update_annotated_qimage(frame_index, annotated_qimage)
+        DataManager().update_pred_result(frame_index, pred_image, pred_rotated_coords)
 
         results.append(result)
 

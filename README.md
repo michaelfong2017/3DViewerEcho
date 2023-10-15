@@ -30,6 +30,7 @@ pip install plotly
 
 ```
 pyside2-uic mainwindow.ui > ui_mainwindow.py
+pyside2-uic crosssection.ui > ui_crosssection.py
 pyside2-rcc resources/mainwindow.qrc -o mainwindow_rc.py
 ```
 

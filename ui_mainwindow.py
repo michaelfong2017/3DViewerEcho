@@ -13,6 +13,7 @@ from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 from myglwidget import MyGLWidget
+from qjumpslider import QJumpSlider
 
 import mainwindow_rc
 
@@ -45,8 +46,15 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.verticalLayout_2 = QVBoxLayout()
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.horizontalLayout = QHBoxLayout()
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.label_11 = QLabel(self.scrollAreaWidgetContents_3)
         self.label_11.setObjectName(u"label_11")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.label_11.sizePolicy().hasHeightForWidth())
+        self.label_11.setSizePolicy(sizePolicy2)
         font = QFont()
         font.setFamily(u"MS Shell Dlg 2")
         font.setBold(False)
@@ -54,11 +62,21 @@ class Ui_MainWindow(object):
         font.setWeight(50)
         self.label_11.setFont(font)
         self.label_11.setStyleSheet(u"font: 20px \"MS Shell Dlg 2\";")
+        self.label_11.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignTop)
+        self.label_11.setWordWrap(False)
 
-        self.verticalLayout_2.addWidget(self.label_11)
+        self.horizontalLayout.addWidget(self.label_11)
+
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout.addItem(self.horizontalSpacer)
+
+
+        self.verticalLayout_2.addLayout(self.horizontalLayout)
 
         self.horizontalLayout_3 = QHBoxLayout()
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.horizontalLayout_3.setSizeConstraint(QLayout.SetDefaultConstraint)
         self.verticalLayout_10 = QVBoxLayout()
         self.verticalLayout_10.setObjectName(u"verticalLayout_10")
         self.pushButton_13 = QPushButton(self.scrollAreaWidgetContents_3)
@@ -351,15 +369,15 @@ class Ui_MainWindow(object):
         self.pushButton_2.setGeometry(QRect(80, 60, 191, 41))
         self.pushButton_2.setFont(font)
         self.pushButton_2.setStyleSheet(u"font: 20px \"MS Shell Dlg 2\";")
-        self.horizontalSlider = QSlider(self.centralwidget)
+        self.horizontalSlider = QJumpSlider(self.centralwidget)
         self.horizontalSlider.setObjectName(u"horizontalSlider")
         self.horizontalSlider.setGeometry(QRect(60, 200, 251, 22))
         self.horizontalSlider.setOrientation(Qt.Horizontal)
         self.label_10 = QLabel(self.centralwidget)
         self.label_10.setObjectName(u"label_10")
-        self.label_10.setGeometry(QRect(60, 150, 211, 41))
+        self.label_10.setGeometry(QRect(40, 150, 281, 41))
         self.label_10.setFont(font)
-        self.label_10.setStyleSheet(u"font: 20px \"MS Shell Dlg 2\";")
+        self.label_10.setStyleSheet(u"font: 18px \"MS Shell Dlg 2\";")
         self.pushButton_10 = QPushButton(self.centralwidget)
         self.pushButton_10.setObjectName(u"pushButton_10")
         self.pushButton_10.setGeometry(QRect(940, 30, 301, 51))
@@ -378,6 +396,20 @@ class Ui_MainWindow(object):
         self.openGLWidget = MyGLWidget(self.centralwidget)
         self.openGLWidget.setObjectName(u"openGLWidget")
         self.openGLWidget.setGeometry(QRect(376, 0, 528, 297))
+        self.label_12 = QLabel(self.centralwidget)
+        self.label_12.setObjectName(u"label_12")
+        self.label_12.setGeometry(QRect(10, 190, 41, 41))
+        self.label_12.setFont(font)
+        self.label_12.setLayoutDirection(Qt.LeftToRight)
+        self.label_12.setStyleSheet(u"font: 18px \"MS Shell Dlg 2\";")
+        self.label_12.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.label_13 = QLabel(self.centralwidget)
+        self.label_13.setObjectName(u"label_13")
+        self.label_13.setGeometry(QRect(320, 190, 41, 41))
+        self.label_13.setFont(font)
+        self.label_13.setLayoutDirection(Qt.LeftToRight)
+        self.label_13.setStyleSheet(u"font: 18px \"MS Shell Dlg 2\";")
+        self.label_13.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
@@ -420,12 +452,14 @@ class Ui_MainWindow(object):
         self.label.setText("")
         self.pushButton_20.setText(QCoreApplication.translate("MainWindow", u"Export as PNG", None))
         self.pushButton_2.setText(QCoreApplication.translate("MainWindow", u"Import DICOM file", None))
-        self.label_10.setText(QCoreApplication.translate("MainWindow", u"Select time frame:", None))
+        self.label_10.setText(QCoreApplication.translate("MainWindow", u"Selected time frame index: 0", None))
         self.pushButton_10.setText(QCoreApplication.translate("MainWindow", u"Save edited landmarks to the\n"
 "current cross-section", None))
         self.pushButton_11.setText(QCoreApplication.translate("MainWindow", u"Export all cross-section images\n"
 "in the current time frame", None))
         self.pushButton_12.setText(QCoreApplication.translate("MainWindow", u"Export all cross-section images\n"
 "in all time frames", None))
+        self.label_12.setText(QCoreApplication.translate("MainWindow", u"0", None))
+        self.label_13.setText(QCoreApplication.translate("MainWindow", u"99", None))
     # retranslateUi
 
