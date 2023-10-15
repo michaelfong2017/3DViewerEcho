@@ -27,7 +27,9 @@ class MainWindow(QMainWindow):
 
         pred_result = DataManager().get_pred_result(frame_index)
         
-        if not pred_result == None:
+        if pred_result == None:
+            self.clearCrossSection()
+        else:
             pred_image, pred_rotated_coords = pred_result
             pyplot.figure(frame_index)
             pyplot.imshow(pred_image,cmap='gray')
@@ -68,7 +70,7 @@ class MainWindow(QMainWindow):
         label.show()
 
         self.ui.horizontalLayout_3.addWidget(cross_section)
-        self.ui.scrollAreaWidgetContents_3.setMinimumWidth(self.ui.scrollAreaWidgetContents_3.minimumWidth() + cross_section.width() + 6)
+        self.ui.scrollAreaWidgetContents_3.setMinimumWidth(self.ui.scrollAreaWidgetContents_3.minimumWidth() + annotated_qimage.width() + 6)
 
     def clearCrossSection(self):
         self.clearLayout(self.ui.horizontalLayout_3)
