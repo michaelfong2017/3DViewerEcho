@@ -35,8 +35,12 @@ class MainWindow(QMainWindow):
                 try:
                     pred_image, pred_rotated_coords = pred_result
                     pyplot.figure(frame_index * len(all_results) + i)
-                    pyplot.imshow(pred_image,cmap='gray')
+                    pyplot.margins(x=0)
+                    pyplot.gca().xaxis.set_major_locator(pyplot.NullLocator())
+                    pyplot.gca().yaxis.set_major_locator(pyplot.NullLocator())
+                    pyplot.imshow(pred_image, cmap='gray')
                     pyplot.scatter(pred_rotated_coords[:,0], pred_rotated_coords[:,1], c='red', marker='x')
+                    # pyplot.savefig(str(frame_index * len(all_results) + i) + '.png', bbox_inches='tight', pad_inches=0)
                     annotated_qimage = pyplot_to_qimage(pyplot.gcf())
 
                     self.addCrossSection(annotated_qimage, view)
