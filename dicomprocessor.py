@@ -78,6 +78,7 @@ def process_frame(frame, frame_index):
 
         except Exception as e:
             print(e)
+            all_results.update({view: None})
 
 
     return frame_index, all_results

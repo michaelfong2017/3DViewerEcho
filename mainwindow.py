@@ -30,16 +30,18 @@ class MainWindow(QMainWindow):
         self.clearCrossSection()
 
         if not all_results == None:
-            N = 5
             i = 0
             for view, pred_result in all_results.items():
-                pred_image, pred_rotated_coords = pred_result
-                pyplot.figure(frame_index * 5 + i)
-                pyplot.imshow(pred_image,cmap='gray')
-                pyplot.scatter(pred_rotated_coords[:,0], pred_rotated_coords[:,1], c='red', marker='x')
-                annotated_qimage = pyplot_to_qimage(pyplot.gcf())
+                try:
+                    pred_image, pred_rotated_coords = pred_result
+                    pyplot.figure(frame_index * len(all_results) + i)
+                    pyplot.imshow(pred_image,cmap='gray')
+                    pyplot.scatter(pred_rotated_coords[:,0], pred_rotated_coords[:,1], c='red', marker='x')
+                    annotated_qimage = pyplot_to_qimage(pyplot.gcf())
 
-                self.addCrossSection(annotated_qimage, view)
+                    self.addCrossSection(annotated_qimage, view)
+                except Exception as e:
+                    print(e)
 
                 i = i + 1
 
