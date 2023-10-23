@@ -33,39 +33,54 @@ def process_frame(frame, frame_index):
         pickled_data = blosc.decompress(compressed_data)
 
         # Deserialize the pickled data to a NumPy array
-        array_2d = pickle.loads(pickled_data)
+        view_to_array_2d: dict = pickle.loads(pickled_data)
     else:
         print("Error:", response.text)
         # TODO alert user
         return
 
-    pred_coords_raw = array_2d
+    all_results = {}
+    for view, array_2d in view_to_array_2d.items():
+        print(view)
+        pred_coords_raw = array_2d
 
-    print(pred_coords_raw)
-    print(pred_coords_raw.shape)
+        print(pred_coords_raw)
+        print(pred_coords_raw.shape)
 
-    st = time.perf_counter()
+        st = time.perf_counter()
 
-    # extract the content of the plane and project onto 2d image. Also do the same for the coordinates for visualization.
-    # pred_vs, pred_mapped_coords, pred_up = FindVisualFromCoords(pred_coords_raw, data_3d_padded)
-    # Note: You can modify time_index value to get plane visual from other time slices
-    pred_vs, pred_mapped_coords, pred_up = FindVisualFromCoords(
-        pred_coords_raw, frame
-    )
+        try:
+            # TODO
+            # Since some model predictions results are more than 3 points,
+            # just chop the later points for now
+            pred_coords_raw = pred_coords_raw[:3]
 
-    pred_image = Image.fromarray(pred_vs)
-    pred_image = pred_image.convert("L")
+            # extract the content of the plane and project onto 2d image. Also do the same for the coordinates for visualization.
+            # pred_vs, pred_mapped_coords, pred_up = FindVisualFromCoords(pred_coords_raw, data_3d_padded)
+            # Note: You can modify time_index value to get plane visual from other time slices
+            pred_vs, pred_mapped_coords, pred_up = FindVisualFromCoords(
+                pred_coords_raw, frame
+            )
 
-    # Rotate the image into a "correct" orientation
-    pred_image, pred_rotated_coords = HandleRotations(
-        pred_image, pred_mapped_coords, pred_up, None
-    )
-    # pred_image.save(save_dir + filename[0] + '_pred.png')
+            pred_image = Image.fromarray(pred_vs)
+            pred_image = pred_image.convert("L")
 
-    et = time.perf_counter()
-    print("Execution time: ", et - st)  # 7.5s on jerry's computer
+            # Rotate the image into a "correct" orientation
+            pred_image, pred_rotated_coords = HandleRotations(
+                pred_image, pred_mapped_coords, pred_up, None
+            )
+            # pred_image.save(save_dir + filename[0] + '_pred.png')
 
-    return frame_index, pred_image, pred_rotated_coords
+            et = time.perf_counter()
+            print("Execution time: ", et - st)  # 7.5s on jerry's computer
+
+            all_results.update({view: (pred_image, pred_rotated_coords)})
+
+        except Exception as e:
+            print(e)
+
+
+    return frame_index, all_results
 
 def thread_pool_test(frame, frame_index):
     r = random.randint(5, 7)
@@ -142,9 +157,9 @@ def process_dicom(filepath, ui: Ui_MainWindow):
             ),
         )
 
-        frame_index, pred_image, pred_rotated_coords = result.get()
+        frame_index, all_results = result.get()
 
-        DataManager().update_pred_result(frame_index, pred_image, pred_rotated_coords)
+        DataManager().update_pred_result(frame_index, all_results)
 
         results.append(result)
 

@@ -1,6 +1,6 @@
 import sys
 from PySide2 import QtGui, QtUiTools, QtCore
-from PySide2.QtWidgets import QApplication, QMainWindow, QFileDialog, QLabel, QVBoxLayout
+from PySide2.QtWidgets import QApplication, QMainWindow, QFileDialog, QLabel, QPushButton
 from ui_mainwindow import Ui_MainWindow
 import os
 import threading
@@ -25,19 +25,23 @@ class MainWindow(QMainWindow):
         frame_index: int = slider_value
         self.ui.label_10.setText(f"Selected time frame index: {frame_index}")
 
-        pred_result = DataManager().get_pred_result(frame_index)
+        all_results = DataManager().get_pred_result(frame_index)
         
-        if pred_result == None:
-            self.clearCrossSection()
-        else:
-            pred_image, pred_rotated_coords = pred_result
-            pyplot.figure(frame_index)
-            pyplot.imshow(pred_image,cmap='gray')
-            pyplot.scatter(pred_rotated_coords[:,0], pred_rotated_coords[:,1], c='red', marker='x')
-            annotated_qimage = pyplot_to_qimage(pyplot.gcf())
+        self.clearCrossSection()
 
-            self.clearCrossSection()
-            self.addCrossSection(annotated_qimage)
+        if not all_results == None:
+            N = 5
+            i = 0
+            for view, pred_result in all_results.items():
+                pred_image, pred_rotated_coords = pred_result
+                pyplot.figure(frame_index * 5 + i)
+                pyplot.imshow(pred_image,cmap='gray')
+                pyplot.scatter(pred_rotated_coords[:,0], pred_rotated_coords[:,1], c='red', marker='x')
+                annotated_qimage = pyplot_to_qimage(pyplot.gcf())
+
+                self.addCrossSection(annotated_qimage, view)
+
+                i = i + 1
 
     def import_dicom(self):
         file = QFileDialog.getOpenFileName(
@@ -57,7 +61,7 @@ class MainWindow(QMainWindow):
         )
         t1.start()
 
-    def addCrossSection(self, annotated_qimage):
+    def addCrossSection(self, annotated_qimage, view):
         loader = QtUiTools.QUiLoader()
         ui_file = QtCore.QFile("crosssection.ui")
         ui_file.open(QtCore.QFile.ReadOnly)
@@ -68,6 +72,9 @@ class MainWindow(QMainWindow):
         label = cross_section.findChild(QLabel, "label_8")
         label.setPixmap(pixmap)
         label.show()
+
+        view_button = cross_section.findChild(QPushButton, "pushButton_13")
+        view_button.setText(view)
 
         self.ui.horizontalLayout_3.addWidget(cross_section)
         self.ui.scrollAreaWidgetContents_3.setMinimumWidth(self.ui.scrollAreaWidgetContents_3.minimumWidth() + annotated_qimage.width() + 6)

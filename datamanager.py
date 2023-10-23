@@ -17,8 +17,8 @@ class DataManager:
     def get_pred_result(self, frame_index):
         return self.frame_index_to_pred_result.get(frame_index)
 
-    def update_pred_result(self, frame_index, pred_image, pred_rotated_coords):
-        self.frame_index_to_pred_result.update({frame_index: (pred_image, pred_rotated_coords)})
+    def update_pred_result(self, frame_index, all_results):
+        self.frame_index_to_pred_result.update({frame_index: all_results})
 
     def remove_pred_result(self, frame_index):
         self.frame_index_to_pred_result.pop(frame_index)
