@@ -34,7 +34,9 @@ class MainWindow(QMainWindow):
             for view, pred_result in all_results.items():
                 try:
                     pred_image, pred_rotated_coords = pred_result
-                    pyplot.figure(frame_index * len(all_results) + i)
+                    width, height = pred_image.size
+                    px = 1 / pyplot.rcParams['figure.dpi']
+                    pyplot.figure(frame_index * len(all_results) + i, figsize=(width * px, height * px))
                     pyplot.margins(x=0)
                     pyplot.gca().xaxis.set_major_locator(pyplot.NullLocator())
                     pyplot.gca().yaxis.set_major_locator(pyplot.NullLocator())

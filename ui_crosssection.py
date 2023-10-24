@@ -32,7 +32,7 @@ class Ui_Form(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.pushButton_13.sizePolicy().hasHeightForWidth())
         self.pushButton_13.setSizePolicy(sizePolicy)
-        self.pushButton_13.setMinimumSize(QSize(420, 0))
+        self.pushButton_13.setMinimumSize(QSize(0, 0))
         self.pushButton_13.setMaximumSize(QSize(16777215, 16777215))
         self.pushButton_13.setStyleSheet(u"font: 10px \"MS Shell Dlg 2\";")
 
@@ -56,7 +56,7 @@ class Ui_Form(object):
         self.pushButton_9.setObjectName(u"pushButton_9")
         sizePolicy.setHeightForWidth(self.pushButton_9.sizePolicy().hasHeightForWidth())
         self.pushButton_9.setSizePolicy(sizePolicy)
-        self.pushButton_9.setMinimumSize(QSize(420, 0))
+        self.pushButton_9.setMinimumSize(QSize(0, 0))
         self.pushButton_9.setMaximumSize(QSize(16777215, 16777215))
 
         self.verticalLayout_10.addWidget(self.pushButton_9)
