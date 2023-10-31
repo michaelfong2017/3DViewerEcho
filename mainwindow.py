@@ -4,9 +4,8 @@ from PySide2.QtWidgets import QApplication, QMainWindow, QFileDialog, QLabel, QP
 from ui_mainwindow import Ui_MainWindow
 import os
 import threading
-from dicomprocessor import process_dicom, pyplot_to_qimage
+from dicomprocessor import process_dicom
 from datamanager import DataManager
-from matplotlib import pyplot, cm
 from clickableqlabel import ClickableQLabel
 
 
@@ -33,22 +32,15 @@ class MainWindow(QMainWindow):
         if not all_results == None:
             i = 0
             for view, pred_result in all_results.items():
-                try:
-                    pred_image, pred_rotated_coords = pred_result
-                    width, height = pred_image.size
-                    px = 1 / pyplot.rcParams['figure.dpi']
-                    pyplot.figure(frame_index * len(all_results) + i, figsize=(width * px, height * px))
-                    pyplot.margins(x=0)
-                    pyplot.gca().xaxis.set_major_locator(pyplot.NullLocator())
-                    pyplot.gca().yaxis.set_major_locator(pyplot.NullLocator())
-                    pyplot.imshow(pred_image, cmap='gray')
-                    pyplot.scatter(pred_rotated_coords[:,0], pred_rotated_coords[:,1], c='red', marker='x')
-                    # pyplot.savefig(str(frame_index * len(all_results) + i) + '.png', bbox_inches='tight', pad_inches=0)
-                    annotated_qimage = pyplot_to_qimage()
-                    
-                    self.addCrossSection(annotated_qimage, view, frame_index)
-                except Exception as e:
-                    print(e)
+                if pred_result == None:
+                    print(f"At frame index {frame_index}, the pred_result for view {view} is None!")
+                else:
+                    try:
+                        # pred_image, pred_rotated_coords, annotated_qimage = pred_result
+                        _, _, annotated_qimage = pred_result
+                        self.addCrossSection(annotated_qimage, view, frame_index)
+                    except Exception as e:
+                        print(e)
 
                 i = i + 1
 

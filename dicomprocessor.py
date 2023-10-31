@@ -41,6 +41,7 @@ def process_frame(frame, frame_index):
         return
 
     all_results = {}
+    i = 0
     for view, array_2d in view_to_array_2d.items():
         print(view)
         pred_coords_raw = array_2d
@@ -72,14 +73,27 @@ def process_frame(frame, frame_index):
             )
             # pred_image.save(save_dir + filename[0] + '_pred.png')
 
+            width, height = pred_image.size
+            px = 1 / pyplot.rcParams['figure.dpi']
+            pyplot.figure(frame_index * len(view_to_array_2d) + i, figsize=(width * px, height * px))
+            pyplot.margins(x=0)
+            pyplot.gca().xaxis.set_major_locator(pyplot.NullLocator())
+            pyplot.gca().yaxis.set_major_locator(pyplot.NullLocator())
+            pyplot.imshow(pred_image, cmap='gray')
+            pyplot.scatter(pred_rotated_coords[:,0], pred_rotated_coords[:,1], c='red', marker='x')
+            # pyplot.savefig(str(frame_index * len(view_to_array_2d) + i) + '.png', bbox_inches='tight', pad_inches=0)
+            annotated_qimage = pyplot_to_qimage()
+
             et = time.perf_counter()
             print("Execution time: ", et - st)  # 7.5s on jerry's computer
 
-            all_results.update({view: (pred_image, pred_rotated_coords)})
+            all_results.update({view: (pred_image, pred_rotated_coords, annotated_qimage)})
 
         except Exception as e:
             print(e)
             all_results.update({view: None})
+
+        i += 1
 
 
     return frame_index, all_results
