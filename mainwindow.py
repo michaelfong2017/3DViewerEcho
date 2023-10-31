@@ -7,6 +7,7 @@ import threading
 from dicomprocessor import process_dicom, pyplot_to_qimage
 from datamanager import DataManager
 from matplotlib import pyplot, cm
+from clickableqlabel import ClickableQLabel
 
 
 class MainWindow(QMainWindow):
@@ -71,6 +72,7 @@ class MainWindow(QMainWindow):
 
     def addCrossSection(self, annotated_qimage, view):
         loader = QtUiTools.QUiLoader()
+        loader.registerCustomWidget(ClickableQLabel)
         ui_file = QtCore.QFile("crosssection.ui")
         ui_file.open(QtCore.QFile.ReadOnly)
         cross_section = loader.load(ui_file)

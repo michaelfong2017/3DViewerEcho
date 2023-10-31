@@ -12,6 +12,8 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
+from clickableqlabel import ClickableQLabel
+
 import mainwindow_rc
 
 class Ui_Form(object):
@@ -38,7 +40,7 @@ class Ui_Form(object):
 
         self.verticalLayout_10.addWidget(self.pushButton_13)
 
-        self.label_8 = QLabel(Form)
+        self.label_8 = ClickableQLabel(Form)
         self.label_8.setObjectName(u"label_8")
         sizePolicy1 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
         sizePolicy1.setHorizontalStretch(0)
