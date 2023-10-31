@@ -44,8 +44,8 @@ class MainWindow(QMainWindow):
                     pyplot.imshow(pred_image, cmap='gray')
                     pyplot.scatter(pred_rotated_coords[:,0], pred_rotated_coords[:,1], c='red', marker='x')
                     # pyplot.savefig(str(frame_index * len(all_results) + i) + '.png', bbox_inches='tight', pad_inches=0)
-                    annotated_qimage = pyplot_to_qimage(pyplot.gcf())
-
+                    annotated_qimage = pyplot_to_qimage()
+                    
                     self.addCrossSection(annotated_qimage, view, frame_index)
                 except Exception as e:
                     print(e)

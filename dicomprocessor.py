@@ -12,6 +12,7 @@ import base64
 
 from formatconverter import dicom_to_array, pad4d
 from ReconstructPlane import FindVisualFromCoords, HandleRotations
+from matplotlib import pyplot
 from PIL import Image
 import io
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -169,14 +170,8 @@ def process_dicom(filepath, ui: Ui_MainWindow):
     results = [r.get() for r in results]
     print(results)
 
-def pyplot_to_qimage(pyplot_figure):
-    # Create a canvas and render the plot on it
-    canvas = FigureCanvas(pyplot_figure)
-    buffer = io.BytesIO()
-    canvas.print_png(buffer)
-
-    # Create QImage from the buffer
-    buffer.seek(0)
-    qimage = QtGui.QImage.fromData(buffer.getvalue())
-
-    return qimage
+def pyplot_to_qimage():
+    buf = io.BytesIO()
+    pyplot.savefig(buf, bbox_inches='tight', pad_inches=0)
+    buf.seek(0)
+    return QtGui.QImage.fromData(buf.getvalue())
