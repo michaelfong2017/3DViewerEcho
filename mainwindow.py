@@ -46,7 +46,7 @@ class MainWindow(QMainWindow):
                     # pyplot.savefig(str(frame_index * len(all_results) + i) + '.png', bbox_inches='tight', pad_inches=0)
                     annotated_qimage = pyplot_to_qimage(pyplot.gcf())
 
-                    self.addCrossSection(annotated_qimage, view)
+                    self.addCrossSection(annotated_qimage, view, frame_index)
                 except Exception as e:
                     print(e)
 
@@ -70,7 +70,17 @@ class MainWindow(QMainWindow):
         )
         t1.start()
 
-    def addCrossSection(self, annotated_qimage, view):
+    def export(self, annotated_qimage, view, frame_index):
+        dialog = QFileDialog()
+        dialog.setDefaultSuffix(".png")
+        default_filename = f"frame-{frame_index}-view-{view}"
+        file_path, _ = dialog.getSaveFileName(self, "Save PNG", default_filename, "PNG Files (*.png)")
+
+        if file_path:
+            annotated_qimage.save(f"{file_path}.png")
+            print("File saved successfully.")
+
+    def addCrossSection(self, annotated_qimage, view, frame_index):
         loader = QtUiTools.QUiLoader()
         loader.registerCustomWidget(ClickableQLabel)
         ui_file = QtCore.QFile("crosssection.ui")
@@ -85,6 +95,9 @@ class MainWindow(QMainWindow):
 
         view_button = cross_section.findChild(QPushButton, "pushButton_13")
         view_button.setText(view)
+
+        export_button = cross_section.findChild(QPushButton, "pushButton_9")
+        export_button.clicked.connect(lambda: self.export(annotated_qimage, view, frame_index))
 
         self.ui.horizontalLayout_3.addWidget(cross_section)
         self.ui.scrollAreaWidgetContents_3.setMinimumWidth(self.ui.scrollAreaWidgetContents_3.minimumWidth() + annotated_qimage.width() + 6)
