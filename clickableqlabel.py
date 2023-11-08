@@ -1,5 +1,5 @@
 from PySide2 import QtCore
-from PySide2.QtWidgets import QApplication, QLabel, QDialog, QVBoxLayout
+from PySide2.QtWidgets import QApplication, QLabel, QDialog, QVBoxLayout, QPushButton
 
 
 class ClickableQLabel(QLabel):
@@ -10,14 +10,18 @@ class ClickableQLabel(QLabel):
         if event.buttons() == QtCore.Qt.LeftButton:
             width = self.pixmap().width()
             print("Pixmap width:", width)
-            dialog = FullScreenDialog(self.pixmap())
-            dialog.exec_()
+
+            cross_section = self.parent()
+            view_button = cross_section.findChild(QPushButton, "pushButton_13")
+
+            self.dialog = FullScreenDialog(self.pixmap(), view_button.text())
+            self.dialog.show()
 
 
 class FullScreenDialog(QDialog):
-    def __init__(self, pixmap):
+    def __init__(self, pixmap, title):
         super().__init__()
-        self.setWindowTitle("Cross Section")
+        self.setWindowTitle(title)
         # self.setWindowState(self.windowState() | QtCore.Qt.WindowFullScreen)
 
         self.label = QLabel()
