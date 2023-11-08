@@ -105,6 +105,12 @@ def thread_pool_test(frame, frame_index):
     return (frame_index, r)
 
 def process_dicom(filepath, ui: Ui_MainWindow):
+    ## ui checkBox disable
+    ui.checkBox.setEnabled(False)
+    ui.progressBar.setValue(33)
+    ui.progressBar.setHidden(False)
+    ##
+
     image4D, spacing4D = dicom_to_array(filepath)
     NUM_FRAMES = image4D.shape[0]
 
@@ -158,7 +164,16 @@ def process_dicom(filepath, ui: Ui_MainWindow):
 
     pool = ThreadPool(21)
     results = []
+    selected_frame_index = -1
     for i in range(NUM_FRAMES):
+        # Analyze only one time frame
+        if ui.checkBox.isChecked():
+            selected_frame_index: int = ui.horizontalSlider.value()
+            if not i == selected_frame_index:
+                i += 1
+                continue
+        # Analyze only one time frame END
+
         data_3d_padded = data_4d_padded[i]
         if i == 0:
             print(data_3d_padded.shape)
@@ -183,6 +198,17 @@ def process_dicom(filepath, ui: Ui_MainWindow):
     pool.join()
     results = [r.get() for r in results]
     print(results)
+    
+    ## ui checkBox enable
+    ui.checkBox.setEnabled(True)
+    ui.progressBar.setHidden(True)
+    ##
+    
+    # Show the result without needing to move the horizontal slider
+    if not selected_frame_index == -1:
+        ui.horizontalSlider.setValue(0)
+        ui.horizontalSlider.setValue(1)
+        ui.horizontalSlider.setValue(selected_frame_index)
 
 def pyplot_to_qimage():
     buf = io.BytesIO()

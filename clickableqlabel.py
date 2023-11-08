@@ -18,7 +18,7 @@ class FullScreenDialog(QDialog):
     def __init__(self, pixmap):
         super().__init__()
         self.setWindowTitle("Cross Section")
-        self.setWindowState(self.windowState() | QtCore.Qt.WindowFullScreen)
+        # self.setWindowState(self.windowState() | QtCore.Qt.WindowFullScreen)
 
         self.label = QLabel()
         self.label.setAlignment(QtCore.Qt.AlignCenter)

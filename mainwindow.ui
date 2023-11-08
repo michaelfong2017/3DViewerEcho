@@ -823,9 +823,9 @@
    <widget class="QPushButton" name="pushButton_2">
     <property name="geometry">
      <rect>
-      <x>80</x>
-      <y>60</y>
-      <width>191</width>
+      <x>40</x>
+      <y>50</y>
+      <width>301</width>
       <height>41</height>
      </rect>
     </property>
@@ -839,17 +839,17 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">font: 20px &quot;MS Shell Dlg 2&quot;;</string>
+     <string notr="true">font: 18px &quot;MS Shell Dlg 2&quot;;</string>
     </property>
     <property name="text">
-     <string>Import DICOM file</string>
+     <string>Import &amp;&amp; Process DICOM file</string>
     </property>
    </widget>
    <widget class="QJumpSlider" name="horizontalSlider">
     <property name="geometry">
      <rect>
       <x>60</x>
-      <y>200</y>
+      <y>180</y>
       <width>251</width>
       <height>22</height>
      </rect>
@@ -862,7 +862,7 @@
     <property name="geometry">
      <rect>
       <x>40</x>
-      <y>150</y>
+      <y>130</y>
       <width>281</width>
       <height>41</height>
      </rect>
@@ -975,7 +975,7 @@ in all time frames</string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>190</y>
+      <y>170</y>
       <width>41</width>
       <height>41</height>
      </rect>
@@ -1006,7 +1006,7 @@ in all time frames</string>
     <property name="geometry">
      <rect>
       <x>320</x>
-      <y>190</y>
+      <y>170</y>
       <width>41</width>
       <height>41</height>
      </rect>
@@ -1031,6 +1031,38 @@ in all time frames</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBox">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>240</y>
+      <width>341</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">font: 16px &quot;MS Shell Dlg 2&quot;;</string>
+    </property>
+    <property name="text">
+     <string>Analyze only the selected time frame</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QProgressBar" name="progressBar">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>90</y>
+      <width>301</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="value">
+     <number>24</number>
     </property>
    </widget>
   </widget>

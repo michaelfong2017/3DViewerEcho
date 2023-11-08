@@ -15,6 +15,8 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
+        self.ui.progressBar.setHidden(True)
+
         self.ui.pushButton_2.clicked.connect(self.import_dicom)
         self.ui.horizontalSlider.valueChanged.connect(self.frame_index_changed)
         self.clearFirstCrossSection()
