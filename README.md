@@ -5,6 +5,13 @@ python -m venv venv
 ```
 
 ```bash
+sudo apt-get install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev
+
+echo 'export MESA_GL_VERSION_OVERRIDE=3.3' >> ~/.bashrc
+source ~/.bashrc
+```
+
+```bash
 pip install --upgrade pip
 pip install PySide2
 
