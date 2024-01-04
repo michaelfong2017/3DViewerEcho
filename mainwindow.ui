@@ -820,36 +820,11 @@
      </layout>
     </widget>
    </widget>
-   <widget class="QPushButton" name="pushButton_2">
-    <property name="geometry">
-     <rect>
-      <x>40</x>
-      <y>50</y>
-      <width>301</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>MS Shell Dlg 2</family>
-      <pointsize>-1</pointsize>
-      <weight>50</weight>
-      <italic>false</italic>
-      <bold>false</bold>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">font: 18px &quot;MS Shell Dlg 2&quot;;</string>
-    </property>
-    <property name="text">
-     <string>Import &amp;&amp; Process DICOM file</string>
-    </property>
-   </widget>
    <widget class="QJumpSlider" name="horizontalSlider">
     <property name="geometry">
      <rect>
       <x>90</x>
-      <y>170</y>
+      <y>180</y>
       <width>251</width>
       <height>22</height>
      </rect>
@@ -862,7 +837,7 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>120</y>
+      <y>130</y>
       <width>281</width>
       <height>41</height>
      </rect>
@@ -887,7 +862,7 @@
     <property name="geometry">
      <rect>
       <x>930</x>
-      <y>30</y>
+      <y>100</y>
       <width>301</width>
       <height>51</height>
      </rect>
@@ -909,58 +884,6 @@
 current cross-section</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_11">
-    <property name="geometry">
-     <rect>
-      <x>930</x>
-      <y>120</y>
-      <width>301</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>MS Shell Dlg 2</family>
-      <pointsize>-1</pointsize>
-      <weight>50</weight>
-      <italic>false</italic>
-      <bold>false</bold>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">font: 17px &quot;MS Shell Dlg 2&quot;;</string>
-    </property>
-    <property name="text">
-     <string>Export all cross-section images
-in the current time frame</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButton_12">
-    <property name="geometry">
-     <rect>
-      <x>930</x>
-      <y>190</y>
-      <width>301</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>MS Shell Dlg 2</family>
-      <pointsize>-1</pointsize>
-      <weight>50</weight>
-      <italic>false</italic>
-      <bold>false</bold>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">font: 17px &quot;MS Shell Dlg 2&quot;;</string>
-    </property>
-    <property name="text">
-     <string>Export all cross-section images
-in all time frames</string>
-    </property>
-   </widget>
    <widget class="MyGLWidget" name="openGLWidget">
     <property name="geometry">
      <rect>
@@ -975,7 +898,7 @@ in all time frames</string>
     <property name="geometry">
      <rect>
       <x>40</x>
-      <y>160</y>
+      <y>170</y>
       <width>41</width>
       <height>41</height>
      </rect>
@@ -1006,7 +929,7 @@ in all time frames</string>
     <property name="geometry">
      <rect>
       <x>350</x>
-      <y>160</y>
+      <y>170</y>
       <width>41</width>
       <height>41</height>
      </rect>
@@ -1033,25 +956,6 @@ in all time frames</string>
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
     </property>
    </widget>
-   <widget class="QCheckBox" name="checkBox">
-    <property name="geometry">
-     <rect>
-      <x>40</x>
-      <y>220</y>
-      <width>341</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">font: 16px &quot;MS Shell Dlg 2&quot;;</string>
-    </property>
-    <property name="text">
-     <string>Analyze only the selected time frame</string>
-    </property>
-    <property name="checked">
-     <bool>true</bool>
-    </property>
-   </widget>
    <widget class="QProgressBar" name="progressBar">
     <property name="geometry">
      <rect>
@@ -1069,7 +973,7 @@ in all time frames</string>
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>160</y>
+      <y>170</y>
       <width>34</width>
       <height>41</height>
      </rect>

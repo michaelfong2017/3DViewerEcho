@@ -1,6 +1,6 @@
 import sys
 from PySide2 import QtGui, QtUiTools, QtCore
-from PySide2.QtWidgets import QApplication, QMainWindow, QFileDialog, QLabel, QPushButton
+from PySide2.QtWidgets import QApplication, QMainWindow, QFileDialog, QLabel, QPushButton, QAction, QMenu
 from ui_mainwindow import Ui_MainWindow
 import os
 import threading
@@ -15,14 +15,88 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
+        #### Top Menu Bar BEGIN ####
+        # Create actions
+        self.action_import_all_time_frame = QAction("Analyze all time frames", self)
+        self.action_import_selected_time_frame = QAction("Analyze only the selected time frame", self)
+
+        ### Export all cross-section images in all time frames
+        self.action_export_all_cross_section_all_time_frames = QAction("Export all cross-section images in all time frames", self)
+        ### Export all cross-section images in the current time frame
+        self.action_export_all_cross_section_selected_time_frame = QAction("Export all cross-section images in the current time frame", self)
+
+        # Connect actions to slots
+        self.action_import_all_time_frame.triggered.connect(self.import_dicom_and_analyze_all)
+        self.action_import_selected_time_frame.triggered.connect(self.import_dicom_and_analyze_selected)
+
+        self.action_export_all_cross_section_all_time_frames.triggered.connect(self.export_all)
+        self.action_export_all_cross_section_selected_time_frame.triggered.connect(self.export_selected_time_frame)
+
+        # Create menus
+        self.import_menu = QMenu("Import and Process DICOM file", self)
+        self.import_menu.addAction(self.action_import_all_time_frame)
+        self.import_menu.addAction(self.action_import_selected_time_frame)
+
+        self.export_menu = QMenu("Export cross-section images", self)
+        self.export_menu.addAction(self.action_export_all_cross_section_all_time_frames)
+        self.export_menu.addAction(self.action_export_all_cross_section_selected_time_frame)
+        
+        # Create menu bar
+        self.menu_bar = self.menuBar()
+        self.menu_bar.addMenu(self.import_menu)
+        self.menu_bar.addMenu(self.export_menu)
+
+        # Set menu bar as the main window's menu bar
+        self.setMenuBar(self.menu_bar)
+
+        # print(self.import_menu.styleSheet())
+        # print(self.menu_bar.styleSheet())
+        ## Style sheet BEGIN ##
+        menuBarStylesheet = """
+QMenuBar {
+    font: 15px "MS Shell Dlg 2";
+    background-color: #f2f2f2;
+    padding: 5px 5px;
+}
+"""
+        self.menu_bar.setStyleSheet(menuBarStylesheet)
+
+        importMenuStylesheet = """ 
+QMenu {
+    font: 15px "MS Shell Dlg 2";
+    background-color: #f2f2f2;
+}
+
+QMenu::item {
+    font: 15px "MS Shell Dlg 2";
+    padding: 5px 20px;
+}
+
+QMenu::item:selected {
+    font: 15px "MS Shell Dlg 2";
+    background-color: #007BFF;
+    color: #ffffff;
+}
+"""
+        # self.import_menu.setStyleSheet(importMenuStylesheet)
+        ## Style sheet END ##
+        #### Top Menu Bar END ####
+        
         self.ui.progressBar.setHidden(True)
 
-        self.ui.pushButton_2.clicked.connect(self.import_dicom)
         self.ui.horizontalSlider.valueChanged.connect(self.frame_index_changed)
-        self.ui.pushButton_21.clicked.connect(self.play_cross_session)
+        self.ui.pushButton_21.clicked.connect(self.play_cross_section)
         self.clearFirstCrossSection()
 
-    def play_cross_session(self):
+    def export_all(self):
+        # TODO
+        print("export_all")
+
+    def export_selected_time_frame(self):
+        # TODO
+        print("export_selected_time_frame")
+
+    def play_cross_section(self):
         current = self.ui.horizontalSlider.value()
         if current == self.ui.horizontalSlider.maximum():
             self.ui.horizontalSlider.setValue(0)
@@ -72,10 +146,10 @@ class MainWindow(QMainWindow):
 
                 i = i + 1
 
-    def import_dicom(self):
+    def import_dicom_and_analyze_all(self):
         file = QFileDialog.getOpenFileName(
             self,
-            self.tr("Select DICOM File"),
+            self.tr("Select DICOM File, in which all time frames will be analyzed"),
             os.getcwd(),
             self.tr("DICOM File (*.dcm)"),
         )
@@ -84,12 +158,32 @@ class MainWindow(QMainWindow):
         t1 = threading.Thread(
             target=process_dicom,
             args=(
+                True,
                 filepath,
                 self.ui,
             ),
         )
         t1.start()
 
+    def import_dicom_and_analyze_selected(self):
+        file = QFileDialog.getOpenFileName(
+            self,
+            self.tr("Select DICOM File, in which only the selected time frame will be analyzed"),
+            os.getcwd(),
+            self.tr("DICOM File (*.dcm)"),
+        )
+        filepath = file[0]
+
+        t1 = threading.Thread(
+            target=process_dicom,
+            args=(
+                False,
+                filepath,
+                self.ui,
+            ),
+        )
+        t1.start()
+    
     def export(self, annotated_qimage, view, frame_index):
         dialog = QFileDialog()
         dialog.setDefaultSuffix(".png")

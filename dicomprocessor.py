@@ -104,9 +104,8 @@ def thread_pool_test(frame, frame_index):
     print("Worker thread finishing")
     return (frame_index, r)
 
-def process_dicom(filepath, ui: Ui_MainWindow):
-    ## ui checkBox disable
-    ui.checkBox.setEnabled(False)
+def process_dicom(analyze_all, filepath, ui: Ui_MainWindow):
+    ## ui
     ui.progressBar.setValue(33)
     ui.progressBar.setHidden(False)
     ##
@@ -167,7 +166,7 @@ def process_dicom(filepath, ui: Ui_MainWindow):
     selected_frame_index = -1
     for i in range(NUM_FRAMES):
         # Analyze only one time frame
-        if ui.checkBox.isChecked():
+        if not analyze_all:
             selected_frame_index: int = ui.horizontalSlider.value()
             if not i == selected_frame_index:
                 i += 1
@@ -199,8 +198,7 @@ def process_dicom(filepath, ui: Ui_MainWindow):
     results = [r.get() for r in results]
     print(results)
     
-    ## ui checkBox enable
-    ui.checkBox.setEnabled(True)
+    ## ui
     ui.progressBar.setHidden(True)
     ##
     
