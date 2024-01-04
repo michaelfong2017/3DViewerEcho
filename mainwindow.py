@@ -19,7 +19,25 @@ class MainWindow(QMainWindow):
 
         self.ui.pushButton_2.clicked.connect(self.import_dicom)
         self.ui.horizontalSlider.valueChanged.connect(self.frame_index_changed)
+        self.ui.pushButton_21.clicked.connect(self.play_cross_session)
         self.clearFirstCrossSection()
+
+    def play_cross_session(self):
+        current = self.ui.horizontalSlider.value()
+        if current == self.ui.horizontalSlider.maximum():
+            self.ui.horizontalSlider.setValue(0)
+
+        self.play_timer = QtCore.QTimer()
+        self.play_timer.timeout.connect(self.increment_frame_index)
+        self.play_delta_time = 60
+        self.play_timer.start(self.play_delta_time)
+
+    def increment_frame_index(self):
+        current = self.ui.horizontalSlider.value()
+        if current == self.ui.horizontalSlider.maximum():
+            self.play_timer.stop()
+        else:
+            self.ui.horizontalSlider.setValue(current + 1)
 
     def frame_index_changed(self, slider_value):
         print(slider_value)
@@ -36,10 +54,18 @@ class MainWindow(QMainWindow):
             for view, pred_result in all_results.items():
                 if pred_result == None:
                     print(f"At frame index {frame_index}, the pred_result for view {view} is None!")
+                    first_found_width = DataManager().get_result_width(view)
+                    if not first_found_width == None:
+                        # Add placeholder cross section
+                        self.addPlaceholderCrossSection(view, first_found_width)
+                        print(f"Placeholder cross section for view {view} has been added.")
                 else:
                     try:
                         # pred_image, pred_rotated_coords, annotated_qimage = pred_result
                         _, _, annotated_qimage = pred_result
+                        
+                        DataManager().update_result_width(view, annotated_qimage.width())
+
                         self.addCrossSection(annotated_qimage, view, frame_index)
                     except Exception as e:
                         print(e)
@@ -95,6 +121,25 @@ class MainWindow(QMainWindow):
 
         self.ui.horizontalLayout_3.addWidget(cross_section)
         self.ui.scrollAreaWidgetContents_3.setMinimumWidth(self.ui.scrollAreaWidgetContents_3.minimumWidth() + annotated_qimage.width() + 6)
+
+    def addPlaceholderCrossSection(self, view, width):
+        loader = QtUiTools.QUiLoader()
+        loader.registerCustomWidget(ClickableQLabel)
+        ui_file = QtCore.QFile("crosssection.ui")
+        ui_file.open(QtCore.QFile.ReadOnly)
+        cross_section = loader.load(ui_file)
+        ui_file.close()
+
+        pixmap = QtGui.QPixmap.fromImage(QtGui.QImage(width, 0, QtGui.QImage.Format_RGB888))
+        label = cross_section.findChild(QLabel, "label_8")
+        label.setPixmap(pixmap)
+        label.show()
+
+        view_button = cross_section.findChild(QPushButton, "pushButton_13")
+        view_button.setText(view)
+
+        self.ui.horizontalLayout_3.addWidget(cross_section)
+        self.ui.scrollAreaWidgetContents_3.setMinimumWidth(self.ui.scrollAreaWidgetContents_3.minimumWidth() + width + 6)
 
     def clearCrossSection(self):
         self.clearLayout(self.ui.horizontalLayout_3)

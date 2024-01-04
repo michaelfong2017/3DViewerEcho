@@ -1,6 +1,8 @@
 <RCC>
   <qresource prefix="images">
     <file>annotated_heart_sample.png</file>
+    <file>icons8-pause-button-48.png</file>
+    <file>icons8-play-button-48.png</file>
     <file>3D_heart_sample.png</file>
   </qresource>
 </RCC>

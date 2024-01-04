@@ -13,6 +13,7 @@ class DataManager:
         self.__initialized = True
 
         self.frame_index_to_pred_result = {}
+        self.view_to_pred_result_width = {}
 
     def get_pred_result(self, frame_index):
         return self.frame_index_to_pred_result.get(frame_index)
@@ -22,3 +23,12 @@ class DataManager:
 
     def remove_pred_result(self, frame_index):
         self.frame_index_to_pred_result.pop(frame_index)
+
+    def get_result_width(self, view):
+        return self.view_to_pred_result_width.get(view)
+
+    def update_result_width(self, view, width):
+        self.view_to_pred_result_width.update({view: width})
+
+    def remove_result_width(self, view):
+        self.view_to_pred_result_width.pop(view)
