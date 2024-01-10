@@ -214,7 +214,11 @@ QMenu::item:selected {
         export_button.clicked.connect(lambda: self.export(annotated_qimage, view, frame_index))
 
         self.ui.horizontalLayout_3.addWidget(cross_section)
-        self.ui.scrollAreaWidgetContents_3.setMinimumWidth(self.ui.scrollAreaWidgetContents_3.minimumWidth() + annotated_qimage.width() + 6)
+        # self.ui.scrollAreaWidgetContents_3.setMinimumWidth(self.ui.scrollAreaWidgetContents_3.minimumWidth() + annotated_qimage.width() + 6) ## Variable width
+        ## Set a fixed width for the cross section
+        fixed_width = 220
+        label.setFixedWidth(fixed_width)
+        self.ui.scrollAreaWidgetContents_3.setMinimumWidth(self.ui.scrollAreaWidgetContents_3.minimumWidth() + fixed_width + 6)
 
     def addPlaceholderCrossSection(self, view, width):
         loader = QtUiTools.QUiLoader()

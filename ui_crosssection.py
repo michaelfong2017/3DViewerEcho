@@ -51,6 +51,7 @@ class Ui_Form(object):
         self.label_8.setMaximumSize(QSize(16777215, 240))
         self.label_8.setPixmap(QPixmap(u":/images/annotated_heart_sample.png"))
         self.label_8.setScaledContents(False)
+        self.label_8.setAlignment(Qt.AlignCenter)
 
         self.verticalLayout_10.addWidget(self.label_8)
 
