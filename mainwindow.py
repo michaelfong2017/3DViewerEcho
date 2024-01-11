@@ -202,7 +202,12 @@ QMenu::item:selected {
         cross_section = loader.load(ui_file)
         ui_file.close()
 
+        scrollArea_height = self.ui.scrollAreaWidgetContents_3.height()
+        print(f"scrollArea_height: {scrollArea_height}")
+        new_pixmap_height = 240 + scrollArea_height - 369
+
         pixmap = QtGui.QPixmap.fromImage(annotated_qimage)
+        pixmap = pixmap.scaledToHeight(new_pixmap_height)
         label = cross_section.findChild(QLabel, "label_8")
         label.setPixmap(pixmap)
         label.show()
@@ -216,9 +221,12 @@ QMenu::item:selected {
         self.ui.horizontalLayout_3.addWidget(cross_section)
         # self.ui.scrollAreaWidgetContents_3.setMinimumWidth(self.ui.scrollAreaWidgetContents_3.minimumWidth() + annotated_qimage.width() + 6) ## Variable width
         ## Set a fixed width for the cross section
-        fixed_width = 220
-        label.setFixedWidth(fixed_width)
+        fixed_width = new_pixmap_height
+        label.parent().setFixedWidth(fixed_width)
+        label.setFixedHeight(fixed_width)
         self.ui.scrollAreaWidgetContents_3.setMinimumWidth(self.ui.scrollAreaWidgetContents_3.minimumWidth() + fixed_width + 6)
+        self.ui.scrollAreaWidgetContents_3.setMaximumWidth(self.ui.scrollAreaWidgetContents_3.minimumWidth() + fixed_width + 6)
+        # print(f"maximumWidth: {self.ui.scrollAreaWidgetContents_3.maximumWidth()}")
 
     def addPlaceholderCrossSection(self, view, width):
         loader = QtUiTools.QUiLoader()

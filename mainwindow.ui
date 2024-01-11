@@ -357,7 +357,7 @@ current cross-section</string>
       <property name="widgetResizable">
        <bool>true</bool>
       </property>
-      <widget class="QWidget" name="scrollAreaWidgetContents_3">
+      <widget class="ScrollAreaWidget" name="scrollAreaWidgetContents_3">
        <property name="geometry">
         <rect>
          <x>0</x>
@@ -1170,6 +1170,12 @@ current cross-section</string>
    <class>QJumpSlider</class>
    <extends>QSlider</extends>
    <header>qjumpslider</header>
+  </customwidget>
+  <customwidget>
+   <class>ScrollAreaWidget</class>
+   <extends>QWidget</extends>
+   <header>scrollareawidget</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

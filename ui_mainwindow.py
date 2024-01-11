@@ -14,6 +14,7 @@ from PySide2.QtWidgets import *
 
 from myglwidget import MyGLWidget
 from qjumpslider import QJumpSlider
+from scrollareawidget import ScrollAreaWidget
 
 import mainwindow_rc
 
@@ -191,7 +192,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setSizePolicy(sizePolicy2)
         self.scrollArea.setMinimumSize(QSize(1260, 371))
         self.scrollArea.setWidgetResizable(True)
-        self.scrollAreaWidgetContents_3 = QWidget()
+        self.scrollAreaWidgetContents_3 = ScrollAreaWidget()
         self.scrollAreaWidgetContents_3.setObjectName(u"scrollAreaWidgetContents_3")
         self.scrollAreaWidgetContents_3.setGeometry(QRect(0, 0, 2000, 352))
         sizePolicy3 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
