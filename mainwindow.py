@@ -210,6 +210,7 @@ QMenu::item:selected {
         pixmap = pixmap.scaledToHeight(new_pixmap_height)
         label = cross_section.findChild(QLabel, "label_8")
         label.setPixmap(pixmap)
+        label.tag = f"{view},{frame_index}"
         label.show()
 
         view_button = cross_section.findChild(QPushButton, "pushButton_13")
