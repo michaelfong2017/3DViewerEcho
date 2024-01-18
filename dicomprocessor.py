@@ -11,7 +11,8 @@ import numpy as np
 import base64
 
 from formatconverter import dicom_to_array, pad4d
-from ReconstructPlane import FindVisualFromCoords, HandleRotations
+from ReconstructPlane import HandleRotations
+from PlaneReconstructionUtils import FindVisualFromCoords
 from matplotlib import pyplot
 from PIL import Image
 import io
