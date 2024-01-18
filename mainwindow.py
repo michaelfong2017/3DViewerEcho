@@ -154,6 +154,16 @@ QMenu::item:selected {
             self.tr("DICOM File (*.dcm)"),
         )
         filepath = file[0]
+        
+        if filepath == "": # No file is selected
+            loader = QtUiTools.QUiLoader()
+            ui_file = QtCore.QFile("errordialog.ui")
+            ui_file.open(QtCore.QFile.ReadOnly)
+            dialog = loader.load(ui_file)
+            dialog.label.setText("Please select a valid filepath!")
+            dialog.label_2.setText("")
+            dialog.exec_()
+            return
 
         t1 = threading.Thread(
             target=process_dicom,
@@ -173,6 +183,16 @@ QMenu::item:selected {
             self.tr("DICOM File (*.dcm)"),
         )
         filepath = file[0]
+
+        if filepath == "": # No file is selected
+            loader = QtUiTools.QUiLoader()
+            ui_file = QtCore.QFile("errordialog.ui")
+            ui_file.open(QtCore.QFile.ReadOnly)
+            dialog = loader.load(ui_file)
+            dialog.label.setText("Please select a valid filepath!")
+            dialog.label_2.setText("")
+            dialog.exec_()
+            return
 
         t1 = threading.Thread(
             target=process_dicom,
