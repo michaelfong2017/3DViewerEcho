@@ -5,6 +5,15 @@ from PySide2.QtWidgets import QApplication, QLabel, QDialog, QVBoxLayout, QPushB
 class ClickableQLabel(QLabel):
     def __int__(self):
         super().__init__()
+        self._tag = ""
+
+    @property
+    def tag(self):
+        return self._tag
+
+    @tag.setter
+    def tag(self, value):
+        self._tag = value
 
     def mousePressEvent(self, event):
         if event.buttons() == QtCore.Qt.LeftButton:

@@ -1,4 +1,4 @@
-from PySide2 import QtGui
+from PySide2 import QtGui, QtUiTools, QtCore
 from ui_mainwindow import Ui_MainWindow
 
 from multiprocessing.pool import ThreadPool
@@ -111,7 +111,18 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow):
     ui.progressBar.setHidden(False)
     ##
 
-    image4D, spacing4D = dicom_to_array(filepath)
+    try:
+        image4D, spacing4D = dicom_to_array(filepath)
+    except FileNotFoundError as e:
+        loader = QtUiTools.QUiLoader()
+        ui_file = QtCore.QFile("errordialog.ui")
+        ui_file.open(QtCore.QFile.ReadOnly)
+        dialog = loader.load(ui_file)
+        dialog.label.setText("Please select a valid filepath!")
+        dialog.label_2.setText("")
+        dialog.exec_()
+        return
+    
     NUM_FRAMES = image4D.shape[0]
 
     # ui slider BEGIN

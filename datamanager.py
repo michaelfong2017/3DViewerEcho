@@ -15,13 +15,13 @@ class DataManager:
         self.frame_index_to_pred_result = {}
         self.view_to_pred_result_width = {}
 
-    def get_pred_result(self, frame_index):
+    def get_pred_result(self, frame_index: int):
         return self.frame_index_to_pred_result.get(frame_index)
 
-    def update_pred_result(self, frame_index, all_results):
+    def update_pred_result(self, frame_index: int, all_results):
         self.frame_index_to_pred_result.update({frame_index: all_results})
 
-    def remove_pred_result(self, frame_index):
+    def remove_pred_result(self, frame_index: int):
         self.frame_index_to_pred_result.pop(frame_index)
 
     def get_result_width(self, view):
