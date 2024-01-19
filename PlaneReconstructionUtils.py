@@ -483,19 +483,6 @@ def FindPlaneCorners(normals_line, points_line, dim, th=25):
 
     return p_intersection, intersecting_lines
 
-def FindNormalByCoords(coords):
-    # coords (ls, 3)
-    # TODO: pick 3 best coordinates
-    p0, p1, p2 = coords[0:3]
-
-    a, b, c, d = get_plane_equation_from_points(p0, p1, p2)
-    if a == b == c == d == 0:
-        print("Error: The three points are on the same straight line!")
-        1/0
-        return 0
-
-    return np.array([a, b, c])
-
 def CheckNormalAxis(normal):
     if abs(normal[0]) == 1:
         print("The normal is aligned with the x-axis.")
@@ -509,11 +496,36 @@ def CheckNormalAxis(normal):
     else:
         return -1
 
-# Extract cross sectional view of volume from given coords
-def FindVisualFromCoords(coords, volume):
+#### Core Utils #####
+def FindNormalByCoords(coords, view):
+    # TODO: pick 3 best coordinates
+    pred_coords_raw = FilterLandmarks(coords, view)
 
-    normal = FindNormalByCoords(coords)
-    print("FindVisualFromCoords: ", coords)
+    p0, p1, p2 = pred_coords_raw[0:3]
+    a, b, c, d = get_plane_equation_from_points(p0, p1, p2)
+
+    if a == b == c == d == 0:
+        print("Error: The three points are on the same straight line!")
+        print("Random generation in ", coords.shape[0] , " landmarks")
+
+        elements = list(range(0, coords.shape[0]))
+        all_combinations = list(itertools.combinations(elements, 3))
+        
+        for combination in all_combinations:
+            pred_coords_raw = [[coords[landmark_index][0], coords[landmark_index][1], coords[landmark_index][2]] for landmark_index in combination]
+            print(pred_coords_raw)
+            p0, p1, p2 = pred_coords_raw[0:3]
+            a, b, c, d = get_plane_equation_from_points(p0, p1, p2)
+            if not(a == b == c == d == 0):
+                return np.array([a, b, c]), np.array(pred_coords_raw)
+
+    return np.array([a, b, c]), pred_coords_raw
+
+# Extract cross sectional view of volume from given coords
+def FindVisualFromCoords(coords, volume, view):
+
+    normal, coords = FindNormalByCoords(coords, view)
+    print("FindVisualFromCoords: ", coords, " in view ", view)
     print("Calculated Plane Normal: ", normal)
     normal = normal/np.linalg.norm(normal) # normalize
     print("Normalized normal: ", normal)
@@ -522,34 +534,27 @@ def FindVisualFromCoords(coords, volume):
     if(CheckNormalAxis(normal) >= 0):
         print("###############################################")
         print("###############################################")
-        print("###############################################")
+        print("Perfectly Horizontal/Vertical Plane")
         axis = CheckNormalAxis(normal)
         axis_index = coords[0][axis]
 
         print("The axis index: ", coords[0][axis])
-        print("The axis index: ", coords[1][axis])
-        print("The axis index: ", coords[2][axis])
         if axis == 0:
-            cross_sectional_slice = volume[axis_index, :, :]
+            cross_sectional_slice = volume[int(axis_index), :, :]
             displacement_pts = [landmark[1:] for landmark in coords]
             up_in_2d = [0, 0, 1.0]
             # Need invert pts y-axis
             displacement_pts = [[pts[0], 128-pts[1]] for pts in displacement_pts]
         elif axis == 1:
-            cross_sectional_slice = volume[:, axis_index, :]
+            cross_sectional_slice = volume[:, int(axis_index), :]
             displacement_pts = [[landmark[0], landmark[2]] for landmark in coords]
             up_in_2d = [0, 0, 1.0]
             # Need invert pts y-axis
             displacement_pts = [[pts[0], 128-pts[1]] for pts in displacement_pts]
         elif axis == 2:
-            print("THIS SHOULD NOT BE CALLED?!!!!!!!!!!!!!!!!!!!!!!")
-            print("THIS SHOULD NOT BE CALLED?!!!!!!!!!!!!!!!!!!!!!!")
-            print("THIS SHOULD NOT BE CALLED?!!!!!!!!!!!!!!!!!!!!!!")
-            cross_sectional_slice = volume[:, :, axis_index]
+            cross_sectional_slice = volume[:, :, int(axis_index)]
             displacement_pts = [landmark[:2] for landmark in coords]
             up_in_2d = [1.0, 0, 0]
-
-        
 
         displacement_pts = np.array(displacement_pts)
         # print("result: ", cross_sectional_slice.shape, cross_sectional_slice.min(), cross_sectional_slice.max())

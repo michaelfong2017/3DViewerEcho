@@ -11,8 +11,7 @@ import numpy as np
 import base64
 
 from formatconverter import dicom_to_array, pad4d
-from ReconstructPlane import HandleRotations
-from PlaneReconstructionUtils import FindVisualFromCoords
+import PlaneReconstructionUtils
 from matplotlib import pyplot
 from PIL import Image
 import io
@@ -44,35 +43,34 @@ def process_frame(frame, frame_index):
     all_results = {}
     i = 0
     for view, array_2d in view_to_array_2d.items():
+        print("---------------------------------------------------------------")
         print(view)
         pred_coords_raw = array_2d
 
-        print(pred_coords_raw)
-        print(pred_coords_raw.shape)
+        print("Received: ", pred_coords_raw)
 
         st = time.perf_counter()
 
         try:
-            # TODO
-            # Since some model predictions results are more than 3 points,
-            # just chop the later points for now
-            pred_coords_raw = pred_coords_raw[:3]
 
             # extract the content of the plane and project onto 2d image. Also do the same for the coordinates for visualization.
             # pred_vs, pred_mapped_coords, pred_up = FindVisualFromCoords(pred_coords_raw, data_3d_padded)
             # Note: You can modify time_index value to get plane visual from other time slices
-            pred_vs, pred_mapped_coords, pred_up = FindVisualFromCoords(
-                pred_coords_raw, frame
+            pred_vs, pred_mapped_coords, pred_up = PlaneReconstructionUtils.FindVisualFromCoords(
+                pred_coords_raw, frame, view
             )
 
+            # Rotate Image
+            pred_vs, pred_rotated_coords = PlaneReconstructionUtils.HandleRotationsNumpy(pred_vs, pred_mapped_coords, pred_up, view)
+            # Rotate the image into a "correct" orientation
+            # pred_image, pred_rotated_coords = HandleRotations(
+            #     pred_image, pred_mapped_coords, pred_up, None
+            # )
+            
+            # Convert Imag eto PIL image
             pred_image = Image.fromarray(pred_vs)
             pred_image = pred_image.convert("L")
-
-            # Rotate the image into a "correct" orientation
-            pred_image, pred_rotated_coords = HandleRotations(
-                pred_image, pred_mapped_coords, pred_up, None
-            )
-            # pred_image.save(save_dir + filename[0] + '_pred.png')
+            # pred_image.save(view + 'testing_pred.png')
 
             width, height = pred_image.size
             px = 1 / pyplot.rcParams['figure.dpi']
