@@ -37,7 +37,13 @@ def process_frame(frame, frame_index):
         view_to_array_2d: dict = pickle.loads(pickled_data)
     else:
         print("Error:", response.text)
-        # TODO alert user
+        loader = QtUiTools.QUiLoader()
+        ui_file = QtCore.QFile("errordialog.ui")
+        ui_file.open(QtCore.QFile.ReadOnly)
+        dialog = loader.load(ui_file)
+        dialog.label.setText("process_frame response is not 200")
+        dialog.label_2.setText("")
+        dialog.exec_()
         return
 
     all_results = {}
@@ -53,6 +59,59 @@ def process_frame(frame, frame_index):
 
         try:
 
+            # extract the content of the plane and project onto 2d image. Also do the same for the coordinates for visualization.
+            # pred_vs, pred_mapped_coords, pred_up = FindVisualFromCoords(pred_coords_raw, data_3d_padded)
+            # Note: You can modify time_index value to get plane visual from other time slices
+            pred_vs, pred_mapped_coords, pred_up = PlaneReconstructionUtils.FindVisualFromCoords(
+                pred_coords_raw, frame, view
+            )
+
+            # Rotate Image
+            pred_vs, pred_rotated_coords = PlaneReconstructionUtils.HandleRotationsNumpy(pred_vs, pred_mapped_coords, pred_up, view)
+            # Rotate the image into a "correct" orientation
+            # pred_image, pred_rotated_coords = HandleRotations(
+            #     pred_image, pred_mapped_coords, pred_up, None
+            # )
+            
+            # Convert Imag eto PIL image
+            pred_image = Image.fromarray(pred_vs)
+            pred_image = pred_image.convert("L")
+            # pred_image.save(view + 'testing_pred.png')
+
+            width, height = pred_image.size
+            px = 1 / pyplot.rcParams['figure.dpi']
+            pyplot.figure(frame_index * len(view_to_array_2d) + i, figsize=(width * px, height * px))
+            pyplot.margins(x=0)
+            pyplot.gca().xaxis.set_major_locator(pyplot.NullLocator())
+            pyplot.gca().yaxis.set_major_locator(pyplot.NullLocator())
+            pyplot.imshow(pred_image, cmap='gray')
+            pyplot.scatter(pred_rotated_coords[:,0], pred_rotated_coords[:,1], c='red', marker='x')
+            # pyplot.savefig(str(frame_index * len(view_to_array_2d) + i) + '.png', bbox_inches='tight', pad_inches=0)
+            annotated_qimage = pyplot_to_qimage()
+
+            et = time.perf_counter()
+            print("Execution time: ", et - st)  # 7.5s on jerry's computer
+
+            all_results.update({view: (pred_image, pred_rotated_coords, annotated_qimage)})
+
+        except Exception as e:
+            print(e)
+            all_results.update({view: None})
+
+        i += 1
+
+
+    return frame_index, all_results, view_to_array_2d
+
+def process_frame_with_known_landmarks(frame, frame_index, view_to_array_2d):
+    all_results = {}
+    i = 0
+    for view, array_2d in view_to_array_2d.items():
+        pred_coords_raw = array_2d
+
+        st = time.perf_counter()
+
+        try:
             # extract the content of the plane and project onto 2d image. Also do the same for the coordinates for visualization.
             # pred_vs, pred_mapped_coords, pred_up = FindVisualFromCoords(pred_coords_raw, data_3d_padded)
             # Note: You can modify time_index value to get plane visual from other time slices
@@ -149,7 +208,19 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow):
 
     url = "http://localhost:8000/normalize_dicom_array"
     headers = {"Content-Type": "application/octet-stream"}
-    response = requests.post(url, data=serialized_data, headers=headers)
+    try:
+        response = requests.post(url, data=serialized_data, headers=headers)
+    except requests.exceptions.ConnectionError as e:
+        print(e)
+        loader = QtUiTools.QUiLoader()
+        ui_file = QtCore.QFile("errordialog.ui")
+        ui_file.open(QtCore.QFile.ReadOnly)
+        dialog = loader.load(ui_file)
+        dialog.label.setText("Server connection error!")
+        dialog.label_2.setText("Check server status & server url!")
+        dialog.exec_()
+        return
+    
     if response.status_code == 200:
         compressed_data = response.content
 
@@ -160,7 +231,13 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow):
         array_4d = pickle.loads(pickled_data)
     else:
         print("Error:", response.text)
-        # TODO alert user
+        loader = QtUiTools.QUiLoader()
+        ui_file = QtCore.QFile("errordialog.ui")
+        ui_file.open(QtCore.QFile.ReadOnly)
+        dialog = loader.load(ui_file)
+        dialog.label.setText("normalize_dicom_array response is not 200")
+        dialog.label_2.setText("")
+        dialog.exec_()
         return
 
     data_4d_padded = array_4d
@@ -197,7 +274,7 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow):
             ),
         )
 
-        frame_index, all_results = result.get()
+        frame_index, all_results, view_to_array_2d = result.get()
 
         DataManager().update_pred_result(frame_index, all_results)
 
@@ -207,7 +284,36 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow):
     pool.join()
     results = [r.get() for r in results]
     print(results)
+
+    # If analyze selected frame only, apply the landmark result to all other time frames as well
+    if not analyze_all:
+        assert not view_to_array_2d == None
+
+        pool = ThreadPool(21)
+        results = []
+        for i in range(NUM_FRAMES):
+            data_3d_padded = data_4d_padded[i]
+
+            result = pool.apply_async(
+                process_frame_with_known_landmarks,
+                args=(
+                    data_3d_padded,
+                    i,
+                    view_to_array_2d,
+                ),
+            )
+
+            frame_index, all_results = result.get()
+
+            DataManager().update_pred_result(frame_index, all_results)
     
+            results.append(result)
+
+        pool.close()
+        pool.join()
+        results = [r.get() for r in results]
+        print(results)
+
     ## ui
     ui.progressBar.setHidden(True)
     ##
