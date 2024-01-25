@@ -85,7 +85,7 @@ QMenu::item:selected {
         self.ui.progressBar.setHidden(True)
 
         self.ui.horizontalSlider.valueChanged.connect(self.frame_index_changed)
-        self.ui.pushButton_21.clicked.connect(self.play_cross_section)
+        self.ui.pushButton_21.clicked.connect(lambda: self.play_or_pause_cross_section(self.ui.pushButton_21))
         self.clearFirstCrossSection()
 
     def export_all(self):
@@ -96,25 +96,50 @@ QMenu::item:selected {
         # TODO
         print("export_selected_time_frame")
 
-    def play_cross_section(self):
-        current = self.ui.horizontalSlider.value()
-        if current == self.ui.horizontalSlider.maximum():
-            self.ui.horizontalSlider.setValue(0)
+    def play_or_pause_cross_section(self, button):
+        if self.is_playing(button) == None:
+            print(f"Play/Pause button {button} is broken!")
+            return
+        elif self.is_playing(button) == False:
+            old_style_sheet = self.ui.pushButton_21.styleSheet()
+            new_style_sheet = old_style_sheet.replace(":/images/icons8-play-button-48.png", ":/images/icons8-pause-button-48.png")
+            self.ui.pushButton_21.setStyleSheet(new_style_sheet)
 
-        self.play_timer = QtCore.QTimer()
-        self.play_timer.timeout.connect(self.increment_frame_index)
-        self.play_delta_time = 60
-        self.play_timer.start(self.play_delta_time)
+            current = self.ui.horizontalSlider.value()
+            if current == self.ui.horizontalSlider.maximum():
+                self.ui.horizontalSlider.setValue(0)
+
+            self.play_timer = QtCore.QTimer()
+            self.play_timer.timeout.connect(self.increment_frame_index)
+            self.play_delta_time = 60
+            self.play_timer.start(self.play_delta_time)
+        else:
+            old_style_sheet = self.ui.pushButton_21.styleSheet()
+            new_style_sheet = old_style_sheet.replace(":/images/icons8-pause-button-48.png", ":/images/icons8-play-button-48.png")
+            self.ui.pushButton_21.setStyleSheet(new_style_sheet)
+
+            self.play_timer.stop()
+
+    def is_playing(self, button):
+        if ":/images/icons8-play-button-48.png" in button.styleSheet():
+            return False
+        elif ":/images/icons8-pause-button-48.png" in button.styleSheet():
+            return True
+        return None
 
     def increment_frame_index(self):
         current = self.ui.horizontalSlider.value()
         if current == self.ui.horizontalSlider.maximum():
+            old_style_sheet = self.ui.pushButton_21.styleSheet()
+            new_style_sheet = old_style_sheet.replace(":/images/icons8-pause-button-48.png", ":/images/icons8-play-button-48.png")
+            self.ui.pushButton_21.setStyleSheet(new_style_sheet)
+
             self.play_timer.stop()
         else:
             self.ui.horizontalSlider.setValue(current + 1)
 
     def frame_index_changed(self, slider_value):
-        print(slider_value)
+        # print(slider_value)
 
         frame_index: int = slider_value
         self.ui.label_10.setText(f"Selected time frame index: {frame_index}")
@@ -223,7 +248,7 @@ QMenu::item:selected {
         ui_file.close()
 
         scrollArea_height = self.ui.scrollAreaWidgetContents_3.height()
-        print(f"scrollArea_height: {scrollArea_height}")
+        # print(f"scrollArea_height: {scrollArea_height}")
         new_pixmap_height = 240 + scrollArea_height - 369
 
         pixmap = QtGui.QPixmap.fromImage(annotated_qimage)
