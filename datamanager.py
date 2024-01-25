@@ -15,6 +15,39 @@ class DataManager:
         self.frame_index_to_pred_result = {}
         self.view_to_pred_result_width = {}
 
+        self._dicom_number_of_frames: int = -1
+        self._dicom_average_frame_time_in_ms: float = 60.0
+        self._dicom_fps: float = -1.0
+        self._dicom_total_duration_in_s: float = -1.0
+
+    @property
+    def dicom_number_of_frames(self):
+        return self._dicom_number_of_frames
+    @dicom_number_of_frames.setter
+    def dicom_number_of_frames(self, value):
+        self._dicom_number_of_frames = value
+
+    @property
+    def dicom_average_frame_time_in_ms(self):
+        return self._dicom_average_frame_time_in_ms
+    @dicom_average_frame_time_in_ms.setter
+    def dicom_average_frame_time_in_ms(self, value):
+        self._dicom_average_frame_time_in_ms = value
+
+    @property
+    def dicom_fps(self):
+        return self._dicom_fps
+    @dicom_fps.setter
+    def dicom_fps(self, value):
+        self._dicom_fps = value
+
+    @property
+    def dicom_total_duration_in_s(self):
+        return self._dicom_total_duration_in_s
+    @dicom_total_duration_in_s.setter
+    def dicom_total_duration_in_s(self, value):
+        self._dicom_total_duration_in_s = value
+        
     def get_pred_result(self, frame_index: int):
         return self.frame_index_to_pred_result.get(frame_index)
 

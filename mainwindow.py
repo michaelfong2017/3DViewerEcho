@@ -111,7 +111,7 @@ QMenu::item:selected {
 
             self.play_timer = QtCore.QTimer()
             self.play_timer.timeout.connect(self.increment_frame_index)
-            self.play_delta_time = 60
+            self.play_delta_time = DataManager().dicom_average_frame_time_in_ms
             self.play_timer.start(self.play_delta_time)
         else:
             old_style_sheet = self.ui.pushButton_21.styleSheet()
@@ -196,6 +196,7 @@ QMenu::item:selected {
                 True,
                 filepath,
                 self.ui,
+                -1,
             ),
         )
         t1.start()
@@ -225,6 +226,7 @@ QMenu::item:selected {
                 False,
                 filepath,
                 self.ui,
+                self.ui.horizontalSlider.value(),
             ),
         )
         t1.start()

@@ -29,12 +29,51 @@ class Ui_MainWindow(object):
         self.verticalLayout_12.setObjectName(u"verticalLayout_12")
         self.horizontalLayout_4 = QHBoxLayout()
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
-        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Fixed, QSizePolicy.Minimum)
 
         self.horizontalLayout_4.addItem(self.horizontalSpacer_3)
 
         self.verticalLayout_13 = QVBoxLayout()
         self.verticalLayout_13.setObjectName(u"verticalLayout_13")
+        self.verticalSpacer_7 = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Fixed)
+
+        self.verticalLayout_13.addItem(self.verticalSpacer_7)
+
+        self.verticalLayout_15 = QVBoxLayout()
+        self.verticalLayout_15.setObjectName(u"verticalLayout_15")
+        self.label_17 = QLabel(self.centralwidget)
+        self.label_17.setObjectName(u"label_17")
+        self.label_17.setStyleSheet(u"font: 18px \"MS Shell Dlg 2\";")
+
+        self.verticalLayout_15.addWidget(self.label_17)
+
+        self.label_16 = QLabel(self.centralwidget)
+        self.label_16.setObjectName(u"label_16")
+        self.label_16.setStyleSheet(u"font: 15px \"MS Shell Dlg 2\";")
+
+        self.verticalLayout_15.addWidget(self.label_16)
+
+        self.label_15 = QLabel(self.centralwidget)
+        self.label_15.setObjectName(u"label_15")
+        self.label_15.setStyleSheet(u"font: 15px \"MS Shell Dlg 2\";")
+
+        self.verticalLayout_15.addWidget(self.label_15)
+
+        self.label_9 = QLabel(self.centralwidget)
+        self.label_9.setObjectName(u"label_9")
+        self.label_9.setStyleSheet(u"font: 15px \"MS Shell Dlg 2\";")
+
+        self.verticalLayout_15.addWidget(self.label_9)
+
+        self.label_14 = QLabel(self.centralwidget)
+        self.label_14.setObjectName(u"label_14")
+        self.label_14.setStyleSheet(u"font: 15px \"MS Shell Dlg 2\";")
+
+        self.verticalLayout_15.addWidget(self.label_14)
+
+
+        self.verticalLayout_13.addLayout(self.verticalLayout_15)
+
         self.verticalSpacer_4 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         self.verticalLayout_13.addItem(self.verticalSpacer_4)
@@ -537,6 +576,11 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"3D Viewer Echo", None))
+        self.label_17.setText(QCoreApplication.translate("MainWindow", u"DICOM File (Video) Info:", None))
+        self.label_16.setText(QCoreApplication.translate("MainWindow", u"Video - Number of Frames: ", None))
+        self.label_15.setText(QCoreApplication.translate("MainWindow", u"Video - Average Frame Time: ", None))
+        self.label_9.setText(QCoreApplication.translate("MainWindow", u"Video - FPS: ", None))
+        self.label_14.setText(QCoreApplication.translate("MainWindow", u"Video - Total Duration: ", None))
         self.label_10.setText(QCoreApplication.translate("MainWindow", u"Selected time frame index: 0", None))
         self.pushButton_21.setText("")
         self.label_12.setText(QCoreApplication.translate("MainWindow", u"0", None))

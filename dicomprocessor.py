@@ -162,7 +162,7 @@ def thread_pool_test(frame, frame_index):
     print("Worker thread finishing")
     return (frame_index, r)
 
-def process_dicom(analyze_all, filepath, ui: Ui_MainWindow):
+def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index):
     ## ui
     ui.progressBar.setValue(33)
     ui.progressBar.setHidden(False)
@@ -180,6 +180,8 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow):
         dialog.exec_()
         return
     
+    display_video_info(ui)
+
     NUM_FRAMES = image4D.shape[0]
 
     # ui slider BEGIN
@@ -250,13 +252,12 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow):
 
     pool = ThreadPool(21)
     results = []
-    selected_frame_index = -1
+    if selected_frame_index >= NUM_FRAMES:
+        selected_frame_index = NUM_FRAMES - 1
     for i in range(NUM_FRAMES):
         # Analyze only one time frame
         if not analyze_all:
-            selected_frame_index: int = ui.horizontalSlider.value()
             if not i == selected_frame_index:
-                i += 1
                 continue
         # Analyze only one time frame END
 
@@ -323,6 +324,12 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow):
         ui.horizontalSlider.setValue(0)
         ui.horizontalSlider.setValue(1)
         ui.horizontalSlider.setValue(selected_frame_index)
+
+def display_video_info(ui: Ui_MainWindow):
+    ui.label_16.setText(f"Video - Number of Frames: {DataManager().dicom_number_of_frames}")
+    ui.label_15.setText(f"Video - Average Frame Time: {round(DataManager().dicom_average_frame_time_in_ms, 2)}ms")
+    ui.label_9.setText(f"Video - FPS: {round(DataManager().dicom_fps, 2)}")
+    ui.label_14.setText(f"Video - Total Duration: {round(DataManager().dicom_total_duration_in_s, 2)}s")
 
 def pyplot_to_qimage():
     buf = io.BytesIO()

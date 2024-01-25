@@ -10,6 +10,7 @@ from matplotlib import pyplot, cm
 from scipy import ndimage
 import time
 from PIL import Image
+from datamanager import DataManager
 
 
 def dicom_to_array(dicom_filePath):
@@ -27,6 +28,20 @@ def dicom_to_array(dicom_filePath):
     frames = int(ds.NumberOfFrames)
     imageComponents = frames
     frameTimeMsec = ds.FrameTime
+
+    ## Save video info BEGIN
+    print(f"Video info - numberOfFrames: {frames}")
+    print(f"Video info - frameTimeMsec: {frameTimeMsec}")
+    fps = 1000 / frameTimeMsec
+    total_duration_in_second = frames * frameTimeMsec / 1000
+    print(f"Video info - fps: {fps}")
+    print(f"Video info - total_duration_in_second: {total_duration_in_second}")
+    DataManager().dicom_number_of_frames = frames
+    DataManager().dicom_average_frame_time_in_ms = frameTimeMsec
+    DataManager().dicom_fps = fps
+    DataManager().dicom_total_duration_in_s = total_duration_in_second
+    ## Save video info END
+
     pixelShape = (frames, slices, rows, columns)
     print("dicom file shape: ", pixelShape)
     pixelSize = pixelShape[0] * pixelShape[1] * pixelShape[2] * pixelShape[3]
