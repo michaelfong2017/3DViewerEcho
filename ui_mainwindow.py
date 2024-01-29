@@ -25,14 +25,10 @@ class Ui_MainWindow(object):
         MainWindow.resize(1280, 725)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.verticalLayout_12 = QVBoxLayout(self.centralwidget)
-        self.verticalLayout_12.setObjectName(u"verticalLayout_12")
-        self.horizontalLayout_4 = QHBoxLayout()
-        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
-        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Fixed, QSizePolicy.Minimum)
-
-        self.horizontalLayout_4.addItem(self.horizontalSpacer_3)
-
+        self.horizontalLayout_7 = QHBoxLayout(self.centralwidget)
+        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
+        self.verticalLayout_14 = QVBoxLayout()
+        self.verticalLayout_14.setObjectName(u"verticalLayout_14")
         self.verticalLayout_13 = QVBoxLayout()
         self.verticalLayout_13.setObjectName(u"verticalLayout_13")
         self.verticalSpacer_7 = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Fixed)
@@ -74,10 +70,29 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_13.addLayout(self.verticalLayout_15)
 
-        self.verticalSpacer_4 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
-        self.verticalLayout_13.addItem(self.verticalSpacer_4)
+        self.verticalLayout_14.addLayout(self.verticalLayout_13)
 
+        self.openGLWidget = MyGLWidget(self.centralwidget)
+        self.openGLWidget.setObjectName(u"openGLWidget")
+        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.openGLWidget.sizePolicy().hasHeightForWidth())
+        self.openGLWidget.setSizePolicy(sizePolicy)
+        self.openGLWidget.setMinimumSize(QSize(480, 261))
+
+        self.verticalLayout_14.addWidget(self.openGLWidget)
+
+        self.verticalSpacer_3 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.verticalLayout_14.addItem(self.verticalSpacer_3)
+
+
+        self.horizontalLayout_7.addLayout(self.verticalLayout_14)
+
+        self.verticalLayout_12 = QVBoxLayout()
+        self.verticalLayout_12.setObjectName(u"verticalLayout_12")
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout_6 = QHBoxLayout()
@@ -105,9 +120,6 @@ class Ui_MainWindow(object):
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
         self.pushButton_21 = QPushButton(self.centralwidget)
         self.pushButton_21.setObjectName(u"pushButton_21")
-        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.pushButton_21.sizePolicy().hasHeightForWidth())
         self.pushButton_21.setSizePolicy(sizePolicy)
         self.pushButton_21.setMaximumSize(QSize(28, 16777215))
@@ -132,7 +144,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_11 = QVBoxLayout()
         self.verticalLayout_11.setObjectName(u"verticalLayout_11")
-        self.verticalSpacer = QSpacerItem(250, 13, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer = QSpacerItem(250, 13, QSizePolicy.Minimum, QSizePolicy.Fixed)
 
         self.verticalLayout_11.addItem(self.verticalSpacer)
 
@@ -142,7 +154,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_11.addWidget(self.horizontalSlider)
 
-        self.verticalSpacer_2 = QSpacerItem(250, 13, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer_2 = QSpacerItem(250, 13, QSizePolicy.Minimum, QSizePolicy.Fixed)
 
         self.verticalLayout_11.addItem(self.verticalSpacer_2)
 
@@ -164,57 +176,7 @@ class Ui_MainWindow(object):
         self.verticalLayout.addLayout(self.horizontalLayout_5)
 
 
-        self.verticalLayout_13.addLayout(self.verticalLayout)
-
-        self.verticalSpacer_3 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        self.verticalLayout_13.addItem(self.verticalSpacer_3)
-
-
-        self.horizontalLayout_4.addLayout(self.verticalLayout_13)
-
-        self.horizontalSpacer_5 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.horizontalLayout_4.addItem(self.horizontalSpacer_5)
-
-        self.openGLWidget = MyGLWidget(self.centralwidget)
-        self.openGLWidget.setObjectName(u"openGLWidget")
-        sizePolicy.setHeightForWidth(self.openGLWidget.sizePolicy().hasHeightForWidth())
-        self.openGLWidget.setSizePolicy(sizePolicy)
-        self.openGLWidget.setMinimumSize(QSize(480, 261))
-
-        self.horizontalLayout_4.addWidget(self.openGLWidget)
-
-        self.horizontalSpacer_6 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.horizontalLayout_4.addItem(self.horizontalSpacer_6)
-
-        self.verticalLayout_14 = QVBoxLayout()
-        self.verticalLayout_14.setObjectName(u"verticalLayout_14")
-        self.verticalSpacer_6 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        self.verticalLayout_14.addItem(self.verticalSpacer_6)
-
-        self.pushButton_10 = QPushButton(self.centralwidget)
-        self.pushButton_10.setObjectName(u"pushButton_10")
-        self.pushButton_10.setFont(font)
-        self.pushButton_10.setStyleSheet(u"font: 17px \"MS Shell Dlg 2\";")
-
-        self.verticalLayout_14.addWidget(self.pushButton_10)
-
-        self.verticalSpacer_5 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        self.verticalLayout_14.addItem(self.verticalSpacer_5)
-
-
-        self.horizontalLayout_4.addLayout(self.verticalLayout_14)
-
-        self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.horizontalLayout_4.addItem(self.horizontalSpacer_4)
-
-
-        self.verticalLayout_12.addLayout(self.horizontalLayout_4)
+        self.verticalLayout_12.addLayout(self.verticalLayout)
 
         self.progressBar = QProgressBar(self.centralwidget)
         self.progressBar.setObjectName(u"progressBar")
@@ -233,7 +195,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents_3 = ScrollAreaWidget()
         self.scrollAreaWidgetContents_3.setObjectName(u"scrollAreaWidgetContents_3")
-        self.scrollAreaWidgetContents_3.setGeometry(QRect(0, 0, 2000, 352))
+        self.scrollAreaWidgetContents_3.setGeometry(QRect(0, 0, 2000, 518))
         sizePolicy3 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
         sizePolicy3.setHorizontalStretch(0)
         sizePolicy3.setVerticalStretch(0)
@@ -267,7 +229,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_2.addLayout(self.horizontalLayout)
 
-        self.horizontalLayout_3 = QHBoxLayout()
+        self.horizontalLayout_3 = QGridLayout()
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
         self.horizontalLayout_3.setSizeConstraint(QLayout.SetDefaultConstraint)
         self.verticalLayout_10 = QVBoxLayout()
@@ -303,7 +265,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_10.addWidget(self.pushButton_9)
 
 
-        self.horizontalLayout_3.addLayout(self.verticalLayout_10)
+        self.horizontalLayout_3.addLayout(self.verticalLayout_10, 0, 0, 1, 1)
 
         self.verticalLayout_9 = QVBoxLayout()
         self.verticalLayout_9.setObjectName(u"verticalLayout_9")
@@ -338,7 +300,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_9.addWidget(self.pushButton_14)
 
 
-        self.horizontalLayout_3.addLayout(self.verticalLayout_9)
+        self.horizontalLayout_3.addLayout(self.verticalLayout_9, 0, 1, 1, 1)
 
         self.verticalLayout_8 = QVBoxLayout()
         self.verticalLayout_8.setObjectName(u"verticalLayout_8")
@@ -373,7 +335,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_8.addWidget(self.pushButton_15)
 
 
-        self.horizontalLayout_3.addLayout(self.verticalLayout_8)
+        self.horizontalLayout_3.addLayout(self.verticalLayout_8, 0, 2, 1, 1)
 
         self.verticalLayout_7 = QVBoxLayout()
         self.verticalLayout_7.setObjectName(u"verticalLayout_7")
@@ -408,7 +370,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_7.addWidget(self.pushButton_16)
 
 
-        self.horizontalLayout_3.addLayout(self.verticalLayout_7)
+        self.horizontalLayout_3.addLayout(self.verticalLayout_7, 0, 3, 1, 1)
 
         self.verticalLayout_6 = QVBoxLayout()
         self.verticalLayout_6.setObjectName(u"verticalLayout_6")
@@ -443,7 +405,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_6.addWidget(self.pushButton_17)
 
 
-        self.horizontalLayout_3.addLayout(self.verticalLayout_6)
+        self.horizontalLayout_3.addLayout(self.verticalLayout_6, 0, 4, 1, 1)
 
         self.verticalLayout_5 = QVBoxLayout()
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
@@ -478,7 +440,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_5.addWidget(self.pushButton_18)
 
 
-        self.horizontalLayout_3.addLayout(self.verticalLayout_5)
+        self.horizontalLayout_3.addLayout(self.verticalLayout_5, 0, 5, 1, 1)
 
         self.verticalLayout_4 = QVBoxLayout()
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
@@ -513,7 +475,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_4.addWidget(self.pushButton_19)
 
 
-        self.horizontalLayout_3.addLayout(self.verticalLayout_4)
+        self.horizontalLayout_3.addLayout(self.verticalLayout_4, 0, 6, 1, 1)
 
         self.verticalLayout_3 = QVBoxLayout()
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
@@ -548,7 +510,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_3.addWidget(self.pushButton_20)
 
 
-        self.horizontalLayout_3.addLayout(self.verticalLayout_3)
+        self.horizontalLayout_3.addLayout(self.verticalLayout_3, 0, 7, 1, 1)
 
 
         self.verticalLayout_2.addLayout(self.horizontalLayout_3)
@@ -559,6 +521,9 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidget(self.scrollAreaWidgetContents_3)
 
         self.verticalLayout_12.addWidget(self.scrollArea)
+
+
+        self.horizontalLayout_7.addLayout(self.verticalLayout_12)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
@@ -585,8 +550,6 @@ class Ui_MainWindow(object):
         self.pushButton_21.setText("")
         self.label_12.setText(QCoreApplication.translate("MainWindow", u"0", None))
         self.label_13.setText(QCoreApplication.translate("MainWindow", u"99", None))
-        self.pushButton_10.setText(QCoreApplication.translate("MainWindow", u"Save edited landmarks to the\n"
-"current cross-section", None))
         self.label_11.setText(QCoreApplication.translate("MainWindow", u"Select below to load cross section:", None))
         self.pushButton_13.setText(QCoreApplication.translate("MainWindow", u"Transverse Section at Aortic Valve Level", None))
         self.label_8.setText("")
