@@ -86,7 +86,7 @@ QMenu::item:selected {
 
         self.ui.horizontalSlider.valueChanged.connect(self.frame_index_changed)
         self.ui.pushButton_21.clicked.connect(lambda: self.play_or_pause_cross_section(self.ui.pushButton_21))
-        self.clearFirstCrossSection()
+        self.ui.gridWidget.clearAllItems()
 
     def export_all(self):
         # TODO
@@ -146,18 +146,18 @@ QMenu::item:selected {
 
         all_results = DataManager().get_pred_result(frame_index)
         
-        self.clearCrossSection()
+        self.clearAllCrossSections()
 
         if not all_results == None:
             i = 0
             for view, pred_result in all_results.items():
                 if pred_result == None:
                     print(f"At frame index {frame_index}, the pred_result for view {view} is None!")
-                    first_found_width = DataManager().get_result_width(view)
-                    if not first_found_width == None:
-                        # Add placeholder cross section
-                        self.addPlaceholderCrossSection(view, first_found_width)
-                        print(f"Placeholder cross section for view {view} has been added.")
+                    # first_found_width = DataManager().get_result_width(view)
+                    # if not first_found_width == None:
+                    # Add placeholder cross section
+                    self.addPlaceholderCrossSection(view)
+                    print(f"Placeholder cross section for view {view} has been added.")
                 else:
                     try:
                         # pred_image, pred_rotated_coords, annotated_qimage = pred_result
@@ -249,12 +249,12 @@ QMenu::item:selected {
         cross_section = loader.load(ui_file)
         ui_file.close()
 
-        scrollArea_height = self.ui.scrollAreaWidgetContents_3.height()
-        # print(f"scrollArea_height: {scrollArea_height}")
-        new_pixmap_height = 240 + scrollArea_height - 369
+        scrollArea_width = self.ui.scrollAreaWidgetContents_3.width()
+        # print(f"scrollArea_width: {scrollArea_width}")
+        new_pixmap_width = (scrollArea_width - 18 - 12) / 3 # TODO change 3 to N
 
         pixmap = QtGui.QPixmap.fromImage(annotated_qimage)
-        pixmap = pixmap.scaledToHeight(new_pixmap_height)
+        pixmap = pixmap.scaledToWidth(new_pixmap_width)
         label = cross_section.findChild(QLabel, "label_8")
         label.setPixmap(pixmap)
         label.tag = f"{view},{frame_index}"
@@ -266,17 +266,12 @@ QMenu::item:selected {
         export_button = cross_section.findChild(QPushButton, "pushButton_9")
         export_button.clicked.connect(lambda: self.export(annotated_qimage, view, frame_index))
 
-        self.ui.horizontalLayout_3.addWidget(cross_section)
-        # self.ui.scrollAreaWidgetContents_3.setMinimumWidth(self.ui.scrollAreaWidgetContents_3.minimumWidth() + annotated_qimage.width() + 6) ## Variable width
-        ## Set a fixed width for the cross section
-        fixed_width = new_pixmap_height
+        self.ui.gridWidget.addWidget(cross_section)
+        fixed_width = new_pixmap_width
         label.parent().setFixedWidth(fixed_width)
         label.setFixedHeight(fixed_width)
-        self.ui.scrollAreaWidgetContents_3.setMinimumWidth(self.ui.scrollAreaWidgetContents_3.minimumWidth() + fixed_width + 6)
-        self.ui.scrollAreaWidgetContents_3.setMaximumWidth(self.ui.scrollAreaWidgetContents_3.minimumWidth() + fixed_width + 6)
-        # print(f"maximumWidth: {self.ui.scrollAreaWidgetContents_3.maximumWidth()}")
 
-    def addPlaceholderCrossSection(self, view, width):
+    def addPlaceholderCrossSection(self, view):
         loader = QtUiTools.QUiLoader()
         loader.registerCustomWidget(ClickableQLabel)
         ui_file = QtCore.QFile("crosssection.ui")
@@ -284,7 +279,11 @@ QMenu::item:selected {
         cross_section = loader.load(ui_file)
         ui_file.close()
 
-        pixmap = QtGui.QPixmap.fromImage(QtGui.QImage(width, 0, QtGui.QImage.Format_RGB888))
+        scrollArea_width = self.ui.scrollAreaWidgetContents_3.width()
+        # print(f"scrollArea_width: {scrollArea_width}")
+        new_pixmap_width = (scrollArea_width - 18 - 12) / 3 # TODO change 3 to N
+
+        pixmap = QtGui.QPixmap.fromImage(QtGui.QImage(new_pixmap_width, 0, QtGui.QImage.Format_RGB888))
         label = cross_section.findChild(QLabel, "label_8")
         label.setPixmap(pixmap)
         label.show()
@@ -292,36 +291,10 @@ QMenu::item:selected {
         view_button = cross_section.findChild(QPushButton, "pushButton_13")
         view_button.setText(view)
 
-        self.ui.horizontalLayout_3.addWidget(cross_section)
-        self.ui.scrollAreaWidgetContents_3.setMinimumWidth(self.ui.scrollAreaWidgetContents_3.minimumWidth() + width + 6)
+        self.ui.gridWidget.addWidget(cross_section)
 
-    def clearCrossSection(self):
-        self.clearLayout(self.ui.horizontalLayout_3)
-        self.ui.scrollAreaWidgetContents_3.setFixedWidth(500)
-        self.ui.scrollAreaWidgetContents_3.setMinimumWidth(12)
-
-    def clearFirstCrossSection(self):
-        self.clearNestedLayout(self.ui.horizontalLayout_3)
-        self.ui.scrollAreaWidgetContents_3.setFixedWidth(500)
-        self.ui.scrollAreaWidgetContents_3.setMinimumWidth(12)
-
-    def clearLayout(self, layout):
-        if layout is not None:
-            while layout.count():
-                item = layout.takeAt(0)
-                item.widget().deleteLater()
-
-    def clearNestedLayout(self, layout):
-        if layout is not None:
-            while layout.count():
-                item = layout.takeAt(0)
-                if item is not None:
-                    while item.count():
-                        subitem = item.takeAt(0)
-                        widget = subitem.widget()
-                        if widget is not None:
-                            widget.setParent(None)
-                    layout.removeItem(item)
+    def clearAllCrossSections(self):
+        self.ui.gridWidget.clearAllItems()
 
 
 if __name__ == "__main__":

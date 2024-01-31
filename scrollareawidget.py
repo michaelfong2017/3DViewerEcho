@@ -6,18 +6,18 @@ from PySide2 import QtGui
 class ScrollAreaWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.previous_height = 0
+        self.previous_width = 0
 
     def resizeEvent(self, event):
         # Handle the resize event here
         # print("Widget resized:", event.size())
-        current_height = self.height()
-        diff = current_height - self.previous_height
-        if current_height == self.previous_height:
+        current_width = self.width()
+        diff = current_width - self.previous_width
+        if current_width == self.previous_width:
             return
         else:
-            # print("Height has changed!")
-            self.previous_height = current_height
+            # print("Width has changed!")
+            self.previous_width = current_width
 
         labels = self.find_labels(self)
         for label in labels:
@@ -30,19 +30,15 @@ class ScrollAreaWidget(QWidget):
                 if v == view:
                     _, _, annotated_qimage = pred_result
 
-            minimum_width = self.minimumWidth()
-
             pixmap = QtGui.QPixmap.fromImage(annotated_qimage)
             ## error handling
             if pixmap:
-                resize_height = 240 + event.size().height() - 369
-                resized_pixmap = pixmap.scaled(resize_height, resize_height)
+                resize_width = (event.size().width() - 18 - 12) / 3 # TODO change 3 to N
+                resized_pixmap = pixmap.scaled(resize_width, resize_width)
                 label.setPixmap(resized_pixmap)
-                label.parent().setFixedWidth(resize_height)
-                label.setFixedHeight(resize_height)
+                label.parent().setFixedWidth(resize_width)
+                label.setFixedHeight(resize_width)
                 label.show()
-                self.setMinimumWidth(minimum_width + diff)
-                self.setMaximumWidth(minimum_width + diff)
 
     def find_labels(self, widget):
         labels = []
