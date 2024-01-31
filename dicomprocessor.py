@@ -281,6 +281,13 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
 
         results.append(result)
 
+        is_first = True if not analyze_all or (analyze_all and i == 0) else False
+        # Show the result without needing to move the horizontal slider
+        if is_first:
+            ui.horizontalSlider.setValue(0)
+            ui.horizontalSlider.setValue(1)
+            ui.horizontalSlider.setValue(i)
+
     pool.close()
     pool.join()
     results = [r.get() for r in results]
@@ -318,12 +325,6 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
     ## ui
     ui.progressBar.setHidden(True)
     ##
-    
-    # Show the result without needing to move the horizontal slider
-    if not selected_frame_index == -1:
-        ui.horizontalSlider.setValue(0)
-        ui.horizontalSlider.setValue(1)
-        ui.horizontalSlider.setValue(selected_frame_index)
 
 def display_video_info(ui: Ui_MainWindow):
     ui.label_16.setText(f"Video - Number of Frames: {DataManager().dicom_number_of_frames}")
