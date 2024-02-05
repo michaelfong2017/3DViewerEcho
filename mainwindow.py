@@ -241,6 +241,38 @@ QMenu::item:selected {
             annotated_qimage.save(f"{file_path}.png")
             print("File saved successfully.")
 
+    def counterclockwiseRotate90(self, annotated_qimage, label, view, frame_index):
+        print(f"counterclockwiseRotate({annotated_qimage}, {label}, {label.tag}, {view}, {frame_index})")
+        pixmap = QtGui.QPixmap.fromImage(annotated_qimage)
+        new_degree = (int(label.tag.split(",")[2]) - 90) % 360
+
+        scrollArea_width = self.ui.scrollAreaWidgetContents_3.width()
+        # print(f"scrollArea_width: {scrollArea_width}")
+        new_pixmap_width = (scrollArea_width - 18 - 12) / 3 # TODO change 3 to N
+        
+        transform = QtGui.QTransform().rotate(new_degree)
+        pixmap = pixmap.transformed(transform)
+        pixmap = pixmap.scaledToWidth(new_pixmap_width)
+        label.setPixmap(pixmap)
+        label.tag = f"{view},{frame_index},{new_degree}"
+        label.show()
+
+    def clockwiseRotate90(self, annotated_qimage, label, view, frame_index):
+        print(f"clockwiseRotate({annotated_qimage}, {label}, {label.tag}, {view}, {frame_index})")
+        pixmap = QtGui.QPixmap.fromImage(annotated_qimage)
+        new_degree = (int(label.tag.split(",")[2]) + 90) % 360
+
+        scrollArea_width = self.ui.scrollAreaWidgetContents_3.width()
+        # print(f"scrollArea_width: {scrollArea_width}")
+        new_pixmap_width = (scrollArea_width - 18 - 12) / 3 # TODO change 3 to N
+        
+        transform = QtGui.QTransform().rotate(new_degree)
+        pixmap = pixmap.transformed(transform)
+        pixmap = pixmap.scaledToWidth(new_pixmap_width)
+        label.setPixmap(pixmap)
+        label.tag = f"{view},{frame_index},{new_degree}"
+        label.show()
+
     def addCrossSection(self, annotated_qimage, view, frame_index):
         loader = QtUiTools.QUiLoader()
         loader.registerCustomWidget(ClickableQLabel)
@@ -257,7 +289,15 @@ QMenu::item:selected {
         pixmap = pixmap.scaledToWidth(new_pixmap_width)
         label = cross_section.findChild(QLabel, "label_8")
         label.setPixmap(pixmap)
-        label.tag = f"{view},{frame_index}"
+
+        # if label.tag == "":
+        #     label.tag = f"{view},{frame_index},0"
+        # else:
+        #     # TODO more serious error handling
+        #     new_degree = (int(label.tag.split(",")[2]) - 90) % 360
+        #     label.tag = f"{view},{frame_index},{new_degree}"
+        label.tag = f"{view},{frame_index},0"
+
         label.show()
 
         view_button = cross_section.findChild(QPushButton, "pushButton_13")
@@ -265,6 +305,11 @@ QMenu::item:selected {
 
         export_button = cross_section.findChild(QPushButton, "pushButton_9")
         export_button.clicked.connect(lambda: self.export(annotated_qimage, view, frame_index))
+
+        counterclockwise_rotate_button = cross_section.findChild(QPushButton, "pushButton")
+        clockwise_rotate_button = cross_section.findChild(QPushButton, "pushButton_2")
+        counterclockwise_rotate_button.clicked.connect(lambda: self.counterclockwiseRotate90(annotated_qimage, label, view, frame_index))
+        clockwise_rotate_button.clicked.connect(lambda: self.clockwiseRotate90(annotated_qimage, label, view, frame_index))
 
         self.ui.gridWidget.addWidget(cross_section)
         fixed_width = new_pixmap_width
