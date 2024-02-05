@@ -20,19 +20,16 @@ class MyGridWidget(QWidget):
                     return row, column
         return self.layout().rowCount(), 0
 
-    def clearAllItems(self):
-        while self.layout().count():
-            item = self.layout().takeAt(0)
-            try:
-                item.widget().deleteLater()
-            except:
-                if item is not None:
-                    while item.count():
-                        subitem = item.takeAt(0)
-                        widget = subitem.widget()
-                        if widget is not None:
-                            widget.setParent(None)
-                    self.layout().removeItem(item)
+    def clearAllItems(self, layout):
+        while layout.layout().count():
+            item = layout.layout().takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
+            else:
+                sublayout = item.layout()
+                if sublayout:
+                    self.clearAllItems(sublayout)
 
 
 # if __name__ == "__main__":

@@ -324,9 +324,9 @@ background-color: rgb(255, 255, 255, 0);</string>
          <property name="geometry">
           <rect>
            <x>0</x>
-           <y>-431</y>
+           <y>0</y>
            <width>753</width>
-           <height>961</height>
+           <height>963</height>
           </rect>
          </property>
          <property name="sizePolicy">
@@ -420,32 +420,82 @@ background-color: rgb(255, 255, 255, 0);</string>
              <item row="0" column="0">
               <layout class="QVBoxLayout" name="verticalLayout_10">
                <item>
-                <widget class="QPushButton" name="pushButton_13">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="minimumSize">
-                  <size>
-                   <width>0</width>
-                   <height>0</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>16777215</width>
-                   <height>16777215</height>
-                  </size>
-                 </property>
-                 <property name="styleSheet">
-                  <string notr="true">font: 10px &quot;MS Shell Dlg 2&quot;;</string>
-                 </property>
-                 <property name="text">
-                  <string>Transverse Section at Aortic Valve Level</string>
-                 </property>
-                </widget>
+                <layout class="QHBoxLayout" name="horizontalLayout_2">
+                 <item>
+                  <widget class="QPushButton" name="pushButton_13">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>16777215</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">font: 10px &quot;MS Shell Dlg 2&quot;;</string>
+                   </property>
+                   <property name="text">
+                    <string>A2C</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="pushButton_2">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>23</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">image: url(:/images/Counterclockwise_rotating_circular_arrow_symbol.png);
+background-color: rgb(255, 255, 255, 0);</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="pushButton_10">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>23</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="styleSheet">
+                    <string notr="true">image: url(:/images/Clockwise_rotating_circular_arrow_symbol.png);
+background-color: rgb(255, 255, 255, 0);</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </item>
                <item>
                 <widget class="QLabel" name="label_8">
@@ -531,7 +581,7 @@ background-color: rgb(255, 255, 255, 0);</string>
                   <string notr="true">font: 10px &quot;MS Shell Dlg 2&quot;;</string>
                  </property>
                  <property name="text">
-                  <string>Transverse Section at Mitral Valve Level</string>
+                  <string>A4C</string>
                  </property>
                 </widget>
                </item>
@@ -619,7 +669,7 @@ background-color: rgb(255, 255, 255, 0);</string>
                   <string notr="true">font: 10px &quot;MS Shell Dlg 2&quot;;</string>
                  </property>
                  <property name="text">
-                  <string>Longitudinal Section through Interatrial Septum</string>
+                  <string>SAXM</string>
                  </property>
                 </widget>
                </item>
@@ -707,7 +757,7 @@ background-color: rgb(255, 255, 255, 0);</string>
                   <string notr="true">font: 10px &quot;MS Shell Dlg 2&quot;;</string>
                  </property>
                  <property name="text">
-                  <string>Longitudinal Section through Pulmonary Trunk</string>
+                  <string>SAXMV</string>
                  </property>
                 </widget>
                </item>
@@ -795,7 +845,7 @@ background-color: rgb(255, 255, 255, 0);</string>
                   <string notr="true">font: 10px &quot;MS Shell Dlg 2&quot;;</string>
                  </property>
                  <property name="text">
-                  <string>Transverse Section at Papillary Muscle Level</string>
+                  <string>ALAX</string>
                  </property>
                 </widget>
                </item>
@@ -883,7 +933,7 @@ background-color: rgb(255, 255, 255, 0);</string>
                   <string notr="true">font: 10px &quot;MS Shell Dlg 2&quot;;</string>
                  </property>
                  <property name="text">
-                  <string>Longitudinal Section through Aorta</string>
+                  <string>6</string>
                  </property>
                 </widget>
                </item>
@@ -971,7 +1021,7 @@ background-color: rgb(255, 255, 255, 0);</string>
                   <string notr="true">font: 10px &quot;MS Shell Dlg 2&quot;;</string>
                  </property>
                  <property name="text">
-                  <string>Transverse Section at Pulmonary Valve Level</string>
+                  <string>7</string>
                  </property>
                 </widget>
                </item>

@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="images">
+    <file>Clockwise_rotating_circular_arrow_symbol.png</file>
+    <file>Counterclockwise_rotating_circular_arrow_symbol.png</file>
     <file>annotated_heart_sample.png</file>
     <file>icons8-pause-button-48.png</file>
     <file>icons8-play-button-48.png</file>

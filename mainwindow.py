@@ -86,7 +86,7 @@ QMenu::item:selected {
 
         self.ui.horizontalSlider.valueChanged.connect(self.frame_index_changed)
         self.ui.pushButton_21.clicked.connect(lambda: self.play_or_pause_cross_section(self.ui.pushButton_21))
-        self.ui.gridWidget.clearAllItems()
+        self.ui.gridWidget.clearAllItems(self.ui.gridWidget)
 
     def export_all(self):
         # TODO
@@ -294,7 +294,7 @@ QMenu::item:selected {
         self.ui.gridWidget.addWidget(cross_section)
 
     def clearAllCrossSections(self):
-        self.ui.gridWidget.clearAllItems()
+        self.ui.gridWidget.clearAllItems(self.ui.gridWidget)
 
 
 if __name__ == "__main__":
