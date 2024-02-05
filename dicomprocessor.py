@@ -163,11 +163,6 @@ def thread_pool_test(frame, frame_index):
     return (frame_index, r)
 
 def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index):
-    ## ui
-    ui.progressBar.setValue(33)
-    ui.progressBar.setHidden(False)
-    ##
-
     try:
         image4D, spacing4D = dicom_to_array(filepath)
     except FileNotFoundError as e:
@@ -183,6 +178,11 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
     display_video_info(ui)
 
     NUM_FRAMES = image4D.shape[0]
+
+    ## ui loading bar
+    ui.progressBar.setValue(10)
+    ui.progressBar.setHidden(False)
+    ##
 
     # ui slider BEGIN
     ui.horizontalSlider.setMinimum(0)
@@ -288,6 +288,16 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
             ui.horizontalSlider.setValue(1)
             ui.horizontalSlider.setValue(i)
 
+        ## ui progress bar
+        if analyze_all:
+            new_value = round(10 + (i + 1) * 90.0 / NUM_FRAMES)
+            if new_value > 100:
+                new_value = 100
+            ui.progressBar.setValue(new_value)
+        else:
+            ui.progressBar.setValue(20)
+        ##
+
     pool.close()
     pool.join()
     results = [r.get() for r in results]
@@ -300,6 +310,9 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
         pool = ThreadPool(21)
         results = []
         for i in range(NUM_FRAMES):
+            if i == selected_frame_index:
+                continue
+
             data_3d_padded = data_4d_padded[i]
 
             result = pool.apply_async(
@@ -316,6 +329,13 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
             DataManager().update_pred_result(frame_index, all_results)
     
             results.append(result)
+
+            ## ui progress bar
+            new_value = round(20 + (i + 1) * 80.0 / NUM_FRAMES)
+            if new_value > 100:
+                new_value = 100
+            ui.progressBar.setValue(new_value)
+            ##
 
         pool.close()
         pool.join()
