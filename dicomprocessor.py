@@ -85,7 +85,7 @@ def process_frame(frame, frame_index):
             pyplot.gca().xaxis.set_major_locator(pyplot.NullLocator())
             pyplot.gca().yaxis.set_major_locator(pyplot.NullLocator())
             pyplot.imshow(pred_image, cmap='gray')
-            pyplot.scatter(pred_rotated_coords[:,0], pred_rotated_coords[:,1], c='red', marker='x')
+            # pyplot.scatter(pred_rotated_coords[:,0], pred_rotated_coords[:,1], c='red', marker='x')
             # pyplot.savefig(str(frame_index * len(view_to_array_2d) + i) + '.png', bbox_inches='tight', pad_inches=0)
             annotated_qimage = pyplot_to_qimage()
 
@@ -138,7 +138,7 @@ def process_frame_with_known_landmarks(frame, frame_index, view_to_array_2d):
             pyplot.gca().xaxis.set_major_locator(pyplot.NullLocator())
             pyplot.gca().yaxis.set_major_locator(pyplot.NullLocator())
             pyplot.imshow(pred_image, cmap='gray')
-            pyplot.scatter(pred_rotated_coords[:,0], pred_rotated_coords[:,1], c='red', marker='x')
+            # pyplot.scatter(pred_rotated_coords[:,0], pred_rotated_coords[:,1], c='red', marker='x')
             # pyplot.savefig(str(frame_index * len(view_to_array_2d) + i) + '.png', bbox_inches='tight', pad_inches=0)
             annotated_qimage = pyplot_to_qimage()
 
