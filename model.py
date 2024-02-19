@@ -40,6 +40,7 @@ class Cube(BaseModel):
         self.on_init()
 
     def update(self):
+        self.m_model = glm.rotate(self.m_model, 0.01, glm.vec3(0, 1, 0))
         self.texture.use()
         self.program["camPos"].write(self.camera.position)
         self.program["m_view"].write(self.camera.m_view)
