@@ -24,6 +24,7 @@ class Cube:
         image = image.mirrored(False, True)
         width = image.width()
         height = image.height()
+        image.fill("red")
         data = image.bits().tobytes()
         texture = self.ctx.texture(size=(width, height), components=3, data=data)
         return texture
@@ -38,6 +39,8 @@ class Cube:
         return m_model
 
     def on_init(self):
+        # light
+        self.shader_program["light.Ia"].write(self.app.light.Ia)
         # texture
         self.shader_program["u_texture_0"] = 0
         self.texture.use()

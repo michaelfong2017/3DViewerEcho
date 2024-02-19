@@ -5,6 +5,7 @@ from model import *
 from camera import Camera
 from keyeventhandler import KeyEventHandler
 from arcball import ArcBallUtil
+from light import Light
 
 
 class MyGLWidget(QtOpenGL.QGLWidget):
@@ -60,7 +61,7 @@ class MyGLWidget(QtOpenGL.QGLWidget):
         try:
             self.scene.render()
         except AttributeError:
-            # Don't print error message so that console is not flushed
+            # Don't print this error message so that console is not flushed
             pass
 
     # In seconds
@@ -78,6 +79,8 @@ class MyGLWidget(QtOpenGL.QGLWidget):
         self.time = 0
         self.elapsed_timer = QtCore.QElapsedTimer()
         self.elapsed_timer.start()
+        # light
+        self.light = Light()
         # camera
         self.camera = Camera(self)
         # scene
