@@ -7,8 +7,8 @@ class Texture:
         self.ctx = ctx
         self.textures = {}
         self.textures[0] = self.get_texture(path="textures/img.png")
-        self.textures[1] = self.get_texture(path="textures/img.png")
-        self.textures[2] = self.get_texture(path="textures/img.png")
+        self.textures[1] = self.get_texture(path="textures/test.png")
+        self.textures[2] = self.get_texture(path="textures/img_2.png")
 
     def get_texture(self, path):
         image = QtGui.QImage(path)
