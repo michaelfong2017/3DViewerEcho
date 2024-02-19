@@ -6,6 +6,8 @@ from camera import Camera
 from keyeventhandler import KeyEventHandler
 from arcball import ArcBallUtil
 from light import Light
+from mesh import Mesh
+from scene import Scene
 
 
 class MyGLWidget(QtOpenGL.QGLWidget):
@@ -26,7 +28,7 @@ class MyGLWidget(QtOpenGL.QGLWidget):
 
     def keyPressEvent(self, e):
         if e.key() == QtCore.Qt.Key_Escape:
-            self.scene.destroy()
+            self.mesh.destroy()
             sys.exit()
         else:
             KeyEventHandler().add_pressed_key(e.key())
@@ -69,6 +71,9 @@ class MyGLWidget(QtOpenGL.QGLWidget):
         self.time = self.elapsed_timer.elapsed() * 0.001
 
     def initializeGL(self):
+        # window size
+        self.WIN_SIZE = (self.width(), self.height())
+        print(f"WIN_SIZE: {self.WIN_SIZE}")
         # detect and use existing opengl context
         self.ctx = mgl.create_context()
         # self.ctx.front_face = 'cw'
@@ -83,8 +88,10 @@ class MyGLWidget(QtOpenGL.QGLWidget):
         self.light = Light()
         # camera
         self.camera = Camera(self)
+        # mesh
+        self.mesh = Mesh(self)
         # scene
-        self.scene = Cube(self)
+        self.scene = Scene(self)
 
     def init_arcball(self):
         self.arc_ball = ArcBallUtil(self.width(), self.height())
@@ -105,11 +112,6 @@ class MyGLWidget(QtOpenGL.QGLWidget):
         width = max(2, width)
         height = max(2, height)
         self.ctx.viewport = (0, 0, width, height)
-
-        self.WIN_SIZE = (width, height)
-        print(f"WIN_SIZE: {self.WIN_SIZE}")
-        self.aspect_ratio = self.WIN_SIZE[0] / self.WIN_SIZE[1]
-        self.camera.set_projection_matrix(aspect_ratio=self.aspect_ratio)
 
         self.arc_ball = ArcBallUtil(width, height)
         print(self.camera.position)

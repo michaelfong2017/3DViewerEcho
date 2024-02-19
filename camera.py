@@ -11,12 +11,15 @@ SPEED = 0.01
 class Camera:
     def __init__(self, app):
         self.app = app
+        self.aspect_ratio = app.WIN_SIZE[0] / app.WIN_SIZE[1]
         self.position = glm.vec3(0, 0, 4)
         self.up = glm.vec3(0, 1, 0)
         self.right = glm.vec3(1, 0, 0)
         self.forward = glm.vec3(0, 0, -1)
         # view matrix
         self.m_view = self.get_view_matrix()
+        # projection matrix
+        self.m_proj = self.get_projection_matrix()
 
     def update_camera_vectors(self):
         yaw, pitch = glm.radians(self.yaw), glm.radians(self.pitch)
@@ -56,6 +59,5 @@ class Camera:
         arc_ball_transform = glm.mat4x4(*self.app.arc_ball.Transform.flatten())
         return lookAt * arc_ball_transform
 
-    def set_projection_matrix(self, aspect_ratio):
-        self.m_proj = glm.perspective(glm.radians(FOV), aspect_ratio, NEAR, FAR)
-        self.app.scene.shader_program["m_proj"].write(self.m_proj)
+    def get_projection_matrix(self):
+        return glm.perspective(glm.radians(FOV), self.aspect_ratio, NEAR, FAR)
