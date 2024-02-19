@@ -23,6 +23,12 @@ class Texture:
         # image.fill("red")
         data = image.bits().tobytes()
         texture = self.ctx.texture(size=(width, height), components=3, data=data)
+        
+        # mipmaps
+        texture.filter = (mgl.LINEAR_MIPMAP_LINEAR, mgl.LINEAR)
+        texture.build_mipmaps()
+        # AF
+        texture.anisotropy = 32.0
         return texture
     
     def destroy(self):
