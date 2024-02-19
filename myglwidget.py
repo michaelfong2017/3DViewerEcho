@@ -57,7 +57,11 @@ class MyGLWidget(QtOpenGL.QGLWidget):
             -self.arc_ball.Transform[:3, :3].T @ self.center
         )
 
-        self.scene.render()
+        try:
+            self.scene.render()
+        except AttributeError:
+            # Don't print error message so that console is not flushed
+            pass
 
     # In seconds
     def get_time(self):
