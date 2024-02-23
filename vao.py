@@ -21,6 +21,12 @@ class VAO:
             vbo = self.vbo.vbos['quad']
         )
 
+        # line vao
+        self.vaos['line'] = self.get_vao(
+            program=self.program.programs['line'],
+            vbo = self.vbo.vbos['line']
+        )
+
     def get_vao(self, program, vbo):
         vao = self.ctx.vertex_array(program, [(vbo.vbo, vbo.format, *vbo.attribs)])
         return vao

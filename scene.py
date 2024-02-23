@@ -21,6 +21,18 @@ class Scene:
         add(Quad(app, tex_id="test-A4C"))
         add(Quad(app, tex_id="test-A4C", rot=(90, 0, 0)))
         add(Quad(app, tex_id="test-A4C", rot=(0, 90, 0)))
+        add(Line(app, pos=(0, -1, -1)))
+        add(Line(app, pos=(0, -1, 1)))
+        add(Line(app, pos=(0, 1, -1)))
+        add(Line(app, pos=(0, 1, 1)))
+        add(Line(app, pos=(-1, -1, 0), rot=(0, 90, 0)))
+        add(Line(app, pos=(-1, 1, 0), rot=(0, 90, 0)))
+        add(Line(app, pos=(1, -1, 0), rot=(0, 90, 0)))
+        add(Line(app, pos=(1, 1, 0), rot=(0, 90, 0)))
+        add(Line(app, pos=(-1, 0, -1), rot=(0, 0, 90)))
+        add(Line(app, pos=(-1, 0, 1), rot=(0, 0, 90)))
+        add(Line(app, pos=(1, 0, -1), rot=(0, 0, 90)))
+        add(Line(app, pos=(1, 0, 1), rot=(0, 0, 90)))
 
         # n, s = 80, 2
         # for x in range(-n, n, s):

@@ -1,5 +1,6 @@
 import numpy as np
 import glm
+import moderngl as mgl
 
 
 class BaseModel:
@@ -87,3 +88,23 @@ class Quad(BaseModel):
         self.program["light.Ia"].write(self.app.light.Ia)
         self.program["light.Id"].write(self.app.light.Id)
         self.program["light.Is"].write(self.app.light.Is)
+
+
+class Line(BaseModel):
+    def __init__(self, app, vao_name='line', tex_id=0, pos=(0, 0, 0), rot=(0, 0, 0), scale=(1, 1, 1)):
+        super().__init__(app, vao_name, tex_id, pos, rot, scale)
+        self.on_init()
+
+    def update(self):
+        self.program["m_view"].write(self.camera.m_view)
+        self.program["m_model"].write(self.m_model)
+
+    def on_init(self):
+        # mvp
+        self.program["m_proj"].write(self.camera.m_proj)
+        self.program["m_view"].write(self.camera.m_view)
+        self.program["m_model"].write(self.m_model)
+
+    def render(self):
+        self.update()
+        self.vao.render(mgl.LINES)
