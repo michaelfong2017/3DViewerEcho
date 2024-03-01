@@ -18,8 +18,8 @@ class Scene:
         # add(Cube(app, tex_id=1, pos=(-2.5, 0, 0), rot=(45, 0, 0), scale=(1, 2, 1)))
         # add(Cube(app, tex_id=2, pos=(2.5, 0, 0), rot=(0, 0, 45), scale=(1, 1, 2)))
 
-        add(Quad(app, tex_id="test-A4C"))
-        add(Quad(app, tex_id="test-A4C", rot=(90, 0, 0)))
+        add(Quad(app, tex_id="test-ALAX"))
+        add(Quad(app, tex_id="test-A2C", rot=(90, 0, 0)))
         add(Quad(app, tex_id="test-A4C", rot=(0, 90, 0)))
         add(Line(app, pos=(0, -1, -1)))
         add(Line(app, pos=(0, -1, 1)))
