@@ -73,7 +73,7 @@ def process_frame(frame, frame_index):
             #     pred_image, pred_mapped_coords, pred_up, None
             # )
             
-            # Convert Imag eto PIL image
+            # Convert Image to PIL image
             pred_image = Image.fromarray(pred_vs)
             pred_image = pred_image.convert("L")
             # pred_image.save(view + 'testing_pred.png')
