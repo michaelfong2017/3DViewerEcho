@@ -78,6 +78,9 @@ class MyGLWidget(QtOpenGL.QGLWidget):
         self.ctx = mgl.create_context()
         # self.ctx.front_face = 'cw'
         self.ctx.enable(flags=mgl.DEPTH_TEST | mgl.CULL_FACE)
+        # Enable blending
+        self.ctx.enable(mgl.BLEND)
+        self.ctx.blend_func = mgl.SRC_ALPHA, mgl.ONE_MINUS_SRC_ALPHA
         # init arcball
         self.init_arcball()
         # create an object to help track time

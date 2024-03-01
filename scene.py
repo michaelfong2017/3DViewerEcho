@@ -1,4 +1,5 @@
 from model import *
+from collections import OrderedDict
 
 
 class Scene:
@@ -19,8 +20,8 @@ class Scene:
         # add(Cube(app, tex_id=2, pos=(2.5, 0, 0), rot=(0, 0, 45), scale=(1, 1, 2)))
 
         add(Quad(app, tex_id="test-A2C-transparent"))
-        add(Quad(app, tex_id="test-A4C-transparent", rot=(90, 0, 0)))
-        add(Quad(app, tex_id="test-ALAX-transparent", rot=(0, 90, 0)))
+        add(Quad(app, tex_id="test-A4C-transparent", pos=(0, 0, 2), rot=(0, 90, 0)))
+        add(Quad(app, tex_id="test-ALAX-transparent", pos=(0, 0, 4), rot=(90, 0, 0)))
         add(Line(app, pos=(0, -1, -1)))
         add(Line(app, pos=(0, -1, 1)))
         add(Line(app, pos=(0, 1, -1)))
@@ -40,5 +41,17 @@ class Scene:
         #         add(Cube(app, pos=(x, -s, z)))
 
     def render(self):
+        d = {}
         for obj in self.objects:
-            obj.render()
+            transformed = self.app.camera.m_view * glm.vec4(obj.pos, 1.0)
+            distance = glm.length(self.app.camera.position - glm.vec3(transformed))
+            if d.get(distance):
+                d[distance].append(obj)
+            else:
+                d[distance] = [obj]
+        
+        od = OrderedDict(sorted(d.items(), reverse=True))
+
+        for distance, objs in od.items():
+            for obj in objs:
+                obj.render()
