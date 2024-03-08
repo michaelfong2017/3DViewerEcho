@@ -62,19 +62,16 @@ def process_frame(frame, frame_index):
             # extract the content of the plane and project onto 2d image. Also do the same for the coordinates for visualization.
             # pred_vs, pred_mapped_coords, pred_up = FindVisualFromCoords(pred_coords_raw, data_3d_padded)
             # Note: You can modify time_index value to get plane visual from other time slices
-            pred_vs, pred_mapped_coords, pred_up = PlaneReconstructionUtils.FindVisualFromCoords(
+            pred_vs, pred_mapped_coords, pred_mapped_coords_index, pred_up = PlaneReconstructionUtils.FindVisualFromCoords(
                 pred_coords_raw, frame, view
             )
-
             # Rotate Image
-            pred_vs, pred_rotated_coords = PlaneReconstructionUtils.HandleRotationsNumpy(pred_vs, pred_mapped_coords, pred_up, view)
-            # Rotate the image into a "correct" orientation
-            # pred_image, pred_rotated_coords = HandleRotations(
-            #     pred_image, pred_mapped_coords, pred_up, None
-            # )
+            pred_image, pred_rotated_coords = PlaneReconstructionUtils.HandleRotationsNumpy(pred_vs, pred_mapped_coords, pred_mapped_coords_index, pred_up, view)
+   
+            pred_image, pred_rotated_coords = PlaneReconstructionUtils.ViewSpecificRotations(pred_image, pred_rotated_coords, view)
             
             # Convert Image to PIL image
-            pred_image = Image.fromarray(pred_vs)
+            pred_image = Image.fromarray(pred_image)
             pred_image = pred_image.convert("L")
             # pred_image.save(view + 'testing_pred.png')
 
@@ -115,19 +112,16 @@ def process_frame_with_known_landmarks(frame, frame_index, view_to_array_2d):
             # extract the content of the plane and project onto 2d image. Also do the same for the coordinates for visualization.
             # pred_vs, pred_mapped_coords, pred_up = FindVisualFromCoords(pred_coords_raw, data_3d_padded)
             # Note: You can modify time_index value to get plane visual from other time slices
-            pred_vs, pred_mapped_coords, pred_up = PlaneReconstructionUtils.FindVisualFromCoords(
-                pred_coords_raw, frame, view
-            )
+            pred_vs, pred_mapped_coords, pred_mapped_coords_index, pred_up = PlaneReconstructionUtils.FindVisualFromCoords(
+                pred_coords_raw, frame, view)
 
             # Rotate Image
-            pred_vs, pred_rotated_coords = PlaneReconstructionUtils.HandleRotationsNumpy(pred_vs, pred_mapped_coords, pred_up, view)
-            # Rotate the image into a "correct" orientation
-            # pred_image, pred_rotated_coords = HandleRotations(
-            #     pred_image, pred_mapped_coords, pred_up, None
-            # )
+            pred_image, pred_rotated_coords = PlaneReconstructionUtils.HandleRotationsNumpy(pred_vs, pred_mapped_coords, pred_mapped_coords_index, pred_up, view)
+   
+            pred_image, pred_rotated_coords = PlaneReconstructionUtils.ViewSpecificRotations(pred_image, pred_rotated_coords, view)
             
             # Convert Imag eto PIL image
-            pred_image = Image.fromarray(pred_vs)
+            pred_image = Image.fromarray(pred_image)
             pred_image = pred_image.convert("L")
             # pred_image.save(view + 'testing_pred.png')
 

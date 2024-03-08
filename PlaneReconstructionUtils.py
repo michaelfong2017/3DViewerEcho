@@ -17,6 +17,7 @@ import subprocess
 # import cupy as cp
 from scipy.ndimage import map_coordinates
 from scipy.ndimage import rotate
+from scipy import ndimage
 from scipy.interpolate import RegularGridInterpolator, interp2d
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
@@ -25,6 +26,9 @@ import mpl_toolkits.axisartist.floating_axes as floating_axes
 from mpl_toolkits.mplot3d import Axes3D
 # import torch
 # from torch.utils.data import DataLoader
+import logging
+# import cv2
+from itertools import combinations
 
 #### Data Utils #####
 def normalize_echo(data):
@@ -50,7 +54,6 @@ def pad3d(data: np.ndarray):
 def pad4d(data: np.ndarray):
     time = data.shape[0]
     max_length = max(data.shape[1:])
-    print("max: ", max_length)
     out_size = [time, max_length, max_length, max_length]
     pad_width = np.array([[0,0], [0, 0], [0, 0], [0, 0]])
     offsets = np.array([0, 0, 0])
@@ -72,7 +75,7 @@ def pad4d(data: np.ndarray):
 
 #     return combined_xyz
 
-# Convert 4d Dicom data to 4d NRRD data
+# # Convert 4d Dicom data to 4d NRRD data
 # def dicom_4d_to_nrrd_4d(dicom_filePath):
 #     t1 = time.perf_counter()
 
@@ -89,7 +92,7 @@ def pad4d(data: np.ndarray):
 #     imageComponents = frames
 #     frameTimeMsec = ds.FrameTime
 #     pixelShape = (frames, slices, rows, columns)
-#     print("DICOM file shape: ", pixelShape)
+#     logging.info(f'DICOM file shape: {pixelShape}')
 #     pixelSize = pixelShape[0] * pixelShape[1] * pixelShape[2] * pixelShape[3]
 #     totalFileSize = os.path.getsize(dicom_filePath)
 #     headerSize = totalFileSize-pixelSize
@@ -119,16 +122,17 @@ def pad4d(data: np.ndarray):
 #         image4D[frame] = imageArray
 #         #print('frame '+str(frame)+' done')
 
-#     print("FPS: ", frameTimeMsec)
-#     print("np.array shape:", image4D.shape, type(image4D))
+#     logging.info(f'Frame Time (ms)): {frameTimeMsec}')
+#     logging.info(f'np.array shape:, {image4D.shape}, {type(image4D)}')
+
 
 #     t2 = time.perf_counter()
-#     print('time for dicom to array: ', t2-t1)
+#     # print('time for dicom to array: ', t2-t1)
 
 #     # pyplot.imshow(imageArray[:,88,:],cmap='gray')
 #     # pyplot.show()
 
-#     print("inter spacing: ", spacing)
+#     logging.info(f'inter spacing: {spacing}')
 #     temp = [1, spacing[0], spacing[1], spacing[2]]
 #     spacing4D = np.array(temp)
 
@@ -149,9 +153,9 @@ def pad4d(data: np.ndarray):
 #     new_data_array = new_data_array.astype(np.uint8)
 
 #     t3 = time.perf_counter()
-#     print('time to normalize array: ', t3-t2)
+#     logging.info(f'time to normalize array: {t3-t2}')
 
-#     print("Nrrd obj: ", new_data_array.shape)
+#     logging.info(f'Nrrd obj: {new_data_array.shape}')
 
 #     # for t in range(frames): #new_data_array.shape[0]
 #     #     nrrd.write(os.path.join(nrrd_save_path, 't_' + str(t)+'.seq.nrrd'), new_data_array[t,:,:,:])
@@ -161,11 +165,19 @@ def pad4d(data: np.ndarray):
 
 #     return new_data_array, frameTimeMsec
 
+
+### Plane reconstruction Utils ###
 # Crop image to remove useless black background
-def CropImage(img, coords, spacing=5):
+def CropImageAndReturnPadding(img, coords, spacing=5):
+
+    coords = np.array(coords)
 
     # img = img + 0.0 # remove -0.0
     indices = np.where(img > 1e-3)
+    if all(array.size == 0 for array in indices):
+        logging.error("Can't handle empty image")
+        1/0
+        return img, coords
     min_y, max_y = np.min(indices[0]), np.max(indices[0])
     min_x, max_x = np.min(indices[1]), np.max(indices[1])
 
@@ -186,54 +198,115 @@ def CropImage(img, coords, spacing=5):
     coords[:, 0] = coords[:, 0] - min_x
     coords[:, 1] = coords[:, 1] - min_y
 
+    return cropped_image, coords, min_y, max_y, min_x, max_x
+
+# Crop image to remove useless black background
+def CropImageWithGivenPadding(img, coords, min_y, max_y, min_x, max_x, spacing=50):
+
+    # img = img + 0.0 # remove -0.0
+    indices = np.where(img > 1e-3)
+    if all(array.size == 0 for array in indices):
+        print("Can't handle empty image")
+        1/0
+        return img, coords
+
+    # Crop the original image using the expanded bounding box
+    cropped_image = img[min_y:max_y, min_x:max_x]
+
+    coords[:, 0] = coords[:, 0] - min_x
+    coords[:, 1] = coords[:, 1] - min_y
+
     return cropped_image, coords
 
+# find the 3 best landmarks
+def ransac_landmarks(input_landmarks):
+    # input_landmarks: shape (landmark_count, 3)
+
+    # print("input_landmarks: ", input_landmarks)
+    input_indices = range(0, input_landmarks.shape[0])
+    indices_to_remove = np.where(np.all(input_landmarks == 0, axis=1))[0]
+    valid_indices = np.delete(input_indices, indices_to_remove, axis=0)
+    # print("valid_indices: ", valid_indices)
+
+    best_landmarks = []
+    best_indicies = []
+
+    min_distance = 128
+
+    # Generate all possible combinations of landmarks
+    all_combinations_indices = combinations(valid_indices, 3)
+
+    for sample_indices in all_combinations_indices:
+
+        sampled_landmarks = input_landmarks[np.array(sample_indices)]
+
+        # Calculate the plane equation for the current combination
+        A, B, C, D = get_plane_equation_from_points(sampled_landmarks[0], sampled_landmarks[1], sampled_landmarks[2])
+
+        if A == B == C == D == 0:
+            logging.warning(f'Case of straight line. Ignore this combination')
+            continue
+
+        # Calculate the distances from each point to the plane
+        distances = np.sum(np.abs(A * input_landmarks[valid_indices, 0] + B * input_landmarks[valid_indices, 1] + C * input_landmarks[valid_indices, 2] + D) / np.sqrt(A**2 + B**2 + C**2))
+
+        # print(sampled_landmarks[0], sampled_landmarks[1], sampled_landmarks[2], " = distances: ", distances)
+        if distances < min_distance:
+            min_distance = distances
+            best_landmarks = sampled_landmarks
+            best_indicies = sample_indices
+
+    # print("best_landmarks: ", best_landmarks)
+    if len(list(best_indicies)) == 0:
+        print("ERROR: No valid points can be located")
+        1/0
+
+    logging.info(f'best_indicies: {list(best_indicies)}')
+    return list(best_indicies)
+
 # Filter out the most useful & accurate 3 landmarks for plane reconstruction
-def FilterLandmarks(landmarks, view):
-    # if view == "A4C":
-    #     landmarks = landmarks[[0, 1, 2], :]
-    if view == "SAXB":
-        landmarks = landmarks[[0, 1, 3], :]
+def IdentifyBestLandmarks(landmarks, view):
+    if view == "A2C":
+        return [0, 1, 2]
+    if view == "A4C":
+        return ransac_landmarks(landmarks)
+        # return [0, 1, 2]
     if view == "ALAX":
-        landmarks = landmarks[[1, 2, 3], :]
+        return ransac_landmarks(landmarks)
     if view == "SAXA":
-        landmarks[:, 2] = np.mean(landmarks[:, 2]) # TODO: hardcode approach
+        # landmarks[:, 2] = np.mean(landmarks[:, 2]) # TODO: hardcode approach
+        return [0, 1, 2]
+    if view == "SAXB":
+        return [0, 1, 3]
     if view == "SAXM":
-        landmarks = landmarks[[1, 3, 5], :]
-        landmarks[:, 2] = np.mean(landmarks[:, 2]) # TODO: hardcode approach
+        return ransac_landmarks(landmarks)
+        # return [1, 3, 5] # 1, 3, 5 > 10, 13, 27
     if view == "SAXMV":
-        landmarks = landmarks[[0, 1, 5], :]
-        landmarks[:, 2] = np.mean(landmarks[:, 2]) # TODO: hardcode approach
+        return ransac_landmarks(landmarks)
+        # return [0, 1, 5]
+    logging.error('View name does not exist!')
+    return [0, 1, 2]
 
-    return landmarks
+# ndimage.rotate angle rotates anticlockwise: TODO: coordinates are not correct, rotation correct but position incorrect
+def RotateImageAndCoordinates(image, coordinates, rotation_angle):
 
-# Handle rotations of view
-def HandleRotationsNumpy(numpy_img, coords, up_vector, view):
+    if coordinates.shape[1]  == 3:
+        coordinates = coordinates[:, 0:1]
 
-    print("HandleRotationsNumpy View: ", view)
+    # Calculate the center of the image
+    center = np.array([(image.shape[0] - 1) / 2, (image.shape[1] - 1) / 2])
 
-    # 
-    if(up_vector[1] == 0):
-        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        print("Horizontal Plane: Hard-code approach") # TODO
-        # SAXA-LV apex
-        # print(coords[2])
-        # coords[2][0] += 2 # x
-        # coords[2][2] += 2 # z
-        numpy_img = rotate(numpy_img, 90, reshape=False)
-        return numpy_img, coords
+    # Rotate the image
+    rotated_image = rotate(image, rotation_angle, reshape=True)
 
+    # Rotate the coordinates
+    rotated_coordinates = np.dot(coordinates - center, np.array([[np.cos(np.deg2rad(rotation_angle)), -np.sin(np.deg2rad(rotation_angle))],
+                                                                [np.sin(np.deg2rad(rotation_angle)), np.cos(np.deg2rad(rotation_angle))]])) + center
+    return rotated_image, np.array(rotated_coordinates)
 
-    slope = up_vector[0] / up_vector[1]
-    print("slope: ", slope)
-    angle = math.degrees(math.atan(1 / slope))
-    
-    # for handling inverted cases. will also h flip later
-    if up_vector[0] > 0:
-        angle += 180
-        
-    print("angle: ", angle)
-    rotated_image = rotate(numpy_img, -angle, reshape=False)
+def RotateCoordinates(rotated_image, coords, angle):
+
+    coords = np.array(coords)
 
     # Rotate the coordinates
     center_x = rotated_image.shape[1] // 2
@@ -256,56 +329,73 @@ def HandleRotationsNumpy(numpy_img, coords, up_vector, view):
         rotated_y += center_y
 
         rotated_coords.append((rotated_x, rotated_y))
-        
-    rotated_coords = np.array(rotated_coords)
+    
+    return np.array(rotated_coords)
 
-    # for handling inverted cases
-    if up_vector[0] > 0:
-        rotated_image = np.fliplr(rotated_image)
-        rotated_coords[:, 0] = rotated_image.shape[1] - rotated_coords[:, 0]
-
+# 'A2C': [0, 5, 25],
+# 'A4C': [1, 2, 14, 21, 22, 31],
+# A4C-LV apex, A4C-TV tip, Lateral mitral annulus, MV tip, Medial mitral annulus, Tricuspid annulus.
+# 'SAXA': [12, 28, 29],
+# 'SAXB': [8, 9, 23, 30], # 0, 1, 3
+# 'ALAX': [3, 4, 7, 24], # 1, 2, 3
+# 'SAXM': [6, 10, 11, 13, 26, 27], # 1, 3, 5
+def ViewSpecificRotations(image, coords, view):
+    
     if view == "A2C": # Left To Right: Posteromedial mitral annulus(25) > Anterolateral mitral annulus(5)
-        if rotated_coords[2][0] > rotated_coords[1][0]:
-            rotated_image = np.fliplr(rotated_image)
-            rotated_coords[:, 0] = rotated_image.shape[1] - rotated_coords[:, 0]
-            print("Perform view specific flip")
-    elif view =="A4C": # Tricuspid annulus(31) > Lateral mitral annulus(14)
-        if rotated_coords[5][0] > rotated_coords[2][0]:
-            rotated_image = np.fliplr(rotated_image)
-            rotated_coords[:, 0] = rotated_image.shape[1] - rotated_coords[:, 0]
-            print("Perform view specific flip")
-    elif view =="ALAX": # Posterior mitral annulus(24) > Aortic annulus(7)
-        if rotated_coords[2][0] > rotated_coords[1][0]:
-            rotated_image = np.fliplr(rotated_image)
-            rotated_coords[:, 0] = rotated_image.shape[1] - rotated_coords[:, 0]
-            print("Perform view specific flip")
-    elif view =="SAXB": # SAXB-TV tip(30) > Center of AV(8)
-        if rotated_coords[2][0] > rotated_coords[0][0]:
-            rotated_image = np.fliplr(rotated_image)
-            rotated_coords[:, 0] = rotated_image.shape[1] - rotated_coords[:, 0]
-            print("Perform view specific flip")
-    elif view =="SAXM": # RV(27) > LV(13)
-        if rotated_coords[2][0] > rotated_coords[1][0]:
-            rotated_image = np.fliplr(rotated_image)
-            rotated_coords[:, 0] = rotated_image.shape[1] - rotated_coords[:, 0]
-            print("Perform view specific flip")
-    elif view =="SAXMV": # MV anterior leaflet  A3(16) > 'MV posterior leaflet P3(20)
-        if rotated_coords[1][0] > rotated_coords[2][0]:
-            rotated_image = np.fliplr(rotated_image)
-            rotated_coords[:, 0] = rotated_image.shape[1] - rotated_coords[:, 0]
-            print("Perform view specific flip")
+        if coords[2][0] > coords[1][0]:
+            image = np.fliplr(image)
+            coords[:, 0] = image.shape[1] - coords[:, 0]
+            logging.info("Perform view specific l/r flip")
+    elif view =="A4C": # Tricuspid annulus(31) ----> Lateral mitral annulus(14)
+        if coords[5][0] > coords[2][0]:
+            image = np.fliplr(image)
+            coords[:, 0] = image.shape[1] - coords[:, 0]
+            logging.info("Perform view specific l/r flip")
+    elif view =="ALAX": # 'ALAX': [3, 4, 7, 24], # 1, 2, 3
+        if coords[3][0] > coords[2][0]: # if Posterior mitral annulus(24) > Aortic annulus(7)
+            image = np.fliplr(image)
+            coords[:, 0] = image.shape[1] - coords[:, 0]
+            logging.info("Perform view specific l/r flip")
+    elif view =="SAXB": 
+        if coords[2][0] > coords[0][0]: # if SAXB-TV tip(30) > Center of AV(8)
+            image = np.fliplr(image)
+            coords[:, 0] = image.shape[1] - coords[:, 0]
+            logging.info("Perform view specific l/r flip")
 
-    if view == "SAXA":
-        rotated_image = rotate(rotated_image, 90, reshape=False)
-    elif view == "SAXM":
-        rotated_image = rotate(rotated_image, -45, reshape=False)
-    elif view == "SAXMV":
-        rotated_image = rotate(rotated_image, -90, reshape=False)
+    elif view =="SAXM": # 'SAXM': [6, 10, 11, 13, 26, 27], # 1, 3, 5
+        # rotate image so RV(27) and LV(13) form horizontal line
+        dir_vector = coords[3] - coords[5]
+        angle = np.arctan2(dir_vector[1], dir_vector[0]) * 180.0 / np.pi
+        image, coords = RotateImageAndCoordinates(image, coords, angle)
 
-    return rotated_image, rotated_coords
+        # check for vertical flip
+        if coords[3][1] > coords[2][1]: # if LV(13) > IW(11)
+            image = np.flipud(image)
+            coords[:, 1] = image.shape[0] - coords[:, 1]
+            logging.info("Perform view specific u/d flip")
+
+    elif view =="SAXMV": # 'SAXMV': [15, 16, 17, 18, 19, 20], # 0, 1, 5
+        # rotate image so MV anterior leaflet  A3(16) and MV posterior leaflet P1(18) form horizontal line
+        dir_vector = coords[3] - coords[1]
+        angle = np.arctan2(dir_vector[1], dir_vector[0]) * 180.0 / np.pi
+        image, coords = RotateImageAndCoordinates(image, coords, angle)
+
+        # check for vertical flip
+        if coords[2][1] > coords[5][1]: # if MV anterior leaflet  A1(17) > MV posterior leaflet P3(20)
+            image = np.flipud(image)
+            coords[:, 1] = image.shape[0] - coords[:, 1]
+            logging.info("Perform view specific u/d flip")
+
+    elif view == "SAXA":
+        pass
+
+
+    return image, coords
 
 
 #### Geometry Utils #####
+
+# Get Plane equation from 3 points
 def get_plane_equation_from_points(P, Q, R):  
     x1, y1, z1 = P
     x2, y2, z2 = Q
@@ -485,80 +575,90 @@ def FindPlaneCorners(normals_line, points_line, dim, th=25):
 
 def CheckNormalAxis(normal):
     if abs(normal[0]) == 1:
-        print("The normal is aligned with the x-axis.")
+        logging.info("The normal is aligned with the x-axis.")
         return 0
     elif abs(normal[1]) == 1:
-        print("The normal is aligned with the y-axis.")
+        logging.info("The normal is aligned with the x-axis.")
         return 1
     elif abs(normal[2]) == 1:
-        print("The normal is aligned with the z-axis.")
+        logging.info("The normal is aligned with the x-axis.")
         return 2
     else:
         return -1
 
-#### Core Utils #####
-def FindNormalByCoords(coords, view):
-    # TODO: pick 3 best coordinates
-    pred_coords_raw = FilterLandmarks(coords, view)
 
-    p0, p1, p2 = pred_coords_raw[0:3]
+
+#### Core Utils #####
+# Find Normal vector from points of view. Will also apply filtering to coordinates
+def FindNormalByCoords(coords, view, truth=False, all_landmarks=None):
+
+    # coords: ndarray (ls, 3)
+    logging.info(f'FindNormalByCoords: {coords} in view {view}')
+
+    # Pick 3 best coordinates         
+    best_indexes = IdentifyBestLandmarks(coords, view)
+        
+    if view == 'SAXA':
+        # go to a4c, obtain points 0 and 4 = global 1(A4C-LV apex) and 22(Medial mitral annulus)
+        saxa_normal = [0, 0, 1]
+        if all_landmarks is not None:
+            if (1 in all_landmarks) and (22 in all_landmarks):
+                saxa_normal = all_landmarks[22] - all_landmarks[1]
+        logging.info(f'SAXA Normal: {saxa_normal}')
+        return np.array(saxa_normal), np.array(coords), best_indexes
+
+    best_pred_corrds = coords[best_indexes, :] # only pick 3 landmarks
+    p0, p1, p2 = best_pred_corrds[0:3]
     a, b, c, d = get_plane_equation_from_points(p0, p1, p2)
 
+    # check if straight line. TODO: can be removed if everything works
     if a == b == c == d == 0:
-        print("Error: The three points are on the same straight line!")
-        print("Random generation in ", coords.shape[0] , " landmarks")
+        logging.error('ERROR: THIS SHOULD NOT BE CALLED!!!!!!!!!!!!!!')
+        1/0
 
-        elements = list(range(0, coords.shape[0]))
-        all_combinations = list(itertools.combinations(elements, 3))
-        
-        for combination in all_combinations:
-            pred_coords_raw = [[coords[landmark_index][0], coords[landmark_index][1], coords[landmark_index][2]] for landmark_index in combination]
-            print(pred_coords_raw)
-            p0, p1, p2 = pred_coords_raw[0:3]
-            a, b, c, d = get_plane_equation_from_points(p0, p1, p2)
-            if not(a == b == c == d == 0):
-                return np.array([a, b, c]), np.array(pred_coords_raw)
-
-    return np.array([a, b, c]), pred_coords_raw
+    return np.array([a, b, c]), best_pred_corrds, best_indexes
 
 # Extract cross sectional view of volume from given coords
-def FindVisualFromCoords(coords, volume, view):
+def FindVisualFromCoords(coords, volume, view, truth=False, all_landmarks=None):
 
-    normal, coords = FindNormalByCoords(coords, view)
-    print("FindVisualFromCoords: ", coords, " in view ", view)
-    print("Calculated Plane Normal: ", normal)
+    normal, best_coords, coords_indexes = FindNormalByCoords(coords, view, truth, all_landmarks)
+    logging.info(f'FindVisualFromCoords: {best_coords} in view {view}')
+    logging.info(coords_indexes)
+    # print("Calculated Plane Normal: ", normal)
     normal = normal/np.linalg.norm(normal) # normalize
-    print("Normalized normal: ", normal)
-    pos = coords[0]
+    # print("Normalized normal: ", normal)
+    pos = best_coords[0]
+    # print("best_coords[0] - best_coords[1]: ", (best_coords[0] - best_coords[1]))    
+    # print("best_coords[0] - best_coords[2]: ", (best_coords[0] - best_coords[2]))    
+    # print("best_coords[1] - best_coords[2]: ", (best_coords[1] - best_coords[2]))
 
+    # Perfectly Horizontal/Vertical Plane cases
     if(CheckNormalAxis(normal) >= 0):
-        print("###############################################")
-        print("###############################################")
-        print("Perfectly Horizontal/Vertical Plane")
+        logging.info("Horizontal/Vertical Plane")
         axis = CheckNormalAxis(normal)
-        axis_index = coords[0][axis]
-
-        print("The axis index: ", coords[0][axis])
-        if axis == 0:
+        axis_index = coords[coords_indexes[0]][axis]
+        logging.info(f'The axis index: {axis_index}')
+        if axis == 0: 
             cross_sectional_slice = volume[int(axis_index), :, :]
-            displacement_pts = [landmark[1:] for landmark in coords]
+            displacement_pts_in_2d = [landmark[1:] for landmark in coords]
             up_in_2d = [0, 0, 1.0]
             # Need invert pts y-axis
-            displacement_pts = [[pts[0], 128-pts[1]] for pts in displacement_pts]
+            displacement_pts_in_2d = [[pts[0], 128-pts[1]] for pts in displacement_pts_in_2d]
         elif axis == 1:
             cross_sectional_slice = volume[:, int(axis_index), :]
-            displacement_pts = [[landmark[0], landmark[2]] for landmark in coords]
+            displacement_pts_in_2d = [[landmark[0], landmark[2]] for landmark in coords]
             up_in_2d = [0, 0, 1.0]
             # Need invert pts y-axis
-            displacement_pts = [[pts[0], 128-pts[1]] for pts in displacement_pts]
+            displacement_pts_in_2d = [[pts[0], 128-pts[1]] for pts in displacement_pts_in_2d]
         elif axis == 2:
             cross_sectional_slice = volume[:, :, int(axis_index)]
-            displacement_pts = [landmark[:2] for landmark in coords]
+            displacement_pts_in_2d = [landmark[:2] for landmark in coords]
             up_in_2d = [1.0, 0, 0]
 
-        displacement_pts = np.array(displacement_pts)
+        displacement_pts_in_2d = np.array(displacement_pts_in_2d)
+        # print('displacement_pts_in_2d: ', displacement_pts_in_2d)
         # print("result: ", cross_sectional_slice.shape, cross_sectional_slice.min(), cross_sectional_slice.max())
-        return cross_sectional_slice, displacement_pts, up_in_2d
+        return cross_sectional_slice, displacement_pts_in_2d, coords_indexes, up_in_2d
 
     up_axis = np.array([0,0,1])
     origin_pt = np.array([0,0,0])
@@ -654,6 +754,16 @@ def FindVisualFromCoords(coords, volume, view):
         normal, origin_corner_slice_vrf, # <--- this is only different
     )
 
+    # displace the coordinates
+    displacement_pts_in_2d = new_pos - origin_corner_slice
+
+    result = map_coordinates(volume, inslice_coords_vrf.T, order=1, mode='constant', cval=-1.0)
+    # print("Map Coordinates time: ", end_time-start_time)
+    result = result.reshape(size_slice_x, size_slice_y)
+    # print("result: ", type(result))
+    # print("result: ", result.shape, result.min(), result.max())
+    # print(displacement_pts_in_2d.shape)
+
     up_coord1 = [0, 0, 1] # this coordinate system is same for "pos"
     pt_arr = np.concatenate((up_coord1, np.ones((1,))) ,axis = 0).reshape((4,1))
     up_in_2d_1 = np.matmul(np.linalg.inv(Pose_slice_origin_cspecial), pt_arr)
@@ -667,17 +777,58 @@ def FindVisualFromCoords(coords, volume, view):
     # print("up_in_2d_2:", up_in_2d_2)
 
     up_in_2d = up_in_2d_2 - up_in_2d_1
-    print("up_in_2d:", up_in_2d)
+    logging.info(f'up_in_2d: {up_in_2d}')
 
-    # displace the coordinates
-    displacement_pts = new_pos - origin_corner_slice
+    return result, displacement_pts_in_2d, coords_indexes, up_in_2d
 
-    start_time = time.perf_counter()
-    result = map_coordinates(volume, inslice_coords_vrf.T, order=1, mode='constant', cval=-1.0)
-    end_time = time.perf_counter()
-    # print("Map Coordinates time: ", end_time-start_time)
-    result = result.reshape(size_slice_x, size_slice_y)
-    print("result: ", type(result))
-    # print("result: ", result.shape, result.min(), result.max())
-    # print(displacement_pts.shape)
-    return result, displacement_pts, up_in_2d
+# Fix rotations of view after FindVisualFromCoords(). must be used together
+def HandleRotationsNumpy(numpy_img, coords, coords_indexes, up_vector_of_2d_in_3d_space, view):
+
+    logging.info(f'HandleRotationsNumpy View:  {view} {coords} up_vector_of_2d_in_3d_space: {up_vector_of_2d_in_3d_space}')
+    # print(coords)
+
+    # rows, column
+    # y, x.
+    # horizontal line at the top
+    # numpy_img[10, :] = 255
+
+    # Horizontal Plane
+    if(up_vector_of_2d_in_3d_space[1] == 0):
+        # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        # print("Vertical Plane:") # TODO
+        logging.warning("Horizontal Plane")
+        # SAXA-LV apex
+        # print(coords[2])
+        rotated_image = rotate(numpy_img, 90, reshape=False)
+        # rotated_coords = RotateCoordinates(rotated_image, coords, -90)
+        return rotated_image, coords
+
+    
+    # slop of x and y axis
+    slope = up_vector_of_2d_in_3d_space[0] / up_vector_of_2d_in_3d_space[1]
+    logging.debug(f'slope: {slope}')
+
+    angle = math.degrees(math.atan(1 / slope))
+    
+    # for handling inverted cases. will also h flip later
+    if up_vector_of_2d_in_3d_space[0] > 0:
+        angle += 180
+
+    #
+    if slope == 0 and up_vector_of_2d_in_3d_space[1] >= 0:
+        angle = -angle
+        
+    # print("angle: ", angle)
+    rotated_image = numpy_img
+    rotated_coords = coords
+
+    rotated_image = rotate(numpy_img, -angle, reshape=False)
+    rotated_coords = RotateCoordinates(rotated_image, coords, angle)
+
+    # for handling inverted cases # this should not be needed. flip lr cases handle for view specific
+    # if up_vector_of_2d_in_3d_space[0] > 0:
+    #     print("ERROR: check why this is called!!!")
+    #     rotated_image = np.fliplr(rotated_image)
+    #     rotated_coords[:, 0] = rotated_image.shape[1] - rotated_coords[:, 0]
+
+    return rotated_image, rotated_coords
