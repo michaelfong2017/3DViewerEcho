@@ -56,7 +56,7 @@ class Ui_Form(object):
         self.pushButton.setSizePolicy(sizePolicy2)
         self.pushButton.setMaximumSize(QSize(23, 16777215))
         self.pushButton.setStyleSheet(u"image: url(:/images/Counterclockwise_rotating_circular_arrow_symbol.png);\n"
-"background-color: rgb(255, 255, 255, 0);")
+"background-color: rgba(255, 255, 255, 0);")
 
         self.horizontalLayout.addWidget(self.pushButton)
 
@@ -66,7 +66,7 @@ class Ui_Form(object):
         self.pushButton_2.setSizePolicy(sizePolicy2)
         self.pushButton_2.setMaximumSize(QSize(23, 16777215))
         self.pushButton_2.setStyleSheet(u"image: url(:/images/Clockwise_rotating_circular_arrow_symbol.png);\n"
-"background-color: rgb(255, 255, 255, 0);")
+"background-color: rgba(255, 255, 255, 0);")
 
         self.horizontalLayout.addWidget(self.pushButton_2)
 

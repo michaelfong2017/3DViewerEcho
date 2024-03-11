@@ -658,7 +658,7 @@ def FindVisualFromCoords(coords, volume, view, truth=False, all_landmarks=None):
         displacement_pts_in_2d = np.array(displacement_pts_in_2d)
         # print('displacement_pts_in_2d: ', displacement_pts_in_2d)
         # print("result: ", cross_sectional_slice.shape, cross_sectional_slice.min(), cross_sectional_slice.max())
-        return cross_sectional_slice, displacement_pts_in_2d, coords_indexes, up_in_2d
+        return cross_sectional_slice, displacement_pts_in_2d, coords_indexes, up_in_2d, normal
 
     up_axis = np.array([0,0,1])
     origin_pt = np.array([0,0,0])
@@ -779,7 +779,7 @@ def FindVisualFromCoords(coords, volume, view, truth=False, all_landmarks=None):
     up_in_2d = up_in_2d_2 - up_in_2d_1
     logging.info(f'up_in_2d: {up_in_2d}')
 
-    return result, displacement_pts_in_2d, coords_indexes, up_in_2d
+    return result, displacement_pts_in_2d, coords_indexes, up_in_2d, normal
 
 # Fix rotations of view after FindVisualFromCoords(). must be used together
 def HandleRotationsNumpy(numpy_img, coords, coords_indexes, up_vector_of_2d_in_3d_space, view):

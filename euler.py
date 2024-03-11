@@ -72,7 +72,8 @@ From World to OpenGL, need to rotate about the OpenGL x-axis by negative 90 degr
 
 def eulerFromNormal(nx, ny, nz, view=""):
     euler_angles = euler_rotation_z_to_vector(glm.vec3(nx, ny, nz))
-    print(f"{view} (world rotation): {np.round(euler_angles, 2)}")
+    # print(f"{view} (world rotation): {np.round(euler_angles, 2)}")
+    return euler_angles[0], euler_angles[1], euler_angles[2]
 
 
 if __name__ == "__main__":

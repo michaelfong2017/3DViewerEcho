@@ -125,7 +125,7 @@ class Ui_MainWindow(object):
         self.pushButton_21.setSizePolicy(sizePolicy)
         self.pushButton_21.setMaximumSize(QSize(28, 16777215))
         self.pushButton_21.setStyleSheet(u"image: url(:/images/icons8-play-button-48.png);\n"
-"background-color: rgb(255, 255, 255, 0);")
+"background-color: rgba(255, 255, 255, 0);")
 
         self.horizontalLayout_5.addWidget(self.pushButton_21)
 
@@ -259,7 +259,7 @@ class Ui_MainWindow(object):
         self.pushButton_2.setSizePolicy(sizePolicy)
         self.pushButton_2.setMaximumSize(QSize(23, 16777215))
         self.pushButton_2.setStyleSheet(u"image: url(:/images/Counterclockwise_rotating_circular_arrow_symbol.png);\n"
-"background-color: rgb(255, 255, 255, 0);")
+"background-color: rgba(255, 255, 255, 0);")
 
         self.horizontalLayout_2.addWidget(self.pushButton_2)
 
@@ -269,7 +269,7 @@ class Ui_MainWindow(object):
         self.pushButton_10.setSizePolicy(sizePolicy)
         self.pushButton_10.setMaximumSize(QSize(23, 16777215))
         self.pushButton_10.setStyleSheet(u"image: url(:/images/Clockwise_rotating_circular_arrow_symbol.png);\n"
-"background-color: rgb(255, 255, 255, 0);")
+"background-color: rgba(255, 255, 255, 0);")
 
         self.horizontalLayout_2.addWidget(self.pushButton_10)
 

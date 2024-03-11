@@ -180,7 +180,7 @@
             </property>
             <property name="styleSheet">
              <string notr="true">image: url(:/images/icons8-play-button-48.png);
-background-color: rgb(255, 255, 255, 0);</string>
+background-color: rgba(255, 255, 255, 0);</string>
             </property>
             <property name="text">
              <string/>
@@ -465,7 +465,7 @@ background-color: rgb(255, 255, 255, 0);</string>
                    </property>
                    <property name="styleSheet">
                     <string notr="true">image: url(:/images/Counterclockwise_rotating_circular_arrow_symbol.png);
-background-color: rgb(255, 255, 255, 0);</string>
+background-color: rgba(255, 255, 255, 0);</string>
                    </property>
                    <property name="text">
                     <string/>
@@ -488,7 +488,7 @@ background-color: rgb(255, 255, 255, 0);</string>
                    </property>
                    <property name="styleSheet">
                     <string notr="true">image: url(:/images/Clockwise_rotating_circular_arrow_symbol.png);
-background-color: rgb(255, 255, 255, 0);</string>
+background-color: rgba(255, 255, 255, 0);</string>
                    </property>
                    <property name="text">
                     <string/>

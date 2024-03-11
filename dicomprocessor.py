@@ -17,6 +17,7 @@ from PIL import Image
 import io
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from datamanager import DataManager
+from euler import eulerFromNormal 
 
 
 def process_frame(frame, frame_index):
@@ -62,9 +63,14 @@ def process_frame(frame, frame_index):
             # extract the content of the plane and project onto 2d image. Also do the same for the coordinates for visualization.
             # pred_vs, pred_mapped_coords, pred_up = FindVisualFromCoords(pred_coords_raw, data_3d_padded)
             # Note: You can modify time_index value to get plane visual from other time slices
-            pred_vs, pred_mapped_coords, pred_mapped_coords_index, pred_up = PlaneReconstructionUtils.FindVisualFromCoords(
+            pred_vs, pred_mapped_coords, pred_mapped_coords_index, pred_up, normal = PlaneReconstructionUtils.FindVisualFromCoords(
                 pred_coords_raw, frame, view
             )
+
+            nx, ny, nz = normal[0], normal[1], normal[2]
+            rx, ry, rz = eulerFromNormal(nx, ny, nz)
+            print(f"view: {view}; (rx, ry, rz): ({rx}, {ry}, {rz})")
+
             # Rotate Image
             pred_image, pred_rotated_coords = PlaneReconstructionUtils.HandleRotationsNumpy(pred_vs, pred_mapped_coords, pred_mapped_coords_index, pred_up, view)
    
@@ -89,7 +95,7 @@ def process_frame(frame, frame_index):
             et = time.perf_counter()
             print("Execution time: ", et - st)  # 7.5s on jerry's computer
 
-            all_results.update({view: (pred_image, pred_rotated_coords, annotated_qimage)})
+            all_results.update({view: (pred_image, pred_rotated_coords, annotated_qimage, rx, ry, rz)})
 
         except Exception as e:
             print(e)
@@ -112,8 +118,12 @@ def process_frame_with_known_landmarks(frame, frame_index, view_to_array_2d):
             # extract the content of the plane and project onto 2d image. Also do the same for the coordinates for visualization.
             # pred_vs, pred_mapped_coords, pred_up = FindVisualFromCoords(pred_coords_raw, data_3d_padded)
             # Note: You can modify time_index value to get plane visual from other time slices
-            pred_vs, pred_mapped_coords, pred_mapped_coords_index, pred_up = PlaneReconstructionUtils.FindVisualFromCoords(
+            pred_vs, pred_mapped_coords, pred_mapped_coords_index, pred_up, normal = PlaneReconstructionUtils.FindVisualFromCoords(
                 pred_coords_raw, frame, view)
+
+            nx, ny, nz = normal[0], normal[1], normal[2]
+            rx, ry, rz = eulerFromNormal(nx, ny, nz)
+            print(f"view: {view}; (rx, ry, rz): ({rx}, {ry}, {rz})")
 
             # Rotate Image
             pred_image, pred_rotated_coords = PlaneReconstructionUtils.HandleRotationsNumpy(pred_vs, pred_mapped_coords, pred_mapped_coords_index, pred_up, view)
@@ -139,7 +149,7 @@ def process_frame_with_known_landmarks(frame, frame_index, view_to_array_2d):
             et = time.perf_counter()
             print("Execution time: ", et - st)  # 7.5s on jerry's computer
 
-            all_results.update({view: (pred_image, pred_rotated_coords, annotated_qimage)})
+            all_results.update({view: (pred_image, pred_rotated_coords, annotated_qimage, rx, ry, rz)})
 
         except Exception as e:
             print(e)

@@ -161,7 +161,9 @@ QMenu::item:selected {
                 else:
                     try:
                         # pred_image, pred_rotated_coords, annotated_qimage = pred_result
-                        _, _, annotated_qimage = pred_result
+                        _, _, annotated_qimage, rx, ry, rz = pred_result
+
+                        print(f"view: {view}; (rx, ry, rz): ({rx}, {ry}, {rz})")
                         
                         DataManager().update_result_width(view, annotated_qimage.width())
 
