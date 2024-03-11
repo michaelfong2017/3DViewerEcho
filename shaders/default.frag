@@ -49,7 +49,7 @@ void main() {
 
     color = pow(color, 1 / vec3(gamma));
     float alpha = color4.a;
-    // if (alpha < 0.1)
-    //     discard;
+    if (alpha < 0.1)
+        discard;
     fragColor = vec4(color, alpha);
 }

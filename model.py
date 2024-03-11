@@ -4,11 +4,12 @@ import moderngl as mgl
 
 
 class BaseModel:
-    def __init__(self, app, vao_name, tex_id, pos=(0, 0, 0), rot=(0, 0, 0), scale=(1, 1, 1)):
+    def __init__(self, app, vao_name, tex_id, pos=(0, 0, 0), rot=(0, 0, 0), scale=(1, 1, 1), brightness=1.0):
         self.app = app
         self.pos = pos
         self.rot = glm.vec3([glm.radians(a) for a in rot])
         self.scale = scale
+        self.brightness = brightness
         self.m_model = self.get_model_matrix()
         self.tex_id = tex_id
         self.vao = app.mesh.vao.vaos[vao_name]
@@ -64,8 +65,8 @@ class Cube(BaseModel):
 
 
 class Quad(BaseModel):
-    def __init__(self, app, vao_name='quad', tex_id=0, pos=(0, 0, 0), rot=(0, 0, 0), scale=(1, 1, 1)):
-        super().__init__(app, vao_name, tex_id, pos, rot, scale)
+    def __init__(self, app, vao_name='quad', tex_id=0, pos=(0, 0, 0), rot=(0, 0, 0), scale=(1, 1, 1), brightness=1.0):
+        super().__init__(app, vao_name, tex_id, pos, rot, scale, brightness)
         self.on_init()
 
     def update(self):
@@ -73,6 +74,7 @@ class Quad(BaseModel):
         self.program["camPos"].write(self.camera.position)
         self.program["m_view"].write(self.camera.m_view)
         self.program["m_model"].write(self.m_model)
+        self.program["light.Ia"].write(self.app.light.Ia * self.brightness)
 
     def on_init(self):
         # texture
@@ -85,7 +87,7 @@ class Quad(BaseModel):
         self.program["m_model"].write(self.m_model)
         # light
         self.program["light.position"].write(self.app.light.position)
-        self.program["light.Ia"].write(self.app.light.Ia)
+        self.program["light.Ia"].write(self.app.light.Ia * self.brightness)
         self.program["light.Id"].write(self.app.light.Id)
         self.program["light.Is"].write(self.app.light.Is)
 

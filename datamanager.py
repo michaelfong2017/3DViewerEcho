@@ -20,6 +20,8 @@ class DataManager:
         self._dicom_fps: float = -1.0
         self._dicom_total_duration_in_s: float = -1.0
 
+        self._data_3d_padded_max_length: int = -1   # e.g. data_4d_padded.shape is (42, 213, 213, 213)
+
     @property
     def dicom_number_of_frames(self):
         return self._dicom_number_of_frames
@@ -48,6 +50,13 @@ class DataManager:
     def dicom_total_duration_in_s(self, value):
         self._dicom_total_duration_in_s = value
         
+    @property
+    def data_3d_padded_max_length(self):
+        return self._data_3d_padded_max_length
+    @data_3d_padded_max_length.setter
+    def data_3d_padded_max_length(self, value):
+        self._data_3d_padded_max_length = value
+
     def get_pred_result(self, frame_index: int):
         return self.frame_index_to_pred_result.get(frame_index)
 

@@ -241,6 +241,8 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
     print(data_4d_padded)
     print(data_4d_padded.shape)
 
+    DataManager().data_3d_padded_max_length = 213
+
     NUM_FRAMES = data_4d_padded.shape[0]
     print(f"NUM_FRAMES: {NUM_FRAMES}")
 
