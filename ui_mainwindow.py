@@ -85,6 +85,30 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_14.addWidget(self.openGLWidget)
 
+        self.label_18 = QLabel(self.centralwidget)
+        self.label_18.setObjectName(u"label_18")
+        self.label_18.setStyleSheet(u"font: 15px \"MS Shell Dlg 2\";")
+
+        self.verticalLayout_14.addWidget(self.label_18)
+
+        self.label_19 = QLabel(self.centralwidget)
+        self.label_19.setObjectName(u"label_19")
+        self.label_19.setStyleSheet(u"font: 15px \"MS Shell Dlg 2\";")
+
+        self.verticalLayout_14.addWidget(self.label_19)
+
+        self.label_20 = QLabel(self.centralwidget)
+        self.label_20.setObjectName(u"label_20")
+        self.label_20.setStyleSheet(u"font: 15px \"MS Shell Dlg 2\";")
+
+        self.verticalLayout_14.addWidget(self.label_20)
+
+        self.label_21 = QLabel(self.centralwidget)
+        self.label_21.setObjectName(u"label_21")
+        self.label_21.setStyleSheet(u"font: 15px \"MS Shell Dlg 2\";")
+
+        self.verticalLayout_14.addWidget(self.label_21)
+
         self.verticalSpacer_3 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         self.verticalLayout_14.addItem(self.verticalSpacer_3)
@@ -578,11 +602,15 @@ class Ui_MainWindow(object):
         self.label_15.setText(QCoreApplication.translate("MainWindow", u"Video - Average Frame Time: ", None))
         self.label_9.setText(QCoreApplication.translate("MainWindow", u"Video - FPS: ", None))
         self.label_14.setText(QCoreApplication.translate("MainWindow", u"Video - Total Duration: ", None))
+        self.label_18.setText(QCoreApplication.translate("MainWindow", u"Press W to zoom in, S to zoom out", None))
+        self.label_19.setText(QCoreApplication.translate("MainWindow", u"Press Q to move camera upward, E to move camera downward", None))
+        self.label_20.setText(QCoreApplication.translate("MainWindow", u"Press A to move camera leftward, D to move camera rightward", None))
+        self.label_21.setText(QCoreApplication.translate("MainWindow", u"Left click and drag the mouse for arcball rotation", None))
         self.label_10.setText(QCoreApplication.translate("MainWindow", u"Selected time frame index: 0", None))
         self.pushButton_21.setText("")
         self.label_12.setText(QCoreApplication.translate("MainWindow", u"0", None))
         self.label_13.setText(QCoreApplication.translate("MainWindow", u"99", None))
-        self.label_11.setText(QCoreApplication.translate("MainWindow", u"Select below to load cross section:", None))
+        self.label_11.setText(QCoreApplication.translate("MainWindow", u"Click view name to highlight cross section:", None))
         self.pushButton_13.setText(QCoreApplication.translate("MainWindow", u"A2C", None))
         self.pushButton_2.setText("")
         self.pushButton_10.setText("")

@@ -7,6 +7,7 @@ import threading
 from dicomprocessor import process_dicom
 from datamanager import DataManager
 from clickableqlabel import ClickableQLabel
+from model import Quad
 
 
 class MainWindow(QMainWindow):
@@ -149,6 +150,10 @@ QMenu::item:selected {
         self.clearAllCrossSections()
 
         if not all_results == None:
+            ## Update OpenGL cross sections
+            self.ui.openGLWidget.scene.objects.clear()
+            ####
+
             i = 0
             for view, pred_result in all_results.items():
                 if pred_result == None:
@@ -161,9 +166,21 @@ QMenu::item:selected {
                 else:
                     try:
                         # pred_image, pred_rotated_coords, annotated_qimage = pred_result
-                        _, _, annotated_qimage, rx, ry, rz = pred_result
+                        _, _, annotated_qimage, rx, ry, rz, cx, cy, cz = pred_result
 
                         print(f"view: {view}; (rx, ry, rz): ({rx}, {ry}, {rz})")
+                        print(f"view: {view}; (cx, cy, cz): ({cx}, {cy}, {cz})")
+
+                        gl_cx = cx * 2.0 - 1.0
+                        gl_cy = cz * 2.0 - 1.0
+                        gl_cz = -1 * (cy * 2.0 - 1.0)
+
+                        print(f"view: {view}; (gl_cx, gl_cy, gl_cz): ({gl_cx}, {gl_cy}, {gl_cz})")
+
+                        ## Update OpenGL cross sections
+                        crossSection3D = Quad(self.ui.openGLWidget, tex_id="test-A2C-transparent", pos=(gl_cx, gl_cy, gl_cz), rot=(rx - 90, ry, rz), brightness=1.0)
+                        self.ui.openGLWidget.scene.objects.append(crossSection3D)
+                        ####
                         
                         DataManager().update_result_width(view, annotated_qimage.width())
 

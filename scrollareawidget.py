@@ -28,7 +28,7 @@ class ScrollAreaWidget(QWidget):
             ## TODO error handling
             for v, pred_result in all_results.items():
                 if v == view:
-                    _, _, annotated_qimage, _, _, _ = pred_result
+                    _, _, annotated_qimage, rx, ry, rz, cx, cy, cz = pred_result
 
             pixmap = QtGui.QPixmap.fromImage(annotated_qimage)
             ## error handling

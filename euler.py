@@ -15,14 +15,14 @@ def find_center_point(points, view=""):
     # Calculate the average position of the points
     center_point = np.mean(points, axis=0)
 
-    print(f"{view} (world coordinates): {np.round(center_point, 2)}")
+    # print(f"{view} (world coordinates): {np.round(center_point, 2)}")
 
     gl_point = np.zeros(3)
     gl_point[0] = center_point[0] / 213.0 * 2.0 - 1.0
     gl_point[1] = center_point[2] / 213.0 * 2.0 - 1.0
     gl_point[2] = -1 * (center_point[1] / 213.0 * 2.0 - 1.0)
 
-    print(f"{view} (OpenGL coordinates): {np.round(gl_point, 2)}")
+    # print(f"{view} (OpenGL coordinates): {np.round(gl_point, 2)}")
 
     return center_point
 

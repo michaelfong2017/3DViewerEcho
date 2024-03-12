@@ -17,7 +17,7 @@ from PIL import Image
 import io
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from datamanager import DataManager
-from euler import eulerFromNormal 
+from euler import eulerFromNormal, find_center_point
 
 
 def process_frame(frame, frame_index):
@@ -71,6 +71,17 @@ def process_frame(frame, frame_index):
             rx, ry, rz = eulerFromNormal(nx, ny, nz)
             print(f"view: {view}; (rx, ry, rz): ({rx}, {ry}, {rz})")
 
+            points = [pred_coords_raw[i] for i in pred_mapped_coords_index]
+            center_point = find_center_point(points)
+
+            normalized_point = np.zeros(3)
+            normalized_point[0] = center_point[0] / 213.0
+            normalized_point[1] = center_point[1] / 213.0
+            normalized_point[2] = center_point[2] / 213.0
+
+            cx, cy, cz = normalized_point
+            print(f"view: {view}; (cx, cy, cz): ({cx}, {cy}, {cz})")
+
             # Rotate Image
             pred_image, pred_rotated_coords = PlaneReconstructionUtils.HandleRotationsNumpy(pred_vs, pred_mapped_coords, pred_mapped_coords_index, pred_up, view)
    
@@ -95,7 +106,7 @@ def process_frame(frame, frame_index):
             et = time.perf_counter()
             print("Execution time: ", et - st)  # 7.5s on jerry's computer
 
-            all_results.update({view: (pred_image, pred_rotated_coords, annotated_qimage, rx, ry, rz)})
+            all_results.update({view: (pred_image, pred_rotated_coords, annotated_qimage, rx, ry, rz, cx, cy, cz)})
 
         except Exception as e:
             print(e)
@@ -125,6 +136,17 @@ def process_frame_with_known_landmarks(frame, frame_index, view_to_array_2d):
             rx, ry, rz = eulerFromNormal(nx, ny, nz)
             print(f"view: {view}; (rx, ry, rz): ({rx}, {ry}, {rz})")
 
+            points = [pred_coords_raw[i] for i in pred_mapped_coords_index]
+            center_point = find_center_point(points)
+
+            normalized_point = np.zeros(3)
+            normalized_point[0] = center_point[0] / 213.0
+            normalized_point[1] = center_point[1] / 213.0
+            normalized_point[2] = center_point[2] / 213.0
+
+            cx, cy, cz = normalized_point
+            print(f"view: {view}; (cx, cy, cz): ({cx}, {cy}, {cz})")
+
             # Rotate Image
             pred_image, pred_rotated_coords = PlaneReconstructionUtils.HandleRotationsNumpy(pred_vs, pred_mapped_coords, pred_mapped_coords_index, pred_up, view)
    
@@ -149,7 +171,7 @@ def process_frame_with_known_landmarks(frame, frame_index, view_to_array_2d):
             et = time.perf_counter()
             print("Execution time: ", et - st)  # 7.5s on jerry's computer
 
-            all_results.update({view: (pred_image, pred_rotated_coords, annotated_qimage, rx, ry, rz)})
+            all_results.update({view: (pred_image, pred_rotated_coords, annotated_qimage, rx, ry, rz, cx, cy, cz)})
 
         except Exception as e:
             print(e)
