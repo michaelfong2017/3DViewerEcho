@@ -22,6 +22,8 @@ class DataManager:
 
         self._data_3d_padded_max_length: int = -1   # e.g. data_4d_padded.shape is (42, 213, 213, 213)
 
+        self._highlighted_view: str = ""
+
     @property
     def dicom_number_of_frames(self):
         return self._dicom_number_of_frames
@@ -56,6 +58,13 @@ class DataManager:
     @data_3d_padded_max_length.setter
     def data_3d_padded_max_length(self, value):
         self._data_3d_padded_max_length = value
+
+    @property
+    def highlighted_view(self):
+        return self._highlighted_view
+    @highlighted_view.setter
+    def highlighted_view(self, value):
+        self._highlighted_view = value
 
     def get_pred_result(self, frame_index: int):
         return self.frame_index_to_pred_result.get(frame_index)

@@ -154,7 +154,6 @@ QMenu::item:selected {
             self.ui.openGLWidget.scene.objects.clear()
             ####
 
-            i = 0
             for view, pred_result in all_results.items():
                 if pred_result == None:
                     print(f"At frame index {frame_index}, the pred_result for view {view} is None!")
@@ -177,8 +176,16 @@ QMenu::item:selected {
 
                         print(f"view: {view}; (gl_cx, gl_cy, gl_cz): ({gl_cx}, {gl_cy}, {gl_cz})")
 
+                        brightness = 1.0
+                        highlighted_view = DataManager().highlighted_view
+                        if highlighted_view == view:
+                            print(f"Highlighted view: {view}")
+                            brightness = 5.0
+                        else:
+                            print("Highlighted view does not match with the current")
+
                         ## Update OpenGL cross sections
-                        crossSection3D = Quad(self.ui.openGLWidget, tex_id="test-A2C-transparent", pos=(gl_cx, gl_cy, gl_cz), rot=(rx - 90, ry, rz), brightness=1.0)
+                        crossSection3D = Quad(self.ui.openGLWidget, tex_id="test-A2C-transparent", pos=(gl_cx, gl_cy, gl_cz), rot=(rx - 90, ry, rz), brightness=brightness)
                         self.ui.openGLWidget.scene.objects.append(crossSection3D)
                         ####
                         
@@ -187,8 +194,6 @@ QMenu::item:selected {
                         self.addCrossSection(annotated_qimage, view, frame_index)
                     except Exception as e:
                         print(e)
-
-                i = i + 1
 
     def import_dicom_and_analyze_all(self):
         file = QFileDialog.getOpenFileName(
@@ -250,6 +255,47 @@ QMenu::item:selected {
         )
         t1.start()
     
+    def setHighlight(self, view, frame_index):
+        DataManager().highlighted_view = view
+        all_results = DataManager().get_pred_result(frame_index)
+        if not all_results == None:
+            ## Update OpenGL cross sections
+            self.ui.openGLWidget.scene.objects.clear()
+            ####
+
+            for view, pred_result in all_results.items():
+                if pred_result == None:
+                    print(f"At frame index {frame_index}, the pred_result for view {view} is None!")
+                else:
+                    try:
+                        # pred_image, pred_rotated_coords, annotated_qimage = pred_result
+                        _, _, annotated_qimage, rx, ry, rz, cx, cy, cz = pred_result
+
+                        print(f"view: {view}; (rx, ry, rz): ({rx}, {ry}, {rz})")
+                        print(f"view: {view}; (cx, cy, cz): ({cx}, {cy}, {cz})")
+
+                        gl_cx = cx * 2.0 - 1.0
+                        gl_cy = cz * 2.0 - 1.0
+                        gl_cz = -1 * (cy * 2.0 - 1.0)
+
+                        print(f"view: {view}; (gl_cx, gl_cy, gl_cz): ({gl_cx}, {gl_cy}, {gl_cz})")
+
+                        brightness = 1.0
+                        highlighted_view = DataManager().highlighted_view
+                        if highlighted_view == view:
+                            print(f"Highlighted view: {view}")
+                            brightness = 5.0
+                        else:
+                            print("Highlighted view does not match with the current")
+
+                        ## Update OpenGL cross sections
+                        crossSection3D = Quad(self.ui.openGLWidget, tex_id="test-A2C-transparent", pos=(gl_cx, gl_cy, gl_cz), rot=(rx - 90, ry, rz), brightness=brightness)
+                        self.ui.openGLWidget.scene.objects.append(crossSection3D)
+                        ####
+                        
+                    except Exception as e:
+                        print(e)
+
     def export(self, annotated_qimage, view, frame_index):
         dialog = QFileDialog()
         dialog.setDefaultSuffix(".png")
@@ -321,6 +367,7 @@ QMenu::item:selected {
 
         view_button = cross_section.findChild(QPushButton, "pushButton_13")
         view_button.setText(view)
+        view_button.clicked.connect(lambda: self.setHighlight(view, frame_index))
 
         export_button = cross_section.findChild(QPushButton, "pushButton_9")
         export_button.clicked.connect(lambda: self.export(annotated_qimage, view, frame_index))
