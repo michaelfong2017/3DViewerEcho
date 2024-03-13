@@ -27,26 +27,35 @@ def process_frame(frame, frame_index):
 
     url = "http://localhost:8000/process_frame"
     headers = {"Content-Type": "application/octet-stream"}
-    response = requests.post(url, data=compressed_data, headers=headers)
 
-    if response.status_code == 200:
-        compressed_data = response.content
+    try:
+        response = requests.post(url, data=compressed_data, headers=headers)
 
-        # Decompress the received data
-        pickled_data = blosc.decompress(compressed_data)
+        if response.status_code == 200:
+            compressed_data = response.content
 
-        # Deserialize the pickled data to a NumPy array
-        view_to_array_2d: dict = pickle.loads(pickled_data)
-    else:
-        print("Error:", response.text)
-        loader = QtUiTools.QUiLoader()
-        ui_file = QtCore.QFile(resource_path("errordialog.ui"))
-        ui_file.open(QtCore.QFile.ReadOnly)
-        dialog = loader.load(ui_file)
-        dialog.label.setText("process_frame response is not 200")
-        dialog.label_2.setText("")
-        dialog.exec_()
-        return
+            # Decompress the received data
+            pickled_data = blosc.decompress(compressed_data)
+
+            # Deserialize the pickled data to a NumPy array
+            view_to_array_2d: dict = pickle.loads(pickled_data)
+
+            with open(resource_path(f"pickle/{frame_index}.pickle"), "wb") as file:
+                pickle.dump(view_to_array_2d, file)
+        else:
+            print("Error:", response.text)
+            loader = QtUiTools.QUiLoader()
+            ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+            ui_file.open(QtCore.QFile.ReadOnly)
+            dialog = loader.load(ui_file)
+            dialog.label.setText("process_frame response is not 200")
+            dialog.label_2.setText("")
+            dialog.exec_()
+            return
+    except:
+        print("Loading pickle data...")
+        with open(resource_path(f"pickle/{frame_index}.pickle"), "rb") as file:
+            view_to_array_2d = pickle.load(file)
 
     all_results = {}
     i = 0
@@ -239,35 +248,42 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
     headers = {"Content-Type": "application/octet-stream"}
     try:
         response = requests.post(url, data=serialized_data, headers=headers)
-    except requests.exceptions.ConnectionError as e:
-        print(e)
-        loader = QtUiTools.QUiLoader()
-        ui_file = QtCore.QFile(resource_path("errordialog.ui"))
-        ui_file.open(QtCore.QFile.ReadOnly)
-        dialog = loader.load(ui_file)
-        dialog.label.setText("Server connection error!")
-        dialog.label_2.setText("Check server status & server url!")
-        dialog.exec_()
-        return
-    
-    if response.status_code == 200:
-        compressed_data = response.content
 
-        # Decompress the received data
-        pickled_data = blosc.decompress(compressed_data)
+        if response.status_code == 200:
+            compressed_data = response.content
 
-        # Deserialize the pickled data to a NumPy array
-        array_4d = pickle.loads(pickled_data)
-    else:
-        print("Error:", response.text)
-        loader = QtUiTools.QUiLoader()
-        ui_file = QtCore.QFile(resource_path("errordialog.ui"))
-        ui_file.open(QtCore.QFile.ReadOnly)
-        dialog = loader.load(ui_file)
-        dialog.label.setText("normalize_dicom_array response is not 200")
-        dialog.label_2.setText("")
-        dialog.exec_()
-        return
+            # Decompress the received data
+            pickled_data = blosc.decompress(compressed_data)
+
+            # Deserialize the pickled data to a NumPy array
+            array_4d = pickle.loads(pickled_data)
+
+            with open(resource_path(f"pickle/array_4d.pickle"), "wb") as file:
+                pickle.dump(array_4d, file)
+        else:
+            print("Error:", response.text)
+            loader = QtUiTools.QUiLoader()
+            ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+            ui_file.open(QtCore.QFile.ReadOnly)
+            dialog = loader.load(ui_file)
+            dialog.label.setText("normalize_dicom_array response is not 200")
+            dialog.label_2.setText("")
+            dialog.exec_()
+            return
+    except:
+        print("Loading pickle data...")
+        with open(resource_path("pickle/array_4d.pickle"), "rb") as file:
+            array_4d = pickle.load(file)
+    # except requests.exceptions.ConnectionError as e:
+    #     print(e)
+    #     loader = QtUiTools.QUiLoader()
+    #     ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+    #     ui_file.open(QtCore.QFile.ReadOnly)
+    #     dialog = loader.load(ui_file)
+    #     dialog.label.setText("Server connection error!")
+    #     dialog.label_2.setText("Check server status & server url!")
+    #     dialog.exec_()
+    #     return
 
     data_4d_padded = array_4d
 
