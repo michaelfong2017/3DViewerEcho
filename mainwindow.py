@@ -7,7 +7,7 @@ import threading
 from dicomprocessor import process_dicom
 from datamanager import DataManager
 from clickableqlabel import ClickableQLabel
-from model import Quad
+from model import Quad, Line
 
 
 class MainWindow(QMainWindow):
@@ -151,7 +151,24 @@ QMenu::item:selected {
 
         if not all_results == None:
             ## Update OpenGL cross sections
-            self.ui.openGLWidget.scene.objects.clear()
+            app = self.ui.openGLWidget
+            app.scene.objects.clear()
+            add = app.scene.add_object
+            add(Line(app, pos=(1, 0, 0), color=(1, 0, 0, 1))) # x-axis
+            add(Line(app, pos=(0, 1, 0), rot=(0, 0, 90), color=(0, 1, 0, 1))) # y-axis
+            add(Line(app, pos=(0, 0, 1), rot=(0, 90, 0), color=(0, 0, 1, 1))) # z-axis
+            add(Line(app, pos=(0, -1, -1)))
+            add(Line(app, pos=(0, -1, 1)))
+            add(Line(app, pos=(0, 1, -1)))
+            add(Line(app, pos=(0, 1, 1)))
+            add(Line(app, pos=(-1, -1, 0), rot=(0, 90, 0)))
+            add(Line(app, pos=(-1, 1, 0), rot=(0, 90, 0)))
+            add(Line(app, pos=(1, -1, 0), rot=(0, 90, 0)))
+            add(Line(app, pos=(1, 1, 0), rot=(0, 90, 0)))
+            add(Line(app, pos=(-1, 0, -1), rot=(0, 0, 90)))
+            add(Line(app, pos=(-1, 0, 1), rot=(0, 0, 90)))
+            add(Line(app, pos=(1, 0, -1), rot=(0, 0, 90)))
+            add(Line(app, pos=(1, 0, 1), rot=(0, 0, 90)))
             ####
 
             for view, pred_result in all_results.items():
@@ -180,13 +197,13 @@ QMenu::item:selected {
                         highlighted_view = DataManager().highlighted_view
                         if highlighted_view == view:
                             print(f"Highlighted view: {view}")
-                            brightness = 5.0
+                            brightness = 15.0
                         else:
                             print("Highlighted view does not match with the current")
 
                         ## Update OpenGL cross sections
-                        crossSection3D = Quad(self.ui.openGLWidget, tex_id="test-A2C-transparent", pos=(gl_cx, gl_cy, gl_cz), rot=(rx - 90, ry, rz), brightness=brightness)
-                        self.ui.openGLWidget.scene.objects.append(crossSection3D)
+                        crossSection3D = Quad(app, tex_id="skybox", pos=(gl_cx, gl_cy, gl_cz), rot=(rx - 90, ry, rz), brightness=brightness)
+                        add(crossSection3D)
                         ####
                         
                         DataManager().update_result_width(view, annotated_qimage.width())
@@ -256,11 +273,31 @@ QMenu::item:selected {
         t1.start()
     
     def setHighlight(self, view, frame_index):
-        DataManager().highlighted_view = view
+        if DataManager().highlighted_view == view:
+            DataManager().highlighted_view = ""
+        else:
+            DataManager().highlighted_view = view
         all_results = DataManager().get_pred_result(frame_index)
         if not all_results == None:
             ## Update OpenGL cross sections
-            self.ui.openGLWidget.scene.objects.clear()
+            app = self.ui.openGLWidget
+            app.scene.objects.clear()
+            add = app.scene.add_object
+            add(Line(app, pos=(1, 0, 0), color=(1, 0, 0, 1))) # x-axis
+            add(Line(app, pos=(0, 1, 0), rot=(0, 0, 90), color=(0, 1, 0, 1))) # y-axis
+            add(Line(app, pos=(0, 0, 1), rot=(0, 90, 0), color=(0, 0, 1, 1))) # z-axis
+            add(Line(app, pos=(0, -1, -1)))
+            add(Line(app, pos=(0, -1, 1)))
+            add(Line(app, pos=(0, 1, -1)))
+            add(Line(app, pos=(0, 1, 1)))
+            add(Line(app, pos=(-1, -1, 0), rot=(0, 90, 0)))
+            add(Line(app, pos=(-1, 1, 0), rot=(0, 90, 0)))
+            add(Line(app, pos=(1, -1, 0), rot=(0, 90, 0)))
+            add(Line(app, pos=(1, 1, 0), rot=(0, 90, 0)))
+            add(Line(app, pos=(-1, 0, -1), rot=(0, 0, 90)))
+            add(Line(app, pos=(-1, 0, 1), rot=(0, 0, 90)))
+            add(Line(app, pos=(1, 0, -1), rot=(0, 0, 90)))
+            add(Line(app, pos=(1, 0, 1), rot=(0, 0, 90)))
             ####
 
             for view, pred_result in all_results.items():
@@ -284,13 +321,13 @@ QMenu::item:selected {
                         highlighted_view = DataManager().highlighted_view
                         if highlighted_view == view:
                             print(f"Highlighted view: {view}")
-                            brightness = 5.0
+                            brightness = 15.0
                         else:
                             print("Highlighted view does not match with the current")
 
                         ## Update OpenGL cross sections
-                        crossSection3D = Quad(self.ui.openGLWidget, tex_id="test-A2C-transparent", pos=(gl_cx, gl_cy, gl_cz), rot=(rx - 90, ry, rz), brightness=brightness)
-                        self.ui.openGLWidget.scene.objects.append(crossSection3D)
+                        crossSection3D = Quad(app, tex_id="skybox", pos=(gl_cx, gl_cy, gl_cz), rot=(rx - 90, ry, rz), brightness=brightness)
+                        add(crossSection3D)
                         ####
                         
                     except Exception as e:

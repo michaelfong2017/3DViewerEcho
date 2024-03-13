@@ -93,19 +93,22 @@ class Quad(BaseModel):
 
 
 class Line(BaseModel):
-    def __init__(self, app, vao_name='line', tex_id=0, pos=(0, 0, 0), rot=(0, 0, 0), scale=(1, 1, 1)):
+    def __init__(self, app, vao_name='line', tex_id=0, pos=(0, 0, 0), rot=(0, 0, 0), scale=(1, 1, 1), color=(0.57, 0.0, 0.63, 1.0)):
         super().__init__(app, vao_name, tex_id, pos, rot, scale)
+        self.color = glm.vec4(color)
         self.on_init()
 
     def update(self):
         self.program["m_view"].write(self.camera.m_view)
         self.program["m_model"].write(self.m_model)
+        self.program["color"].write(self.color)
 
     def on_init(self):
         # mvp
         self.program["m_proj"].write(self.camera.m_proj)
         self.program["m_view"].write(self.camera.m_view)
         self.program["m_model"].write(self.m_model)
+        self.program["color"].write(self.color)
 
     def render(self):
         self.update()

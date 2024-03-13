@@ -19,9 +19,12 @@ class Scene:
         # add(Cube(app, tex_id=1, pos=(-2.5, 0, 0), rot=(45, 0, 0), scale=(1, 2, 1)))
         # add(Cube(app, tex_id=2, pos=(2.5, 0, 0), rot=(0, 0, 45), scale=(1, 1, 2)))
 
-        add(Quad(app, tex_id="test-A2C-transparent", pos=(0.08, -0.03, 0.02), rot=(-94.75 - 90, -46.99, 50.57), brightness=1.0))
-        add(Quad(app, tex_id="test-A4C-transparent", pos=(-0.05, 0.01, 0.01), rot=(87.42 - 90, -2.68, -2.56), brightness=1.0))
-        add(Quad(app, tex_id="test-ALAX-transparent", pos=(-0.01, -0.24, -0.05), rot=(-85.07 - 90, 45.1, -41.71), brightness=1.0))
+        add(Line(app, pos=(1, 0, 0), color=(1, 0, 0, 1))) # x-axis
+        add(Line(app, pos=(0, 1, 0), rot=(0, 0, 90), color=(0, 1, 0, 1))) # y-axis
+        add(Line(app, pos=(0, 0, 1), rot=(0, 90, 0), color=(0, 0, 1, 1))) # z-axis
+        add(Quad(app, tex_id="skybox", pos=(0.08, -0.03, 0.02), rot=(-94.75 - 90, -46.99, 50.57), brightness=15.0)) # A2C
+        add(Quad(app, tex_id="skybox", pos=(-0.05, 0.01, 0.01), rot=(87.42 - 90, -2.68, -2.56), brightness=1.0)) # A4C
+        add(Quad(app, tex_id="skybox", pos=(-0.01, -0.24, -0.05), rot=(-85.07 - 90, 45.1, -41.71), brightness=1.0)) # ALAX
         add(Line(app, pos=(0, -1, -1)))
         add(Line(app, pos=(0, -1, 1)))
         add(Line(app, pos=(0, 1, -1)))

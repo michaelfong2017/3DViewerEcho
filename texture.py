@@ -9,6 +9,9 @@ class Texture:
         self.textures[0] = self.get_texture(path="textures/img.png")
         self.textures[1] = self.get_texture(path="textures/test.png")
         self.textures[2] = self.get_texture(path="textures/img_2.png")
+        self.textures["skybox"] = self.get_texture(
+            path="textures/skybox1/bottom.png"
+        )
         self.textures["test-A2C-transparent"] = self.get_texture(
             path="textures/test-A2C-transparent.png"
         )
