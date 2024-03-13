@@ -1,5 +1,6 @@
 from PySide2 import QtGui, QtUiTools, QtCore
 from ui_mainwindow import Ui_MainWindow
+from util import resource_path
 
 from multiprocessing.pool import ThreadPool
 import random
@@ -39,7 +40,7 @@ def process_frame(frame, frame_index):
     else:
         print("Error:", response.text)
         loader = QtUiTools.QUiLoader()
-        ui_file = QtCore.QFile("errordialog.ui")
+        ui_file = QtCore.QFile(resource_path("errordialog.ui"))
         ui_file.open(QtCore.QFile.ReadOnly)
         dialog = loader.load(ui_file)
         dialog.label.setText("process_frame response is not 200")
@@ -193,7 +194,7 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
         image4D, spacing4D = dicom_to_array(filepath)
     except FileNotFoundError as e:
         loader = QtUiTools.QUiLoader()
-        ui_file = QtCore.QFile("errordialog.ui")
+        ui_file = QtCore.QFile(resource_path("errordialog.ui"))
         ui_file.open(QtCore.QFile.ReadOnly)
         dialog = loader.load(ui_file)
         dialog.label.setText("Please select a valid filepath!")
@@ -241,7 +242,7 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
     except requests.exceptions.ConnectionError as e:
         print(e)
         loader = QtUiTools.QUiLoader()
-        ui_file = QtCore.QFile("errordialog.ui")
+        ui_file = QtCore.QFile(resource_path("errordialog.ui"))
         ui_file.open(QtCore.QFile.ReadOnly)
         dialog = loader.load(ui_file)
         dialog.label.setText("Server connection error!")
@@ -260,7 +261,7 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
     else:
         print("Error:", response.text)
         loader = QtUiTools.QUiLoader()
-        ui_file = QtCore.QFile("errordialog.ui")
+        ui_file = QtCore.QFile(resource_path("errordialog.ui"))
         ui_file.open(QtCore.QFile.ReadOnly)
         dialog = loader.load(ui_file)
         dialog.label.setText("normalize_dicom_array response is not 200")

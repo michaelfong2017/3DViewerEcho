@@ -1,25 +1,26 @@
 import moderngl as mgl
 from PIL import Image, ImageOps
+from util import resource_path
 
 
 class Texture:
     def __init__(self, ctx):
         self.ctx = ctx
         self.textures = {}
-        self.textures[0] = self.get_texture(path="textures/img.png")
-        self.textures[1] = self.get_texture(path="textures/test.png")
-        self.textures[2] = self.get_texture(path="textures/img_2.png")
+        self.textures[0] = self.get_texture(path=resource_path("textures/img.png"))
+        self.textures[1] = self.get_texture(path=resource_path("textures/test.png"))
+        self.textures[2] = self.get_texture(path=resource_path("textures/img_2.png"))
         self.textures["skybox"] = self.get_texture(
-            path="textures/skybox1/bottom.png"
+            path=resource_path("textures/skybox1/bottom.png")
         )
         self.textures["test-A2C-transparent"] = self.get_texture(
-            path="textures/test-A2C-transparent.png"
+            path=resource_path("textures/test-A2C-transparent.png")
         )
         self.textures["test-A4C-transparent"] = self.get_texture(
-            path="textures/test-A4C-transparent.png"
+            path=resource_path("textures/test-A4C-transparent.png")
         )
         self.textures["test-ALAX-transparent"] = self.get_texture(
-            path="textures/test-ALAX-transparent.png"
+            path=resource_path("textures/test-ALAX-transparent.png")
         )
         # self.textures["test-SAXMV"] = self.get_texture(path="textures/test-SAXMV.png")
         # self.textures["test-SAXM"] = self.get_texture(path="textures/test-SAXM.png")

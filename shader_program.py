@@ -1,3 +1,6 @@
+from util import resource_path
+
+
 class ShaderProgram:
     def __init__(self, ctx):
         self.ctx = ctx
@@ -6,10 +9,10 @@ class ShaderProgram:
         self.programs["line"] = self.get_program("line")
 
     def get_program(self, shader_program_name):
-        with open(f"shaders/{shader_program_name}.vert") as file:
+        with open(resource_path(f"shaders/{shader_program_name}.vert")) as file:
             vertex_shader = file.read()
 
-        with open(f"shaders/{shader_program_name}.frag") as file:
+        with open(resource_path(f"shaders/{shader_program_name}.frag")) as file:
             fragment_shader = file.read()
 
         program = self.ctx.program(

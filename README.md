@@ -32,6 +32,8 @@ pip install requests
 pip install blosc
 
 pip install plotly
+
+pip install auto-py-to-exe
 ```
 
 ```

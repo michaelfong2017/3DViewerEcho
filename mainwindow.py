@@ -1,4 +1,5 @@
 import sys
+from util import resource_path
 from PySide2 import QtGui, QtUiTools, QtCore
 from PySide2.QtWidgets import QApplication, QMainWindow, QFileDialog, QLabel, QPushButton, QAction, QMenu
 from ui_mainwindow import Ui_MainWindow
@@ -223,7 +224,7 @@ QMenu::item:selected {
         
         if filepath == "": # No file is selected
             loader = QtUiTools.QUiLoader()
-            ui_file = QtCore.QFile("errordialog.ui")
+            ui_file = QtCore.QFile(resource_path("errordialog.ui"))
             ui_file.open(QtCore.QFile.ReadOnly)
             dialog = loader.load(ui_file)
             dialog.label.setText("Please select a valid filepath!")
@@ -253,7 +254,7 @@ QMenu::item:selected {
 
         if filepath == "": # No file is selected
             loader = QtUiTools.QUiLoader()
-            ui_file = QtCore.QFile("errordialog.ui")
+            ui_file = QtCore.QFile(resource_path("errordialog.ui"))
             ui_file.open(QtCore.QFile.ReadOnly)
             dialog = loader.load(ui_file)
             dialog.label.setText("Please select a valid filepath!")
@@ -378,7 +379,7 @@ QMenu::item:selected {
     def addCrossSection(self, annotated_qimage, view, frame_index):
         loader = QtUiTools.QUiLoader()
         loader.registerCustomWidget(ClickableQLabel)
-        ui_file = QtCore.QFile("crosssection.ui")
+        ui_file = QtCore.QFile(resource_path("crosssection.ui"))
         ui_file.open(QtCore.QFile.ReadOnly)
         cross_section = loader.load(ui_file)
         ui_file.close()
@@ -422,7 +423,7 @@ QMenu::item:selected {
     def addPlaceholderCrossSection(self, view):
         loader = QtUiTools.QUiLoader()
         loader.registerCustomWidget(ClickableQLabel)
-        ui_file = QtCore.QFile("crosssection.ui")
+        ui_file = QtCore.QFile(resource_path("crosssection.ui"))
         ui_file.open(QtCore.QFile.ReadOnly)
         cross_section = loader.load(ui_file)
         ui_file.close()
