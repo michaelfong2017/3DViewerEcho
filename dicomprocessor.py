@@ -277,6 +277,7 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
         ui_file = QtCore.QFile(resource_path("errordialog.ui"))
         ui_file.open(QtCore.QFile.ReadOnly)
         dialog = loader.load(ui_file)
+        dialog.setWindowTitle("Notification")
         dialog.label.setText("Server cannot be connected!")
         dialog.label_2.setText("Loading sample data...")
         dialog.exec_()

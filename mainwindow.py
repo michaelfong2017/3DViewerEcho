@@ -17,6 +17,10 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
+        ## private UI data
+        self._current_frame_index = 0
+        ##
+
         #### Top Menu Bar BEGIN ####
         # Create actions
         self.action_import_all_time_frame = QAction("Analyze all time frames", self)
@@ -91,12 +95,131 @@ QMenu::item:selected {
         self.ui.gridWidget.clearAllItems(self.ui.gridWidget)
 
     def export_all(self):
-        # TODO
-        print("export_all")
+        dialog = QFileDialog()        
+        folder_path = dialog.getExistingDirectory(self, "Select folder to save PNG files")
+       
+        if folder_path == "":
+            loader = QtUiTools.QUiLoader()
+            ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+            ui_file.open(QtCore.QFile.ReadOnly)
+            dialog = loader.load(ui_file)
+            dialog.label.setText("Please select a valid folder!")
+            dialog.label_2.setText("")
+            dialog.exec_()
+            return
+        
+        NUM_FRAMES = DataManager().dicom_number_of_frames
+        if NUM_FRAMES == -1 or NUM_FRAMES == 0:
+            loader = QtUiTools.QUiLoader()
+            ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+            ui_file.open(QtCore.QFile.ReadOnly)
+            dialog = loader.load(ui_file)
+            dialog.label.setText("No result to save yet!")
+            dialog.label_2.setText("")
+            dialog.exec_()
+            return
+        try:
+            for frame_index in range(NUM_FRAMES):
+                all_results = DataManager().get_pred_result(frame_index)
+
+                if all_results == None:
+                    loader = QtUiTools.QUiLoader()
+                    ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+                    ui_file.open(QtCore.QFile.ReadOnly)
+                    dialog = loader.load(ui_file)
+                    dialog.setWindowTitle("Notification")
+                    dialog.label.setText("Some results are not ready!")
+                    dialog.label_2.setText("The ready results have been saved.")
+                    dialog.exec_()
+                    raise Exception("Some results are not ready!")
+                else:
+                    for view, pred_result in all_results.items():
+                        if pred_result is None:
+                            loader = QtUiTools.QUiLoader()
+                            ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+                            ui_file.open(QtCore.QFile.ReadOnly)
+                            dialog = loader.load(ui_file)
+                            dialog.label.setText("Some result is broken!")
+                            dialog.label_2.setText("Not all results are saved!")
+                            dialog.exec_()
+                            raise Exception("Some pred_result is None!")
+                        else:
+                            _, _, annotated_qimage, rx, ry, rz, cx, cy, cz = pred_result
+
+                            filename = f"frame-{frame_index}-view-{view}.png"
+
+                            frame_index_dir = os.path.join(folder_path, str(frame_index))
+                            if not os.path.exists(frame_index_dir):
+                                os.mkdir(frame_index_dir)
+                            annotated_qimage.save(f"{os.path.join(frame_index_dir, filename)}")
+
+            print("All files saved successfully.")
+            loader = QtUiTools.QUiLoader()
+            ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+            ui_file.open(QtCore.QFile.ReadOnly)
+            dialog = loader.load(ui_file)
+            dialog.setWindowTitle("Notification")
+            dialog.label.setText("All files saved successfully.")
+            dialog.label_2.setText("")
+            dialog.exec_()
+        except Exception as e:
+            print(e)
 
     def export_selected_time_frame(self):
-        # TODO
-        print("export_selected_time_frame")
+        frame_index = self._current_frame_index
+
+        dialog = QFileDialog()        
+        folder_path = dialog.getExistingDirectory(self, "Select folder to save PNG files")
+       
+        if folder_path == "":
+            loader = QtUiTools.QUiLoader()
+            ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+            ui_file.open(QtCore.QFile.ReadOnly)
+            dialog = loader.load(ui_file)
+            dialog.label.setText("Please select a valid folder!")
+            dialog.label_2.setText("")
+            dialog.exec_()
+            return 
+        try:
+            all_results = DataManager().get_pred_result(frame_index)
+
+            if all_results == None:
+                loader = QtUiTools.QUiLoader()
+                ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+                ui_file.open(QtCore.QFile.ReadOnly)
+                dialog = loader.load(ui_file)
+                dialog.label.setText("No result to save yet!")
+                dialog.label_2.setText("")
+                dialog.exec_()
+                raise Exception("No result to save yet!")
+            else:
+                for view, pred_result in all_results.items():
+                    if pred_result is None:
+                        loader = QtUiTools.QUiLoader()
+                        ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+                        ui_file.open(QtCore.QFile.ReadOnly)
+                        dialog = loader.load(ui_file)
+                        dialog.label.setText("Some result is broken!")
+                        dialog.label_2.setText("Not all results are saved!")
+                        dialog.exec_()
+                        raise Exception("Some pred_result is None!")
+                    else:
+                        _, _, annotated_qimage, rx, ry, rz, cx, cy, cz = pred_result
+
+                        filename = f"frame-{frame_index}-view-{view}.png"
+                        annotated_qimage.save(f"{os.path.join(folder_path, filename)}")
+                
+            print("All files saved successfully.")
+            loader = QtUiTools.QUiLoader()
+            ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+            ui_file.open(QtCore.QFile.ReadOnly)
+            dialog = loader.load(ui_file)
+            dialog.setWindowTitle("Notification")
+            dialog.label.setText("All files saved successfully.")
+            dialog.label_2.setText("")
+            dialog.exec_()
+        except Exception as e:
+            print(e)
 
     def play_or_pause_cross_section(self, button):
         if self.is_playing(button) == None:
@@ -144,6 +267,8 @@ QMenu::item:selected {
         # print(slider_value)
 
         frame_index: int = slider_value
+        self._current_frame_index = frame_index
+
         self.ui.label_10.setText(f"Selected time frame index: {frame_index}")
 
         all_results = DataManager().get_pred_result(frame_index)
