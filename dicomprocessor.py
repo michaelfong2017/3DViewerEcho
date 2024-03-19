@@ -367,8 +367,6 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
     if not analyze_all:
         assert not view_to_array_2d == None
 
-        DataManager().clear_all_results()
-
         pool = ThreadPool(21)
         results = []
         for i in range(NUM_FRAMES):
