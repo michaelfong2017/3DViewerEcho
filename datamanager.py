@@ -75,6 +75,9 @@ class DataManager:
     def remove_pred_result(self, frame_index: int):
         self.frame_index_to_pred_result.pop(frame_index)
 
+    def clear_all_results(self):
+        self.frame_index_to_pred_result.clear()
+
     def get_result_width(self, view):
         return self.view_to_pred_result_width.get(view)
 

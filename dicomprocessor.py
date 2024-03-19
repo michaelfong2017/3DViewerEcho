@@ -251,6 +251,8 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
     try:
         response = requests.post(url, data=serialized_data, headers=headers)
 
+        ui.label_17.setText(f"DICOM File (Video) Info:")
+
         if response.status_code == 200:
             compressed_data = response.content
 
@@ -282,6 +284,7 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
         # dialog.label.setText("Server cannot be connected!")
         # dialog.label_2.setText("Loading sample data...")
         # dialog.exec_()
+        ui.label_17.setText(f"(Using Sample Data) DICOM File (Video) Info:")
         with open(resource_path(os.path.join("pickle", "array_4d.pickle")), "rb") as file:
             array_4d = pickle.load(file)
     # except requests.exceptions.ConnectionError as e:
@@ -304,6 +307,8 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
 
     NUM_FRAMES = data_4d_padded.shape[0]
     print(f"NUM_FRAMES: {NUM_FRAMES}")
+
+    DataManager().clear_all_results()
 
     pool = ThreadPool(21)
     results = []
@@ -361,6 +366,8 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
     # If analyze selected frame only, apply the landmark result to all other time frames as well
     if not analyze_all:
         assert not view_to_array_2d == None
+
+        DataManager().clear_all_results()
 
         pool = ThreadPool(21)
         results = []
