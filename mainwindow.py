@@ -185,22 +185,22 @@ QMenu::item:selected {
                         # pred_image, pred_rotated_coords, annotated_qimage = pred_result
                         _, _, annotated_qimage, rx, ry, rz, cx, cy, cz = pred_result
 
-                        print(f"view: {view}; (rx, ry, rz): ({rx}, {ry}, {rz})")
-                        print(f"view: {view}; (cx, cy, cz): ({cx}, {cy}, {cz})")
+                        # print(f"view: {view}; (rx, ry, rz): ({rx}, {ry}, {rz})")
+                        # print(f"view: {view}; (cx, cy, cz): ({cx}, {cy}, {cz})")
 
                         gl_cx = cx * 2.0 - 1.0
                         gl_cy = cz * 2.0 - 1.0
                         gl_cz = -1 * (cy * 2.0 - 1.0)
 
-                        print(f"view: {view}; (gl_cx, gl_cy, gl_cz): ({gl_cx}, {gl_cy}, {gl_cz})")
+                        # print(f"view: {view}; (gl_cx, gl_cy, gl_cz): ({gl_cx}, {gl_cy}, {gl_cz})")
 
                         brightness = 1.0
                         highlighted_view = DataManager().highlighted_view
                         if highlighted_view == view:
                             print(f"Highlighted view: {view}")
                             brightness = 15.0
-                        else:
-                            print("Highlighted view does not match with the current")
+                        # else:
+                            # print("Highlighted view does not match with the current")
 
                         ## Update OpenGL cross sections
                         crossSection3D = Quad(app, tex_id="skybox", pos=(gl_cx, gl_cy, gl_cz), rot=(rx - 90, ry, rz), brightness=brightness)
@@ -309,22 +309,22 @@ QMenu::item:selected {
                         # pred_image, pred_rotated_coords, annotated_qimage = pred_result
                         _, _, annotated_qimage, rx, ry, rz, cx, cy, cz = pred_result
 
-                        print(f"view: {view}; (rx, ry, rz): ({rx}, {ry}, {rz})")
-                        print(f"view: {view}; (cx, cy, cz): ({cx}, {cy}, {cz})")
+                        # print(f"view: {view}; (rx, ry, rz): ({rx}, {ry}, {rz})")
+                        # print(f"view: {view}; (cx, cy, cz): ({cx}, {cy}, {cz})")
 
                         gl_cx = cx * 2.0 - 1.0
                         gl_cy = cz * 2.0 - 1.0
                         gl_cz = -1 * (cy * 2.0 - 1.0)
 
-                        print(f"view: {view}; (gl_cx, gl_cy, gl_cz): ({gl_cx}, {gl_cy}, {gl_cz})")
+                        # print(f"view: {view}; (gl_cx, gl_cy, gl_cz): ({gl_cx}, {gl_cy}, {gl_cz})")
 
                         brightness = 1.0
                         highlighted_view = DataManager().highlighted_view
                         if highlighted_view == view:
                             print(f"Highlighted view: {view}")
                             brightness = 15.0
-                        else:
-                            print("Highlighted view does not match with the current")
+                        # else:
+                        #     print("Highlighted view does not match with the current")
 
                         ## Update OpenGL cross sections
                         crossSection3D = Quad(app, tex_id="skybox", pos=(gl_cx, gl_cy, gl_cz), rot=(rx - 90, ry, rz), brightness=brightness)

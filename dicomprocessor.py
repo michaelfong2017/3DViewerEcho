@@ -61,11 +61,11 @@ def process_frame(frame, frame_index):
     all_results = {}
     i = 0
     for view, array_2d in view_to_array_2d.items():
-        print("---------------------------------------------------------------")
-        print(view)
+        # print("---------------------------------------------------------------")
+        # print(view)
         pred_coords_raw = array_2d
 
-        print("Received: ", pred_coords_raw)
+        # print("Received: ", pred_coords_raw)
 
         st = time.perf_counter()
 
@@ -80,7 +80,7 @@ def process_frame(frame, frame_index):
 
             nx, ny, nz = normal[0], normal[1], normal[2]
             rx, ry, rz = eulerFromNormal(nx, ny, nz)
-            print(f"view: {view}; (rx, ry, rz): ({rx}, {ry}, {rz})")
+            # print(f"view: {view}; (rx, ry, rz): ({rx}, {ry}, {rz})")
 
             points = [pred_coords_raw[i] for i in pred_mapped_coords_index]
             center_point = find_center_point(points)
@@ -91,7 +91,7 @@ def process_frame(frame, frame_index):
             normalized_point[2] = center_point[2] / 213.0
 
             cx, cy, cz = normalized_point
-            print(f"view: {view}; (cx, cy, cz): ({cx}, {cy}, {cz})")
+            # print(f"view: {view}; (cx, cy, cz): ({cx}, {cy}, {cz})")
 
             # Rotate Image
             pred_image, pred_rotated_coords = PlaneReconstructionUtils.HandleRotationsNumpy(pred_vs, pred_mapped_coords, pred_mapped_coords_index, pred_up, view)
@@ -145,7 +145,7 @@ def process_frame_with_known_landmarks(frame, frame_index, view_to_array_2d):
 
             nx, ny, nz = normal[0], normal[1], normal[2]
             rx, ry, rz = eulerFromNormal(nx, ny, nz)
-            print(f"view: {view}; (rx, ry, rz): ({rx}, {ry}, {rz})")
+            # print(f"view: {view}; (rx, ry, rz): ({rx}, {ry}, {rz})")
 
             points = [pred_coords_raw[i] for i in pred_mapped_coords_index]
             center_point = find_center_point(points)
@@ -156,7 +156,7 @@ def process_frame_with_known_landmarks(frame, frame_index, view_to_array_2d):
             normalized_point[2] = center_point[2] / 213.0
 
             cx, cy, cz = normalized_point
-            print(f"view: {view}; (cx, cy, cz): ({cx}, {cy}, {cz})")
+            # print(f"view: {view}; (cx, cy, cz): ({cx}, {cy}, {cz})")
 
             # Rotate Image
             pred_image, pred_rotated_coords = PlaneReconstructionUtils.HandleRotationsNumpy(pred_vs, pred_mapped_coords, pred_mapped_coords_index, pred_up, view)
@@ -295,7 +295,7 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
 
     data_4d_padded = array_4d
 
-    print(data_4d_padded)
+    # print(data_4d_padded)
     print(data_4d_padded.shape)
 
     DataManager().data_3d_padded_max_length = 213
@@ -354,7 +354,7 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
     pool.close()
     pool.join()
     results = [r.get() for r in results]
-    print(results)
+    # print(results)
 
     # If analyze selected frame only, apply the landmark result to all other time frames as well
     if not analyze_all:
@@ -393,7 +393,7 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
         pool.close()
         pool.join()
         results = [r.get() for r in results]
-        print(results)
+        # print(results)
 
     ## ui
     # ui.progressBar.setHidden(True)

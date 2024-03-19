@@ -117,4 +117,4 @@ class MyGLWidget(QtOpenGL.QGLWidget):
         self.ctx.viewport = (0, 0, width, height)
 
         self.arc_ball = ArcBallUtil(width, height)
-        print(self.camera.position)
+        # print(self.camera.position)
