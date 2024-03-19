@@ -46,6 +46,10 @@ pyside2-rcc resources/mainwindow.qrc -o mainwindow_rc.py
 python mainwindow.py
 ```
 
+```
+pyinstaller --noconfirm --onefile --console --add-data "C:/Users/user/Documents/3DViewerEcho/shaders;shaders/" --add-data "C:/Users/user/Documents/3DViewerEcho/textures;textures/" --add-data "C:/Users/user/Documents/3DViewerEcho/pickle;pickle/" --add-data "C:/Users/user/Documents/3DViewerEcho/crosssection.ui;." --add-data "C:/Users/user/Documents/3DViewerEcho/errordialog.ui;." --collect-submodules "pydicom" --collect-submodules "vtkmodules" --collect-submodules "glcontext"  "C:/Users/user/Documents/3DViewerEcho/mainwindow.py"
+```
+
 # Functional design
 1. Upon clicking the "Import DICOM file" button, the 3D heart and all its cross sections of the default time frame will be loaded.
 
