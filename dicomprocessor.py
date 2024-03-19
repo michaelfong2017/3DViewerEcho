@@ -216,8 +216,8 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
     NUM_FRAMES = image4D.shape[0]
 
     ## ui loading bar
-    ui.progressBar.setValue(10)
-    ui.progressBar.setHidden(False)
+    # ui.progressBar.setValue(10)
+    # ui.progressBar.setHidden(False)
     ##
 
     # ui slider BEGIN
@@ -333,14 +333,14 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
             ui.horizontalSlider.setValue(1)
             ui.horizontalSlider.setValue(i)
 
-        ## ui progress bar
-        if analyze_all:
-            new_value = round(10 + (i + 1) * 90.0 / NUM_FRAMES)
-            if new_value > 100:
-                new_value = 100
-            ui.progressBar.setValue(new_value)
-        else:
-            ui.progressBar.setValue(20)
+        # ## ui progress bar
+        # if analyze_all:
+        #     new_value = round(10 + (i + 1) * 90.0 / NUM_FRAMES)
+        #     if new_value > 100:
+        #         new_value = 100
+        #     ui.progressBar.setValue(new_value)
+        # else:
+        #     ui.progressBar.setValue(20)
         ##
 
     pool.close()
@@ -376,10 +376,10 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
             results.append(result)
 
             ## ui progress bar
-            new_value = round(20 + (i + 1) * 80.0 / NUM_FRAMES)
-            if new_value > 100:
-                new_value = 100
-            ui.progressBar.setValue(new_value)
+            # new_value = round(20 + (i + 1) * 80.0 / NUM_FRAMES)
+            # if new_value > 100:
+            #     new_value = 100
+            # ui.progressBar.setValue(new_value)
             ##
 
         pool.close()
@@ -388,7 +388,7 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
         print(results)
 
     ## ui
-    ui.progressBar.setHidden(True)
+    # ui.progressBar.setHidden(True)
     ##
 
 def display_video_info(ui: Ui_MainWindow):
