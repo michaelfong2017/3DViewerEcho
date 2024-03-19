@@ -1,6 +1,7 @@
 from PySide2 import QtGui, QtUiTools, QtCore
 from ui_mainwindow import Ui_MainWindow
 from util import resource_path
+import os
 
 from multiprocessing.pool import ThreadPool
 import random
@@ -40,7 +41,7 @@ def process_frame(frame, frame_index):
             # Deserialize the pickled data to a NumPy array
             view_to_array_2d: dict = pickle.loads(pickled_data)
 
-            with open(resource_path(f"pickle/{frame_index}.pickle"), "wb") as file:
+            with open(resource_path(os.path.join("pickle", f"{frame_index}.pickle")), "wb") as file:
                 pickle.dump(view_to_array_2d, file)
         else:
             print("Error:", response.text)
@@ -55,7 +56,7 @@ def process_frame(frame, frame_index):
     except:
         print("Loading pickle data...")
         ## UI dialog is not needed since it's already displayed during the normalize_dicom_array API call
-        with open(resource_path(f"pickle/{frame_index}.pickle"), "rb") as file:
+        with open(resource_path(os.path.join("pickle", f"{frame_index}.pickle")), "rb") as file:
             view_to_array_2d = pickle.load(file)
 
     all_results = {}
@@ -259,7 +260,7 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
             # Deserialize the pickled data to a NumPy array
             array_4d = pickle.loads(pickled_data)
 
-            with open(resource_path(f"pickle/array_4d.pickle"), "wb") as file:
+            with open(resource_path(os.path.join("pickle", "array_4d.pickle")), "wb") as file:
                 pickle.dump(array_4d, file)
         else:
             print("Error:", response.text)
@@ -272,16 +273,16 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
             dialog.exec_()
             return
     except:
-        print("Loading pickle data...")
-        loader = QtUiTools.QUiLoader()
-        ui_file = QtCore.QFile(resource_path("errordialog.ui"))
-        ui_file.open(QtCore.QFile.ReadOnly)
-        dialog = loader.load(ui_file)
-        dialog.setWindowTitle("Notification")
-        dialog.label.setText("Server cannot be connected!")
-        dialog.label_2.setText("Loading sample data...")
-        dialog.exec_()
-        with open(resource_path("pickle/array_4d.pickle"), "rb") as file:
+        # print("Loading pickle data...")
+        # loader = QtUiTools.QUiLoader()
+        # ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+        # ui_file.open(QtCore.QFile.ReadOnly)
+        # dialog = loader.load(ui_file)
+        # dialog.setWindowTitle("Notification")
+        # dialog.label.setText("Server cannot be connected!")
+        # dialog.label_2.setText("Loading sample data...")
+        # dialog.exec_()
+        with open(resource_path(os.path.join("pickle", "array_4d.pickle")), "rb") as file:
             array_4d = pickle.load(file)
     # except requests.exceptions.ConnectionError as e:
     #     print(e)
