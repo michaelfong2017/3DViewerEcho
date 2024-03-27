@@ -56,8 +56,12 @@ def process_frame(frame, frame_index):
     except:
         print("Loading pickle data...")
         ## UI dialog is not needed since it's already displayed during the normalize_dicom_array API call
-        with open(resource_path(os.path.join("pickle", f"{frame_index}.pickle")), "rb") as file:
-            view_to_array_2d = pickle.load(file)
+        try:
+            with open(resource_path(os.path.join("pickle", f"{frame_index}.pickle")), "rb") as file:
+                view_to_array_2d = pickle.load(file)
+        except:
+            ## TODO UI show error
+            pass
 
     all_results = {}
     i = 0
@@ -284,9 +288,20 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
         # dialog.label.setText("Server cannot be connected!")
         # dialog.label_2.setText("Loading sample data...")
         # dialog.exec_()
-        ui.label_17.setText(f"(Using Sample Data) DICOM File (Video) Info:")
-        with open(resource_path(os.path.join("pickle", "array_4d.pickle")), "rb") as file:
-            array_4d = pickle.load(file)
+        try:
+            with open(resource_path(os.path.join("pickle", "array_4d.pickle")), "rb") as file:
+                array_4d = pickle.load(file)
+                ui.label_17.setText(f"(Using Sample Data) DICOM File (Video) Info:")
+        except:
+            # loader = QtUiTools.QUiLoader()
+            # ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+            # ui_file.open(QtCore.QFile.ReadOnly)
+            # dialog = loader.load(ui_file)
+            # dialog.label.setText("Server cannot be connected")
+            # dialog.label_2.setText("and no sample data available!")
+            # dialog.exec_()
+            ui.label_17.setText(f"Server cannot be connected and no sample data available!")
+            return
     # except requests.exceptions.ConnectionError as e:
     #     print(e)
     #     loader = QtUiTools.QUiLoader()
