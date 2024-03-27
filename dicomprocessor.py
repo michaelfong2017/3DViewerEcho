@@ -64,7 +64,7 @@ def process_frame(frame, frame_index):
     for view, array_2d in view_to_array_2d.items():
         # print("---------------------------------------------------------------")
         # print(view)
-        pred_coords_raw = array_2d
+        coords_raw = array_2d
 
         # print("Received: ", pred_coords_raw)
 
@@ -75,15 +75,17 @@ def process_frame(frame, frame_index):
             # extract the content of the plane and project onto 2d image. Also do the same for the coordinates for visualization.
             # pred_vs, pred_mapped_coords, pred_up = FindVisualFromCoords(pred_coords_raw, data_3d_padded)
             # Note: You can modify time_index value to get plane visual from other time slices
-            pred_vs, pred_mapped_coords, pred_mapped_coords_index, pred_up, normal = PlaneReconstructionUtils.FindVisualFromCoords(
-                pred_coords_raw, frame, view
-            )
+            # pred_vs, pred_mapped_coords, pred_mapped_coords_index, pred_up, normal = PlaneReconstructionUtils.FindVisualFromCoords(
+            #     pred_coords_raw, frame, view
+            # )
+            vs, coords_2d, coords_index, up_vector_2d, normal_3d, isFlat, axis, axis_index, inslice_coords_vrf, size_slice_x, size_slice_y = PlaneReconstructionUtils.FindVisualFromCoordsOnce(
+                    coords_raw, frame, view)
 
-            nx, ny, nz = normal[0], normal[1], normal[2]
+            nx, ny, nz = normal_3d[0], normal_3d[1], normal_3d[2]
             rx, ry, rz = eulerFromNormal(nx, ny, nz)
             # print(f"view: {view}; (rx, ry, rz): ({rx}, {ry}, {rz})")
 
-            points = [pred_coords_raw[i] for i in pred_mapped_coords_index]
+            points = [coords_raw[i] for i in coords_index]
             center_point = find_center_point(points)
 
             normalized_point = np.zeros(3)
@@ -95,22 +97,21 @@ def process_frame(frame, frame_index):
             # print(f"view: {view}; (cx, cy, cz): ({cx}, {cy}, {cz})")
 
             # Rotate Image
-            pred_image, pred_rotated_coords = PlaneReconstructionUtils.HandleRotationsNumpy(pred_vs, pred_mapped_coords, pred_mapped_coords_index, pred_up, view)
-   
-            pred_image, pred_rotated_coords = PlaneReconstructionUtils.ViewSpecificRotations(pred_image, pred_rotated_coords, view)
+            slice_image, rotated_coords_2d = PlaneReconstructionUtils.HandleRotationsNumpy(vs, coords_2d, coords_index, up_vector_2d, view)
+            slice_image, rotated_coords_2d = PlaneReconstructionUtils.ViewSpecificRotations(slice_image, rotated_coords_2d, view)
             
             # Convert Image to PIL image
-            pred_image = Image.fromarray(pred_image)
-            pred_image = pred_image.convert("L")
+            slice_image = Image.fromarray(slice_image)
+            slice_image = slice_image.convert("L")
             # pred_image.save(view + 'testing_pred.png')
 
-            width, height = pred_image.size
+            width, height = slice_image.size
             px = 1 / pyplot.rcParams['figure.dpi']
             pyplot.figure(frame_index * len(view_to_array_2d) + i, figsize=(width * px, height * px))
             pyplot.margins(x=0)
             pyplot.gca().xaxis.set_major_locator(pyplot.NullLocator())
             pyplot.gca().yaxis.set_major_locator(pyplot.NullLocator())
-            pyplot.imshow(pred_image, cmap='gray')
+            pyplot.imshow(slice_image, cmap='gray')
             # pyplot.scatter(pred_rotated_coords[:,0], pred_rotated_coords[:,1], c='red', marker='x')
             # pyplot.savefig(str(frame_index * len(view_to_array_2d) + i) + '.png', bbox_inches='tight', pad_inches=0)
             annotated_qimage = pyplot_to_qimage()
@@ -118,37 +119,40 @@ def process_frame(frame, frame_index):
             et = time.perf_counter()
             print("Execution time: ", et - st)  # 7.5s on jerry's computer
 
-            all_results.update({view: (pred_image, pred_rotated_coords, annotated_qimage, rx, ry, rz, cx, cy, cz)})
+            all_results.update({view: (slice_image, rotated_coords_2d, annotated_qimage, rx, ry, rz, cx, cy, cz)})
 
         except Exception as e:
             print(e)
             all_results.update({view: None})
 
         i += 1
-
+        view_to_array_2d[view] = [coords_2d, coords_raw, coords_index, up_vector_2d, normal_3d, isFlat, axis, axis_index, inslice_coords_vrf, size_slice_x, size_slice_y]
 
     return frame_index, all_results, view_to_array_2d
 
-def process_frame_with_known_landmarks(frame, frame_index, view_to_array_2d):
+def process_frame_with_known_matrix(frame, frame_index, view_to_array_2d):
     all_results = {}
     i = 0
-    for view, array_2d in view_to_array_2d.items():
-        pred_coords_raw = array_2d
+    for view, info_list in view_to_array_2d.items():
+
+        # isPerfectSlice means perfectly horizontal or vertical slice. so no calculations needed to extract.
+        mapped_coords, coords_raw, mapped_coords_index, pred_up, normal, isPerfectSlice, axis, axis_index, inslice_coords_vrf, size_slice_x, size_slice_y = info_list
 
         st = time.perf_counter()
 
         try:
             # extract the content of the plane and project onto 2d image. Also do the same for the coordinates for visualization.
-            # pred_vs, pred_mapped_coords, pred_up = FindVisualFromCoords(pred_coords_raw, data_3d_padded)
             # Note: You can modify time_index value to get plane visual from other time slices
-            pred_vs, pred_mapped_coords, pred_mapped_coords_index, pred_up, normal = PlaneReconstructionUtils.FindVisualFromCoords(
-                pred_coords_raw, frame, view)
+            # pred_vs, pred_mapped_coords, pred_mapped_coords_index, pred_up, normal = PlaneReconstructionUtils.FindVisualFromCoords(
+            #     pred_coords_raw, frame, view)
+            visual = PlaneReconstructionUtils.FindVisualFromGivenInfo(
+                    frame, isPerfectSlice, axis, axis_index, inslice_coords_vrf, size_slice_x, size_slice_y)
 
             nx, ny, nz = normal[0], normal[1], normal[2]
             rx, ry, rz = eulerFromNormal(nx, ny, nz)
             # print(f"view: {view}; (rx, ry, rz): ({rx}, {ry}, {rz})")
 
-            points = [pred_coords_raw[i] for i in pred_mapped_coords_index]
+            points = [coords_raw[i] for i in mapped_coords_index]
             center_point = find_center_point(points)
 
             normalized_point = np.zeros(3)
@@ -160,22 +164,22 @@ def process_frame_with_known_landmarks(frame, frame_index, view_to_array_2d):
             # print(f"view: {view}; (cx, cy, cz): ({cx}, {cy}, {cz})")
 
             # Rotate Image
-            pred_image, pred_rotated_coords = PlaneReconstructionUtils.HandleRotationsNumpy(pred_vs, pred_mapped_coords, pred_mapped_coords_index, pred_up, view)
+            slice_image, rotated_coords_2d = PlaneReconstructionUtils.HandleRotationsNumpy(visual, mapped_coords, mapped_coords_index, pred_up, view)
    
-            pred_image, pred_rotated_coords = PlaneReconstructionUtils.ViewSpecificRotations(pred_image, pred_rotated_coords, view)
+            slice_image, rotated_coords_2d = PlaneReconstructionUtils.ViewSpecificRotations(slice_image, rotated_coords_2d, view)
             
             # Convert Imag eto PIL image
-            pred_image = Image.fromarray(pred_image)
-            pred_image = pred_image.convert("L")
+            slice_image = Image.fromarray(slice_image)
+            slice_image = slice_image.convert("L")
             # pred_image.save(view + 'testing_pred.png')
 
-            width, height = pred_image.size
+            width, height = slice_image.size
             px = 1 / pyplot.rcParams['figure.dpi']
             pyplot.figure(frame_index * len(view_to_array_2d) + i, figsize=(width * px, height * px))
             pyplot.margins(x=0)
             pyplot.gca().xaxis.set_major_locator(pyplot.NullLocator())
             pyplot.gca().yaxis.set_major_locator(pyplot.NullLocator())
-            pyplot.imshow(pred_image, cmap='gray')
+            pyplot.imshow(slice_image, cmap='gray')
             # pyplot.scatter(pred_rotated_coords[:,0], pred_rotated_coords[:,1], c='red', marker='x')
             # pyplot.savefig(str(frame_index * len(view_to_array_2d) + i) + '.png', bbox_inches='tight', pad_inches=0)
             annotated_qimage = pyplot_to_qimage()
@@ -183,7 +187,7 @@ def process_frame_with_known_landmarks(frame, frame_index, view_to_array_2d):
             et = time.perf_counter()
             print("Execution time: ", et - st)  # 7.5s on jerry's computer
 
-            all_results.update({view: (pred_image, pred_rotated_coords, annotated_qimage, rx, ry, rz, cx, cy, cz)})
+            all_results.update({view: (slice_image, rotated_coords_2d, annotated_qimage, rx, ry, rz, cx, cy, cz)})
 
         except Exception as e:
             print(e)
@@ -193,6 +197,74 @@ def process_frame_with_known_landmarks(frame, frame_index, view_to_array_2d):
 
 
     return frame_index, all_results
+
+# def process_frame_with_known_landmarks(frame, frame_index, view_to_array_2d):
+#     all_results = {}
+#     i = 0
+#     for view, array_2d in view_to_array_2d.items():
+#         pred_coords_raw = array_2d
+
+#         st = time.perf_counter()
+
+#         try:
+#             # extract the content of the plane and project onto 2d image. Also do the same for the coordinates for visualization.
+#             # pred_vs, pred_mapped_coords, pred_up = FindVisualFromCoords(pred_coords_raw, data_3d_padded)
+#             # Note: You can modify time_index value to get plane visual from other time slices
+#             pred_vs, pred_mapped_coords, pred_mapped_coords_index, pred_up, normal = PlaneReconstructionUtils.FindVisualFromCoords(
+#                 pred_coords_raw, frame, view)
+            
+#             # pred_mapped_coords, pred_mapped_coords_index, pred_up, normal, isFlat, axis, axis_index, inslice_coords_vrf, size_slice_x, size_slice_y = PlaneReconstructionUtils.FindVisualFromCoordsOnce(
+#             #         pred_coords_raw, frame, view)
+
+#             nx, ny, nz = normal[0], normal[1], normal[2]
+#             rx, ry, rz = eulerFromNormal(nx, ny, nz)
+#             # print(f"view: {view}; (rx, ry, rz): ({rx}, {ry}, {rz})")
+
+#             points = [pred_coords_raw[i] for i in pred_mapped_coords_index]
+#             center_point = find_center_point(points)
+
+#             normalized_point = np.zeros(3)
+#             normalized_point[0] = center_point[0] / 213.0
+#             normalized_point[1] = center_point[1] / 213.0
+#             normalized_point[2] = center_point[2] / 213.0
+
+#             cx, cy, cz = normalized_point
+#             # print(f"view: {view}; (cx, cy, cz): ({cx}, {cy}, {cz})")
+
+#             # Rotate Image
+#             pred_image, pred_rotated_coords = PlaneReconstructionUtils.HandleRotationsNumpy(pred_vs, pred_mapped_coords, pred_mapped_coords_index, pred_up, view)
+   
+#             pred_image, pred_rotated_coords = PlaneReconstructionUtils.ViewSpecificRotations(pred_image, pred_rotated_coords, view)
+            
+#             # Convert Imag eto PIL image
+#             pred_image = Image.fromarray(pred_image)
+#             pred_image = pred_image.convert("L")
+#             # pred_image.save(view + 'testing_pred.png')
+
+#             width, height = pred_image.size
+#             px = 1 / pyplot.rcParams['figure.dpi']
+#             pyplot.figure(frame_index * len(view_to_array_2d) + i, figsize=(width * px, height * px))
+#             pyplot.margins(x=0)
+#             pyplot.gca().xaxis.set_major_locator(pyplot.NullLocator())
+#             pyplot.gca().yaxis.set_major_locator(pyplot.NullLocator())
+#             pyplot.imshow(pred_image, cmap='gray')
+#             # pyplot.scatter(pred_rotated_coords[:,0], pred_rotated_coords[:,1], c='red', marker='x')
+#             # pyplot.savefig(str(frame_index * len(view_to_array_2d) + i) + '.png', bbox_inches='tight', pad_inches=0)
+#             annotated_qimage = pyplot_to_qimage()
+
+#             et = time.perf_counter()
+#             print("Execution time: ", et - st)  # 7.5s on jerry's computer
+
+#             all_results.update({view: (pred_image, pred_rotated_coords, annotated_qimage, rx, ry, rz, cx, cy, cz)})
+
+#         except Exception as e:
+#             print(e)
+#             all_results.update({view: None})
+
+#         i += 1
+
+
+#     return frame_index, all_results
 
 def thread_pool_test(frame, frame_index):
     r = random.randint(5, 7)
@@ -376,7 +448,8 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
             data_3d_padded = data_4d_padded[i]
 
             result = pool.apply_async(
-                process_frame_with_known_landmarks,
+                process_frame_with_known_matrix,
+                # process_frame_with_known_landmarks,
                 args=(
                     data_3d_padded,
                     i,

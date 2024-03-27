@@ -618,11 +618,11 @@ def FindNormalByCoords(coords, view, truth=False, all_landmarks=None):
 
     return np.array([a, b, c]), best_pred_corrds, best_indexes
 
-# Extract cross sectional view of volume from given coords
-def FindVisualFromCoords(coords, volume, view, truth=False, all_landmarks=None):
-
+# Should only be called on 1 frame to get the following info
+# retrun vs, coords_2d, coords_indexes, up_vector_2d, isFlat, axis, axis_index, inslice_coords_vrf, size_slice_x, size_slice_y
+def FindVisualFromCoordsOnce(coords, volume, view, truth=False, all_landmarks=None):
     normal, best_coords, coords_indexes = FindNormalByCoords(coords, view, truth, all_landmarks)
-    logging.info(f'FindVisualFromCoords: {best_coords} in view {view}')
+    logging.info(f'FindVisualFromCoordsOnce: {best_coords} in view {view}')
     logging.info(coords_indexes)
     # print("Calculated Plane Normal: ", normal)
     normal = normal/np.linalg.norm(normal) # normalize
@@ -639,26 +639,26 @@ def FindVisualFromCoords(coords, volume, view, truth=False, all_landmarks=None):
         axis_index = coords[coords_indexes[0]][axis]
         logging.info(f'The axis index: {axis_index}')
         if axis == 0: 
-            cross_sectional_slice = volume[int(axis_index), :, :]
-            displacement_pts_in_2d = [landmark[1:] for landmark in coords]
-            up_in_2d = [0, 0, 1.0]
+            visual = volume[int(axis_index), :, :]
+            coords_2d = [landmark[1:] for landmark in coords]
+            up_vector_2d = [0, 0, 1.0]
             # Need invert pts y-axis
-            displacement_pts_in_2d = [[pts[0], 128-pts[1]] for pts in displacement_pts_in_2d]
+            coords_2d = [[pts[0], 128-pts[1]] for pts in coords_2d]
         elif axis == 1:
-            cross_sectional_slice = volume[:, int(axis_index), :]
-            displacement_pts_in_2d = [[landmark[0], landmark[2]] for landmark in coords]
-            up_in_2d = [0, 0, 1.0]
+            visual = volume[:, int(axis_index), :]
+            coords_2d = [[landmark[0], landmark[2]] for landmark in coords]
+            up_vector_2d = [0, 0, 1.0]
             # Need invert pts y-axis
-            displacement_pts_in_2d = [[pts[0], 128-pts[1]] for pts in displacement_pts_in_2d]
+            coords_2d = [[pts[0], 128-pts[1]] for pts in coords_2d]
         elif axis == 2:
-            cross_sectional_slice = volume[:, :, int(axis_index)]
-            displacement_pts_in_2d = [landmark[:2] for landmark in coords]
-            up_in_2d = [1.0, 0, 0]
+            visual = volume[:, :, int(axis_index)]
+            coords_2d = [landmark[:2] for landmark in coords]
+            up_vector_2d = [1.0, 0, 0]
 
-        displacement_pts_in_2d = np.array(displacement_pts_in_2d)
+        coords_2d = np.array(coords_2d)
         # print('displacement_pts_in_2d: ', displacement_pts_in_2d)
-        # print("result: ", cross_sectional_slice.shape, cross_sectional_slice.min(), cross_sectional_slice.max())
-        return cross_sectional_slice, displacement_pts_in_2d, coords_indexes, up_in_2d, normal
+        # print("result: ", visual.shape, cross_sectional_slice.min(), cross_sectional_slice.max())
+        return visual, coords_2d, coords_indexes, up_vector_2d, normal, True, axis, axis_index, None, None, None
 
     up_axis = np.array([0,0,1])
     origin_pt = np.array([0,0,0])
@@ -755,7 +755,183 @@ def FindVisualFromCoords(coords, volume, view, truth=False, all_landmarks=None):
     )
 
     # displace the coordinates
-    displacement_pts_in_2d = new_pos - origin_corner_slice
+    coords_2d = new_pos - origin_corner_slice
+
+    visual = map_coordinates(volume, inslice_coords_vrf.T, order=1, mode='constant', cval=-1.0)
+    visual = visual.reshape(size_slice_x, size_slice_y)
+
+    up_coord1 = [0, 0, 1] # this coordinate system is same for "pos"
+    pt_arr = np.concatenate((up_coord1, np.ones((1,))) ,axis = 0).reshape((4,1))
+    up_in_2d_1 = np.matmul(np.linalg.inv(Pose_slice_origin_cspecial), pt_arr)
+    up_in_2d_1 = up_in_2d_1[:-1].reshape(3, )
+    # print("up_in_2d_1:", up_in_2d_1)
+
+    up_coord2 = [0, 0, 64] # this coordinate system is same for "pos" 
+    pt_arr = np.concatenate((up_coord2, np.ones((1,))) ,axis = 0).reshape((4,1))
+    up_in_2d_2 = np.matmul(np.linalg.inv(Pose_slice_origin_cspecial), pt_arr)
+    up_in_2d_2 = up_in_2d_2[:-1].reshape(3, )    
+    # print("up_in_2d_2:", up_in_2d_2)
+
+    up_vector_2d = up_in_2d_2 - up_in_2d_1
+    logging.info(f'up_in_2d: {up_vector_2d}')
+
+    return visual, coords_2d, coords_indexes, up_vector_2d, normal, False, -1, -1, inslice_coords_vrf, size_slice_x, size_slice_y
+
+# Faster implmentation
+def FindVisualFromGivenInfo(volume, isFlat, axis, axis_index, inslice_coords_vrf, size_slice_x, size_slice_y):
+    if isFlat == True:
+        if axis == 0: 
+            visual = volume[int(axis_index), :, :]
+        elif axis == 1:
+            visual = volume[:, int(axis_index), :]
+        elif axis == 2:
+            visual = volume[:, :, int(axis_index)]
+        return visual
+    else:
+        visual = map_coordinates(volume, inslice_coords_vrf.T, order=1, mode='constant', cval=-1.0)
+        visual = visual.reshape(size_slice_x, size_slice_y)
+        return visual
+
+
+
+# Extract cross sectional view of volume from given coords
+def FindVisualFromCoords(coords, volume, view, truth=False, all_landmarks=None):
+
+    normal, best_coords, coords_indexes = FindNormalByCoords(coords, view, truth, all_landmarks)
+    logging.info(f'FindVisualFromCoords: {best_coords} in view {view}')
+    logging.info(coords_indexes)
+    # print("Calculated Plane Normal: ", normal)
+    normal = normal/np.linalg.norm(normal) # normalize
+    # print("Normalized normal: ", normal)
+    pos = best_coords[0]
+    # print("best_coords[0] - best_coords[1]: ", (best_coords[0] - best_coords[1]))    
+    # print("best_coords[0] - best_coords[2]: ", (best_coords[0] - best_coords[2]))    
+    # print("best_coords[1] - best_coords[2]: ", (best_coords[1] - best_coords[2]))
+
+    # Perfectly Horizontal/Vertical Plane cases
+    if(CheckNormalAxis(normal) >= 0):
+        logging.info("Horizontal/Vertical Plane")
+        axis = CheckNormalAxis(normal)
+        axis_index = coords[coords_indexes[0]][axis]
+        logging.info(f'The axis index: {axis_index}')
+        if axis == 0: 
+            cross_sectional_slice = volume[int(axis_index), :, :]
+            coords_2d = [landmark[1:] for landmark in coords]
+            up_vector_2d = [0, 0, 1.0]
+            # Need invert pts y-axis
+            coords_2d = [[pts[0], 128-pts[1]] for pts in coords_2d]
+        elif axis == 1:
+            cross_sectional_slice = volume[:, int(axis_index), :]
+            coords_2d = [[landmark[0], landmark[2]] for landmark in coords]
+            up_vector_2d = [0, 0, 1.0]
+            # Need invert pts y-axis
+            coords_2d = [[pts[0], 128-pts[1]] for pts in coords_2d]
+        elif axis == 2:
+            cross_sectional_slice = volume[:, :, int(axis_index)]
+            coords_2d = [landmark[:2] for landmark in coords]
+            up_vector_2d = [1.0, 0, 0]
+
+        coords_2d = np.array(coords_2d)
+        # print('displacement_pts_in_2d: ', displacement_pts_in_2d)
+        # print("result: ", cross_sectional_slice.shape, cross_sectional_slice.min(), cross_sectional_slice.max())
+        return cross_sectional_slice, coords_2d, coords_indexes, up_vector_2d, normal
+
+    up_axis = np.array([0,0,1])
+    origin_pt = np.array([0,0,0])
+
+    # ... Get intersection lines between plane and volume bounds
+    normals_line, points_line = PlaneBoundsIntersectionsLines(normal, pos, volume.shape)
+
+    # Remove nan lines (= no intersection between the plane and the volume bound)
+    mask = ~np.isnan(normals_line).any(axis=0)
+    normals_line = normals_line[:,mask]
+    points_line = points_line[:,mask]
+
+    # print("normals_line: ", normals_line.shape)
+    # print(normals_line)
+    # print("points_line: ", points_line.shape)
+    # print(points_line)
+
+    # ... Get intersections between generated lines to get corners of view plane
+    p_intersection, intersecting_lines = FindPlaneCorners(normals_line, points_line, volume.shape, th=1e-6)
+    # print(p_intersection.shape, len(intersecting_lines))
+
+    # # ... Calculate parameters of the 2D slice
+    Pose_slice_vrf = get_transformation_matrix(
+        up_axis, origin_pt, # z-axis, origin
+        normal, pos,
+    )
+    # print("Pose_slice_vrf: ", Pose_slice_vrf.shape)
+    # print(Pose_slice_vrf)
+
+    # ... ... ... Apply transform to corners
+    p_intersection_slicerf = np.zeros(p_intersection.shape)
+    for corner in range(p_intersection.shape[1]):
+        pt_arr = np.concatenate((p_intersection[:,corner], np.ones((1,))) ,axis = 0).reshape((4,1))
+        p_intersection_slicerf[:,corner] = np.matmul(np.linalg.inv(Pose_slice_vrf), pt_arr)[:-1].reshape((3,))
+
+    # Also apply transform to coordiantes
+    counter = 0
+    new_pos = np.zeros(coords.shape)
+    for p in coords:
+        pt_arr = np.concatenate((p, np.ones((1,))), axis = 0).reshape((4,1))
+        new_pos[counter] = np.matmul(np.linalg.inv(Pose_slice_vrf), pt_arr)[:-1].reshape((3,))
+        counter += 1
+
+    # ... ... Get slice size based on corners and spacing
+    spacing_slice = [1,1]
+    min_bounds_slice_xy = np.min(p_intersection_slicerf,axis=1)
+    max_bounds_slice_xy = np.max(p_intersection_slicerf,axis=1)
+    size_slice_x = int(np.ceil((max_bounds_slice_xy[0] - min_bounds_slice_xy[0] - 1e-6) / spacing_slice[0]))
+    size_slice_y = int(np.ceil((max_bounds_slice_xy[1] - min_bounds_slice_xy[1] - 1e-6) / spacing_slice[1]))
+    slice_size = [size_slice_x, size_slice_y, 1]
+    # print('slice_size')
+    # print(slice_size)
+
+    # print("====================================")
+
+    # ... ... Get corner in slice coords and redefine transform mat - make corner origin of the slice
+    origin_corner_slice = np.array([min_bounds_slice_xy[0], min_bounds_slice_xy[1],0])
+    pt_arr = np.concatenate((origin_corner_slice, np.ones((1,))) , axis=0).reshape((4,1))
+    origin_corner_slice_vrf = np.matmul(Pose_slice_vrf, pt_arr)[:-1].reshape((3,))
+    Pose_slice_origin_corner_vrf = get_transformation_matrix(
+        up_axis, origin_pt, # z-axis, origin
+        normal, origin_corner_slice_vrf
+    )
+
+    # print("origin_corner_slice: ", origin_corner_slice.shape)
+    # print(origin_corner_slice)
+
+    # print("origin_corner_slice_vrf: ", origin_corner_slice_vrf.shape)
+    # print(origin_corner_slice_vrf)
+
+    # ... ... Get every possible inslice coordinates
+    xvalues = np.linspace(0, size_slice_x-1,size_slice_x)
+    yvalues = np.linspace(0, size_slice_y-1,size_slice_y)
+    zvalues = np.linspace(0,0,1)
+    xx, yy = np.meshgrid(xvalues, yvalues)
+    xx = xx.transpose()
+    yy = yy.transpose()
+    zz = np.zeros(xx.shape)
+    inslice_coords = np.concatenate((xx.reshape(-1,1), yy.reshape(-1,1), zz.reshape(-1,1)), axis = 1)
+
+    # ... ... Map every xy point of slice into volume's RF
+    inslice_coords_vrf = np.zeros(inslice_coords.shape)
+    for coord_set in range(inslice_coords.shape[0]):
+        pt_arr = np.concatenate((inslice_coords[coord_set,:],np.ones((1,))) ,axis = 0).reshape((4,1))
+        inslice_coords_vrf[coord_set,:] = np.matmul(Pose_slice_origin_corner_vrf, pt_arr)[:-1].reshape((3,))
+
+
+    # Map 3d up vector into 2d space
+    # 3d coord to 2d space
+    # 2d to 3d. Inverse when use
+    Pose_slice_origin_cspecial = get_transformation_matrix(
+        up_axis, (64, 64, 0), # (0,0,1) , (0,0,0)
+        normal, origin_corner_slice_vrf, # <--- this is only different
+    )
+
+    # displace the coordinates
+    coords_2d = new_pos - origin_corner_slice
 
     result = map_coordinates(volume, inslice_coords_vrf.T, order=1, mode='constant', cval=-1.0)
     # print("Map Coordinates time: ", end_time-start_time)
@@ -776,10 +952,10 @@ def FindVisualFromCoords(coords, volume, view, truth=False, all_landmarks=None):
     up_in_2d_2 = up_in_2d_2[:-1].reshape(3, )    
     # print("up_in_2d_2:", up_in_2d_2)
 
-    up_in_2d = up_in_2d_2 - up_in_2d_1
-    logging.info(f'up_in_2d: {up_in_2d}')
+    up_vector_2d = up_in_2d_2 - up_in_2d_1
+    logging.info(f'up_in_2d: {up_vector_2d}')
 
-    return result, displacement_pts_in_2d, coords_indexes, up_in_2d, normal
+    return result, coords_2d, coords_indexes, up_vector_2d, normal
 
 # Fix rotations of view after FindVisualFromCoords(). must be used together
 def HandleRotationsNumpy(numpy_img, coords, coords_indexes, up_vector_of_2d_in_3d_space, view):
