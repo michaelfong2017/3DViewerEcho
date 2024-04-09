@@ -396,6 +396,7 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
     print(f"NUM_FRAMES: {NUM_FRAMES}")
 
     DataManager().clear_all_results()
+    ui.gridWidget.clearAllItems(ui.gridWidget)
 
     pool = ThreadPool(21)
     results = []

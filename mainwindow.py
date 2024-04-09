@@ -92,7 +92,7 @@ QMenu::item:selected {
 
         self.ui.horizontalSlider.valueChanged.connect(self.frame_index_changed)
         self.ui.pushButton_21.clicked.connect(lambda: self.play_or_pause_cross_section(self.ui.pushButton_21))
-        self.ui.gridWidget.clearAllItems(self.ui.gridWidget)
+        self.clearAllCrossSections()
 
     def export_all(self):
         dialog = QFileDialog()        
@@ -273,9 +273,9 @@ QMenu::item:selected {
 
         all_results = DataManager().get_pred_result(frame_index)
         
-        self.clearAllCrossSections()
-
-        if not all_results == None:
+        if all_results == None:
+            self.clearAllCrossSections()
+        else:
             ## Update OpenGL cross sections
             app = self.ui.openGLWidget
             app.scene.objects.clear()
@@ -297,6 +297,10 @@ QMenu::item:selected {
             add(Line(app, pos=(1, 0, 1), rot=(0, 0, 90)))
             ####
 
+            if self.shouldInit():
+                initAll = True
+            else:
+                initAll = False
             for view, pred_result in all_results.items():
                 if pred_result == None:
                     print(f"At frame index {frame_index}, the pred_result for view {view} is None!")
@@ -334,7 +338,10 @@ QMenu::item:selected {
                         
                         DataManager().update_result_width(view, annotated_qimage.width())
 
-                        self.addCrossSection(annotated_qimage, view, frame_index)
+                        if initAll:
+                            self.addCrossSection(annotated_qimage, view, frame_index)
+                        else:
+                            self.modifyCrossSection(annotated_qimage, view, frame_index)
                     except Exception as e:
                         print(e)
 
@@ -500,6 +507,66 @@ QMenu::item:selected {
         label.setPixmap(pixmap)
         label.tag = f"{view},{frame_index},{new_degree}"
         label.show()
+
+    def findCrossSection(self, grid_layout, view):
+        i = 0
+        for row in range(grid_layout.rowCount()):
+            for column in range(grid_layout.columnCount()):
+                child = grid_layout.itemAtPosition(row, column).widget()
+                tag = child.findChild(QLabel, "label_8").tag
+                if tag.split(",")[0] == view:
+                    cross_section = child
+                    return cross_section
+                i = i + 1
+                if i == grid_layout.count():
+                    return None
+        return None
+
+    def modifyCrossSection(self, annotated_qimage, view, frame_index):
+        grid_layout = self.ui.gridWidget.layout()
+        cross_section = self.findCrossSection(grid_layout, view)
+
+        scrollArea_width = self.ui.scrollAreaWidgetContents_3.width()
+        # print(f"scrollArea_width: {scrollArea_width}")
+        new_pixmap_width = (scrollArea_width - 18 - 12) / 3 # TODO change 3 to N
+
+        pixmap = QtGui.QPixmap.fromImage(annotated_qimage)
+        pixmap = pixmap.scaledToWidth(new_pixmap_width)
+        label = cross_section.findChild(QLabel, "label_8")
+        label.setPixmap(pixmap)
+
+        # if label.tag == "":
+        #     label.tag = f"{view},{frame_index},0"
+        # else:
+        #     # TODO more serious error handling
+        #     new_degree = (int(label.tag.split(",")[2]) - 90) % 360
+        #     label.tag = f"{view},{frame_index},{new_degree}"
+        label.tag = f"{view},{frame_index},0"
+
+        label.show()
+
+        view_button = cross_section.findChild(QPushButton, "pushButton_13")
+        view_button.setText(view)
+        view_button.clicked.connect(lambda: self.setHighlight(view, frame_index))
+
+        export_button = cross_section.findChild(QPushButton, "pushButton_9")
+        export_button.clicked.connect(lambda: self.export(annotated_qimage, view, frame_index))
+
+        counterclockwise_rotate_button = cross_section.findChild(QPushButton, "pushButton")
+        clockwise_rotate_button = cross_section.findChild(QPushButton, "pushButton_2")
+        counterclockwise_rotate_button.clicked.connect(lambda: self.counterclockwiseRotate90(annotated_qimage, label, view, frame_index))
+        clockwise_rotate_button.clicked.connect(lambda: self.clockwiseRotate90(annotated_qimage, label, view, frame_index))
+
+        # self.ui.gridWidget.addWidget(cross_section)
+        fixed_width = new_pixmap_width
+        label.parent().setFixedWidth(fixed_width)
+        label.setFixedHeight(fixed_width)
+
+    def shouldInit(self):
+        count = self.ui.gridWidget.layout().count()
+        if count == 0:
+            return True
+        return False
 
     def addCrossSection(self, annotated_qimage, view, frame_index):
         loader = QtUiTools.QUiLoader()
