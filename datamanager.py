@@ -24,6 +24,8 @@ class DataManager:
 
         self._highlighted_view: str = ""
 
+        self._server_base_url = "http://localhost:8000/"
+
     @property
     def dicom_number_of_frames(self):
         return self._dicom_number_of_frames
@@ -65,6 +67,13 @@ class DataManager:
     @highlighted_view.setter
     def highlighted_view(self, value):
         self._highlighted_view = value
+
+    @property
+    def server_base_url(self):
+        return self._server_base_url
+    @server_base_url.setter
+    def server_base_url(self, value):
+        self._server_base_url = value
 
     def get_pred_result(self, frame_index: int):
         return self.frame_index_to_pred_result.get(frame_index)

@@ -1,7 +1,7 @@
 import sys
 from util import resource_path
 from PySide2 import QtGui, QtUiTools, QtCore
-from PySide2.QtWidgets import QApplication, QMainWindow, QFileDialog, QLabel, QPushButton, QAction, QMenu
+from PySide2.QtWidgets import QApplication, QMainWindow, QFileDialog, QLabel, QPushButton, QAction, QMenu, QInputDialog
 from ui_mainwindow import Ui_MainWindow
 import os
 import threading
@@ -27,21 +27,23 @@ class MainWindow(QMainWindow):
         ##
 
         #### Top Menu Bar BEGIN ####
-        # Create actions
         self.action_import_all_time_frame = QAction("Analyze all time frames", self)
+        self.action_import_all_time_frame.triggered.connect(self.import_dicom_and_analyze_all)
+
         self.action_import_selected_time_frame = QAction("Analyze only the selected time frame", self)
+        self.action_import_selected_time_frame.triggered.connect(self.import_dicom_and_analyze_selected)
 
         ### Export all cross-section images in all time frames
         self.action_export_all_cross_section_all_time_frames = QAction("Export all cross-section images in all time frames", self)
+        self.action_export_all_cross_section_all_time_frames.triggered.connect(self.export_all)
+        
         ### Export all cross-section images in the current time frame
         self.action_export_all_cross_section_selected_time_frame = QAction("Export all cross-section images in the current time frame", self)
-
-        # Connect actions to slots
-        self.action_import_all_time_frame.triggered.connect(self.import_dicom_and_analyze_all)
-        self.action_import_selected_time_frame.triggered.connect(self.import_dicom_and_analyze_selected)
-
-        self.action_export_all_cross_section_all_time_frames.triggered.connect(self.export_all)
         self.action_export_all_cross_section_selected_time_frame.triggered.connect(self.export_selected_time_frame)
+
+        # Create a Set Server Address action
+        self.action_set_server = QAction("Set Server Base URL (e.g. http://localhost:8000/)", self)
+        self.action_set_server.triggered.connect(self.set_server_address)
 
         # Create menus
         self.import_menu = QMenu("Import and Process DICOM file", self)
@@ -51,12 +53,15 @@ class MainWindow(QMainWindow):
         self.export_menu = QMenu("Export cross-section images", self)
         self.export_menu.addAction(self.action_export_all_cross_section_all_time_frames)
         self.export_menu.addAction(self.action_export_all_cross_section_selected_time_frame)
+
+        self.options_menu = QMenu("Options", self)
+        self.options_menu.addAction(self.action_set_server)
         
         # Create menu bar
         self.menu_bar = self.menuBar()
         self.menu_bar.addMenu(self.import_menu)
         self.menu_bar.addMenu(self.export_menu)
-
+        self.menu_bar.addMenu(self.options_menu)
         # Set menu bar as the main window's menu bar
         self.setMenuBar(self.menu_bar)
 
@@ -99,6 +104,32 @@ QMenu::item:selected {
         self.ui.pushButton_21.clicked.connect(lambda: self.play_or_pause_cross_section(self.ui.pushButton_21))
         self.clearAllCrossSections()
 
+    def set_server_address(self):
+        address, ok = QInputDialog.getText(self, "Server Address", "Enter the server address:", text=DataManager().server_base_url)
+
+        if ok:
+            # Do something with the server address (e.g., store it, use it for connection, etc.)
+            print("Server address:", address)
+            DataManager().server_base_url = address
+            try:
+                response = requests.get(address)
+                loader = QtUiTools.QUiLoader()
+                ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+                ui_file.open(QtCore.QFile.ReadOnly)
+                dialog = loader.load(ui_file)
+                dialog.setWindowTitle("Notification")
+                dialog.label.setText("Server connection test successful!")
+                dialog.label_2.setText("")
+                dialog.exec_()
+            except:
+                loader = QtUiTools.QUiLoader()
+                ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+                ui_file.open(QtCore.QFile.ReadOnly)
+                dialog = loader.load(ui_file)
+                dialog.label.setText("Server cannot be connected!")
+                dialog.label_2.setText("")
+                dialog.exec_()
+        
     def export_all(self):
         dialog = QFileDialog()        
         folder_path = dialog.getExistingDirectory(self, "Select folder to save PNG files")
@@ -515,7 +546,10 @@ QMenu::item:selected {
         event.set()
 
     def send_dicom(self, serialized_data, ui):
-        url = "http://localhost:8000/normalize_dicom_array"
+        base_url = DataManager().server_base_url
+        if not base_url.endswith("/"):
+            base_url = base_url + "/"
+        url = f"{base_url}normalize_dicom_array"
         headers = {"Content-Type": "application/octet-stream"}
         try:
             response = requests.post(url, data=serialized_data, headers=headers)

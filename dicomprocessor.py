@@ -25,7 +25,10 @@ def process_frame(frame, frame_index):
     pickled_data = pickle.dumps(frame)
     compressed_data = blosc.compress(pickled_data)
 
-    url = "http://localhost:8000/process_frame"
+    base_url = DataManager().server_base_url
+    if not base_url.endswith("/"):
+        base_url = base_url + "/"
+    url = f"{base_url}process_frame"
     headers = {"Content-Type": "application/octet-stream"}
 
     try:
