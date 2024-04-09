@@ -12,7 +12,6 @@ import blosc
 import numpy as np
 import base64
 
-from formatconverter import dicom_to_array, pad4d
 import PlaneReconstructionUtils
 from matplotlib import pyplot
 from PIL import Image
@@ -276,115 +275,7 @@ def thread_pool_test(frame, frame_index):
     print("Worker thread finishing")
     return (frame_index, r)
 
-def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index):
-    try:
-        image4D, spacing4D = dicom_to_array(filepath)
-    except FileNotFoundError as e:
-        loader = QtUiTools.QUiLoader()
-        ui_file = QtCore.QFile(resource_path("errordialog.ui"))
-        ui_file.open(QtCore.QFile.ReadOnly)
-        dialog = loader.load(ui_file)
-        dialog.label.setText("Please select a valid filepath!")
-        dialog.label_2.setText("")
-        dialog.exec_()
-        return
-    
-    display_video_info(ui)
-
-    NUM_FRAMES = image4D.shape[0]
-
-    ## ui loading bar
-    # ui.progressBar.setValue(10)
-    # ui.progressBar.setHidden(False)
-    ##
-
-    # ui slider BEGIN
-    ui.horizontalSlider.setMinimum(0)
-    ui.horizontalSlider.setMaximum(NUM_FRAMES - 1)
-    ui.label_12.setText("0")
-    ui.label_13.setText(str(NUM_FRAMES - 1))
-    # ui slider END
-
-    print(image4D.shape)
-    print(spacing4D.shape)
-
-    compressed_data = []
-    for i in range(NUM_FRAMES):
-        pickled_image4D = pickle.dumps(image4D[i])
-        compressed_image4D = blosc.compress(pickled_image4D)
-        encoded_image4D = base64.b64encode(compressed_image4D)
-        compressed_data.append(encoded_image4D)
-
-    pickled_spacing4D = pickle.dumps(spacing4D)
-    compressed_spacing4D = blosc.compress(pickled_spacing4D)
-    encoded_spacing4D = base64.b64encode(compressed_spacing4D)
-    compressed_data.append(encoded_spacing4D)
-
-    serialized_data = b";".join(compressed_data)
-
-    url = "http://localhost:8000/normalize_dicom_array"
-    headers = {"Content-Type": "application/octet-stream"}
-    try:
-        response = requests.post(url, data=serialized_data, headers=headers)
-
-        ui.label_17.setText(f"DICOM File (Video) Info:")
-
-        if response.status_code == 200:
-            compressed_data = response.content
-
-            # Decompress the received data
-            pickled_data = blosc.decompress(compressed_data)
-
-            # Deserialize the pickled data to a NumPy array
-            array_4d = pickle.loads(pickled_data)
-
-            with open(resource_path(os.path.join("pickle", "array_4d.pickle")), "wb") as file:
-                pickle.dump(array_4d, file)
-        else:
-            print("Error:", response.text)
-            loader = QtUiTools.QUiLoader()
-            ui_file = QtCore.QFile(resource_path("errordialog.ui"))
-            ui_file.open(QtCore.QFile.ReadOnly)
-            dialog = loader.load(ui_file)
-            dialog.label.setText("normalize_dicom_array response is not 200")
-            dialog.label_2.setText("")
-            dialog.exec_()
-            return
-    except:
-        # print("Loading pickle data...")
-        # loader = QtUiTools.QUiLoader()
-        # ui_file = QtCore.QFile(resource_path("errordialog.ui"))
-        # ui_file.open(QtCore.QFile.ReadOnly)
-        # dialog = loader.load(ui_file)
-        # dialog.setWindowTitle("Notification")
-        # dialog.label.setText("Server cannot be connected!")
-        # dialog.label_2.setText("Loading sample data...")
-        # dialog.exec_()
-        try:
-            with open(resource_path(os.path.join("pickle", "array_4d.pickle")), "rb") as file:
-                array_4d = pickle.load(file)
-                ui.label_17.setText(f"(Using Sample Data) DICOM File (Video) Info:")
-        except:
-            # loader = QtUiTools.QUiLoader()
-            # ui_file = QtCore.QFile(resource_path("errordialog.ui"))
-            # ui_file.open(QtCore.QFile.ReadOnly)
-            # dialog = loader.load(ui_file)
-            # dialog.label.setText("Server cannot be connected")
-            # dialog.label_2.setText("and no sample data available!")
-            # dialog.exec_()
-            ui.label_17.setText(f"Server cannot be connected and no sample data available!")
-            return
-    # except requests.exceptions.ConnectionError as e:
-    #     print(e)
-    #     loader = QtUiTools.QUiLoader()
-    #     ui_file = QtCore.QFile(resource_path("errordialog.ui"))
-    #     ui_file.open(QtCore.QFile.ReadOnly)
-    #     dialog = loader.load(ui_file)
-    #     dialog.label.setText("Server connection error!")
-    #     dialog.label_2.setText("Check server status & server url!")
-    #     dialog.exec_()
-    #     return
-
+def process_dicom(analyze_all, array_4d, ui: Ui_MainWindow, selected_frame_index):
     data_4d_padded = array_4d
 
     # print(data_4d_padded)
@@ -494,12 +385,6 @@ def process_dicom(analyze_all, filepath, ui: Ui_MainWindow, selected_frame_index
     ## ui
     # ui.progressBar.setHidden(True)
     ##
-
-def display_video_info(ui: Ui_MainWindow):
-    ui.label_16.setText(f"Video - Number of Frames: {DataManager().dicom_number_of_frames}")
-    ui.label_15.setText(f"Video - Average Frame Time: {round(DataManager().dicom_average_frame_time_in_ms, 2)}ms")
-    ui.label_9.setText(f"Video - FPS: {round(DataManager().dicom_fps, 2)}")
-    ui.label_14.setText(f"Video - Total Duration: {round(DataManager().dicom_total_duration_in_s, 2)}s")
 
 def pyplot_to_qimage():
     buf = io.BytesIO()
