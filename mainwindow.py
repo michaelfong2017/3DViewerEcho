@@ -492,7 +492,8 @@ QMenu::item:selected {
                     False,
                     array_4d,
                     self.ui,
-                    self.ui.horizontalSlider.value(),
+                    # self.ui.horizontalSlider.value(),
+                    -1,
                 ),
             )
             t2.start()

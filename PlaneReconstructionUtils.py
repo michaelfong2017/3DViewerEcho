@@ -30,6 +30,18 @@ import logging
 # import cv2
 from itertools import combinations
 
+
+VIEW_STRUCTS = {
+    'A2C': [0, 5, 25],
+    'A4C': [1, 2, 14, 21, 22, 31],
+    'SAXA': [12, 28, 29],
+    'SAXB': [8, 9, 23, 30], # 0, 1, 3
+    'ALAX': [3, 4, 7, 24], # 1, 2, 3
+    'SAXM': [6, 10, 11, 13, 26, 27], # 1, 3, 5
+    'SAXMV': [15, 16, 17, 18, 19, 20], # 0, 1, 5
+    'all': [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]
+}
+
 #### Data Utils #####
 def normalize_echo(data):
     max_echo = data.max()
@@ -972,7 +984,7 @@ def HandleRotationsNumpy(numpy_img, coords, coords_indexes, up_vector_of_2d_in_3
     if(up_vector_of_2d_in_3d_space[1] == 0):
         # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         # print("Vertical Plane:") # TODO
-        logging.warning("Horizontal Plane")
+        # logging.warning("Horizontal Plane")
         # SAXA-LV apex
         # print(coords[2])
         rotated_image = rotate(numpy_img, 90, reshape=False)

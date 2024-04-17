@@ -66,26 +66,29 @@ def process_frame(frame, frame_index):
             pass
 
     all_results = {}
+    all_landmarks = {}
     i = 0
     for view, array_2d in view_to_array_2d.items():
-        # print("---------------------------------------------------------------")
-        # print(view)
+        print("---------------------------------------------------------------")
+        print(view)
         coords_raw = array_2d
 
-        # print("Received: ", pred_coords_raw)
+        structures = PlaneReconstructionUtils.VIEW_STRUCTS[view]
+        print("Received: ", coords_raw)
+        struct_counter=0
+        for s in structures:
+            all_landmarks[s] = coords_raw[struct_counter]
+            struct_counter+=1
 
         st = time.perf_counter()
-
+        # print(all_landmarks)
         try:
 
             # extract the content of the plane and project onto 2d image. Also do the same for the coordinates for visualization.
             # pred_vs, pred_mapped_coords, pred_up = FindVisualFromCoords(pred_coords_raw, data_3d_padded)
             # Note: You can modify time_index value to get plane visual from other time slices
-            # pred_vs, pred_mapped_coords, pred_mapped_coords_index, pred_up, normal = PlaneReconstructionUtils.FindVisualFromCoords(
-            #     pred_coords_raw, frame, view
-            # )
             vs, coords_2d, coords_index, up_vector_2d, normal_3d, isFlat, axis, axis_index, inslice_coords_vrf, size_slice_x, size_slice_y = PlaneReconstructionUtils.FindVisualFromCoordsOnce(
-                    coords_raw, frame, view)
+                    coords_raw, frame, view, truth=False, all_landmarks=all_landmarks)
 
             nx, ny, nz = normal_3d[0], normal_3d[1], normal_3d[2]
             rx, ry, rz = eulerFromNormal(nx, ny, nz)
@@ -105,6 +108,8 @@ def process_frame(frame, frame_index):
             # Rotate Image
             slice_image, rotated_coords_2d = PlaneReconstructionUtils.HandleRotationsNumpy(vs, coords_2d, coords_index, up_vector_2d, view)
             slice_image, rotated_coords_2d = PlaneReconstructionUtils.ViewSpecificRotations(slice_image, rotated_coords_2d, view)
+            min_y = max_y = min_x = max_x = 0
+            #slice_image, rotated_coords_2d, min_y, max_y, min_x, max_x = PlaneReconstructionUtils.CropImageAndReturnPadding(slice_image, rotated_coords_2d, spacing=10)
             
             # Convert Image to PIL image
             slice_image = Image.fromarray(slice_image)
@@ -123,7 +128,7 @@ def process_frame(frame, frame_index):
             annotated_qimage = pyplot_to_qimage()
 
             et = time.perf_counter()
-            print("Execution time: ", et - st)  # 7.5s on jerry's computer
+            # print("Execution time: ", et - st)
 
             all_results.update({view: (slice_image, rotated_coords_2d, annotated_qimage, rx, ry, rz, cx, cy, cz)})
 
@@ -132,7 +137,7 @@ def process_frame(frame, frame_index):
             all_results.update({view: None})
 
         i += 1
-        view_to_array_2d[view] = [coords_2d, coords_raw, coords_index, up_vector_2d, normal_3d, isFlat, axis, axis_index, inslice_coords_vrf, size_slice_x, size_slice_y]
+        view_to_array_2d[view] = [coords_2d, coords_raw, coords_index, up_vector_2d, normal_3d, isFlat, axis, axis_index, inslice_coords_vrf, size_slice_x, size_slice_y, min_y, max_y, min_x, max_x]
 
     return frame_index, all_results, view_to_array_2d
 
@@ -142,7 +147,7 @@ def process_frame_with_known_matrix(frame, frame_index, view_to_array_2d):
     for view, info_list in view_to_array_2d.items():
 
         # isPerfectSlice means perfectly horizontal or vertical slice. so no calculations needed to extract.
-        mapped_coords, coords_raw, mapped_coords_index, pred_up, normal, isPerfectSlice, axis, axis_index, inslice_coords_vrf, size_slice_x, size_slice_y = info_list
+        mapped_coords, coords_raw, mapped_coords_index, pred_up, normal, isPerfectSlice, axis, axis_index, inslice_coords_vrf, size_slice_x, size_slice_y, min_y, max_y, min_x, max_x = info_list
 
         st = time.perf_counter()
 
@@ -171,8 +176,8 @@ def process_frame_with_known_matrix(frame, frame_index, view_to_array_2d):
 
             # Rotate Image
             slice_image, rotated_coords_2d = PlaneReconstructionUtils.HandleRotationsNumpy(visual, mapped_coords, mapped_coords_index, pred_up, view)
-   
             slice_image, rotated_coords_2d = PlaneReconstructionUtils.ViewSpecificRotations(slice_image, rotated_coords_2d, view)
+            # slice_image, rotated_coords_2d = PlaneReconstructionUtils.CropImageWithGivenPadding(slice_image, rotated_coords_2d, min_y, max_y, min_x, max_x, spacing=10)
             
             # Convert Imag eto PIL image
             slice_image = Image.fromarray(slice_image)
@@ -191,7 +196,7 @@ def process_frame_with_known_matrix(frame, frame_index, view_to_array_2d):
             annotated_qimage = pyplot_to_qimage()
 
             et = time.perf_counter()
-            print("Execution time: ", et - st)  # 7.5s on jerry's computer
+            # print("Execution time: ", et - st)
 
             all_results.update({view: (slice_image, rotated_coords_2d, annotated_qimage, rx, ry, rz, cx, cy, cz)})
 
@@ -288,6 +293,10 @@ def process_dicom(analyze_all, array_4d, ui: Ui_MainWindow, selected_frame_index
 
     NUM_FRAMES = data_4d_padded.shape[0]
     print(f"NUM_FRAMES: {NUM_FRAMES}")
+
+    if(selected_frame_index == -1):
+        selected_frame_index = int(NUM_FRAMES / 2)
+        selected_frame_index=10
 
     DataManager().clear_all_results()
     ui.gridWidget.clearAllItems(ui.gridWidget)
