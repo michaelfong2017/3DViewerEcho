@@ -8,7 +8,7 @@ From World to OpenGL, x to x, y to -z, z to y
 """
 
 
-def find_center_point(points, view=""):
+def find_center_point(points, data_3d_padded_max_length, view=""):
     # Convert points to NumPy array
     points = np.array(points)
 
@@ -16,11 +16,10 @@ def find_center_point(points, view=""):
     center_point = np.mean(points, axis=0)
 
     # print(f"{view} (world coordinates): {np.round(center_point, 2)}")
-
     gl_point = np.zeros(3)
-    gl_point[0] = center_point[0] / 213.0 * 2.0 - 1.0
-    gl_point[1] = center_point[2] / 213.0 * 2.0 - 1.0
-    gl_point[2] = -1 * (center_point[1] / 213.0 * 2.0 - 1.0)
+    gl_point[0] = center_point[0] / data_3d_padded_max_length * 2.0 - 1.0
+    gl_point[1] = center_point[2] / data_3d_padded_max_length * 2.0 - 1.0
+    gl_point[2] = -1 * (center_point[1] / data_3d_padded_max_length * 2.0 - 1.0)
 
     # print(f"{view} (OpenGL coordinates): {np.round(gl_point, 2)}")
 
@@ -88,35 +87,35 @@ if __name__ == "__main__":
         [128.1328125, 116.484375, 78.2109375],
         [109.828125, 96.515625, 74.8828125],
     ]
-    center = find_center_point(points, "A2C")
+    center = find_center_point(points, 213, "A2C")
 
     points = [
         [103.171875, 108.1640625, 158.0859375],
         [71.5546875, 106.5, 88.1953125],
         [129.796875, 103.171875, 74.8828125],
     ]
-    center = find_center_point(points, "A4C")
+    center = find_center_point(points, 213, "A4C")
 
     points = [
         [101.5078125, 116.484375, 74.8828125],
         [93.1875, 123.140625, 94.8515625],
         [121.4765625, 96.515625, 73.21875],
     ]
-    center = find_center_point(points, "ALAX")
+    center = find_center_point(points, 213, "ALAX")
 
     points = [
         [88.1953125, 103.171875, 112.6015625],
         [116.484375, 103.171875, 112.6015625],
         [69.890625, 108.1640625, 112.6015625],
     ]
-    center = find_center_point(points, "SAXM")
+    center = find_center_point(points, 213, "SAXM")
 
     points = [
         [111.4921875, 109.828125, 84.3125],
         [104.8359375, 103.171875, 84.3125],
         [111.4921875, 94.8515625, 84.3125],
     ]
-    center = find_center_point(points, "SAXMV")
+    center = find_center_point(points, 213, "SAXMV")
 
 
 """

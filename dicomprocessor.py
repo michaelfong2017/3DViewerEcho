@@ -95,12 +95,12 @@ def process_frame(frame, frame_index):
             # print(f"view: {view}; (rx, ry, rz): ({rx}, {ry}, {rz})")
 
             points = [coords_raw[i] for i in coords_index]
-            center_point = find_center_point(points)
+            center_point = find_center_point(points, DataManager().data_3d_padded_max_length)
 
             normalized_point = np.zeros(3)
-            normalized_point[0] = center_point[0] / 213.0
-            normalized_point[1] = center_point[1] / 213.0
-            normalized_point[2] = center_point[2] / 213.0
+            normalized_point[0] = center_point[0] / DataManager().data_3d_padded_max_length * 1.0
+            normalized_point[1] = center_point[1] / DataManager().data_3d_padded_max_length * 1.0
+            normalized_point[2] = center_point[2] / DataManager().data_3d_padded_max_length * 1.0
 
             cx, cy, cz = normalized_point
             # print(f"view: {view}; (cx, cy, cz): ({cx}, {cy}, {cz})")
@@ -164,12 +164,12 @@ def process_frame_with_known_matrix(frame, frame_index, view_to_array_2d):
             # print(f"view: {view}; (rx, ry, rz): ({rx}, {ry}, {rz})")
 
             points = [coords_raw[i] for i in mapped_coords_index]
-            center_point = find_center_point(points)
+            center_point = find_center_point(points, DataManager().data_3d_padded_max_length)
 
             normalized_point = np.zeros(3)
-            normalized_point[0] = center_point[0] / 213.0
-            normalized_point[1] = center_point[1] / 213.0
-            normalized_point[2] = center_point[2] / 213.0
+            normalized_point[0] = center_point[0] / DataManager().data_3d_padded_max_length * 1.0
+            normalized_point[1] = center_point[1] / DataManager().data_3d_padded_max_length * 1.0
+            normalized_point[2] = center_point[2] / DataManager().data_3d_padded_max_length * 1.0
 
             cx, cy, cz = normalized_point
             # print(f"view: {view}; (cx, cy, cz): ({cx}, {cy}, {cz})")
@@ -289,7 +289,7 @@ def process_dicom(analyze_all, array_4d, ui: Ui_MainWindow, selected_frame_index
     # print(data_4d_padded)
     print(data_4d_padded.shape)
 
-    DataManager().data_3d_padded_max_length = 213
+    DataManager().data_3d_padded_max_length = data_4d_padded.shape[1]
 
     NUM_FRAMES = data_4d_padded.shape[0]
     print(f"NUM_FRAMES: {NUM_FRAMES}")
