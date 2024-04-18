@@ -316,6 +316,9 @@ QMenu::item:selected {
             app = self.ui.openGLWidget
             app.scene.objects.clear()
             add = app.scene.add_object
+            add(Quad(app, tex_id="x=0", pos=(0, 0, 0), rot=(0, -90, 0), brightness=1.0)) # x=0
+            add(Quad(app, tex_id="y=0", pos=(0, 0, 0), rot=(0, 0, 0), brightness=1.0)) # y=0
+            add(Quad(app, tex_id="z=0", pos=(0, 0, 0), rot=(90, 0, 0), brightness=1.0)) # z=0
             add(Line(app, pos=(1, 0, 0), color=(1, 0, 0, 1))) # x-axis
             add(Line(app, pos=(0, 1, 0), rot=(0, 0, 90), color=(0, 1, 0, 1))) # y-axis
             add(Line(app, pos=(0, 0, 1), rot=(0, 90, 0), color=(0, 0, 1, 1))) # z-axis
@@ -631,6 +634,9 @@ QMenu::item:selected {
             app = self.ui.openGLWidget
             app.scene.objects.clear()
             add = app.scene.add_object
+            add(Quad(app, tex_id="x=0", pos=(0, 0, 0), rot=(0, -90, 0), brightness=1.0)) # x=0
+            add(Quad(app, tex_id="y=0", pos=(0, 0, 0), rot=(0, 0, 0), brightness=1.0)) # y=0
+            add(Quad(app, tex_id="z=0", pos=(0, 0, 0), rot=(90, 0, 0), brightness=1.0)) # z=0
             add(Line(app, pos=(1, 0, 0), color=(1, 0, 0, 1))) # x-axis
             add(Line(app, pos=(0, 1, 0), rot=(0, 0, 90), color=(0, 1, 0, 1))) # y-axis
             add(Line(app, pos=(0, 0, 1), rot=(0, 90, 0), color=(0, 0, 1, 1))) # z-axis

@@ -22,6 +22,15 @@ class Texture:
         self.textures["test-ALAX-transparent"] = self.get_texture(
             path=resource_path("textures/test-ALAX-transparent.png")
         )
+        self.textures["x=0"] = self.get_texture(
+            path=resource_path("textures/x=0.png")
+        )
+        self.textures["y=0"] = self.get_texture(
+            path=resource_path("textures/y=0.png")
+        )
+        self.textures["z=0"] = self.get_texture(
+            path=resource_path("textures/z=0.png")
+        )
         # self.textures["test-SAXMV"] = self.get_texture(path="textures/test-SAXMV.png")
         # self.textures["test-SAXM"] = self.get_texture(path="textures/test-SAXM.png")
 

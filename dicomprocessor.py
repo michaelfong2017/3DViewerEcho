@@ -83,7 +83,19 @@ def process_frame(frame, frame_index):
         st = time.perf_counter()
         # print(all_landmarks)
         try:
-
+            # v0 = frame[106, :, :]
+            # v0 = Image.fromarray(v0)
+            # v0 = v0.convert("L")
+            # v0.save("x=0.png") # then rotate 270 degree clockwise manually
+            # v1 = frame[:, 106, :]
+            # v1 = Image.fromarray(v1)
+            # v1 = v1.convert("L")
+            # v1.save("y=0.png") # then rotate 270 degree clockwise manually
+            # v2 = frame[:, :, 106]
+            # v2 = Image.fromarray(v2)
+            # v2 = v2.convert("L")
+            # v2.save("z=0.png") # then rotate 270 degree clockwise manually
+            
             # extract the content of the plane and project onto 2d image. Also do the same for the coordinates for visualization.
             # pred_vs, pred_mapped_coords, pred_up = FindVisualFromCoords(pred_coords_raw, data_3d_padded)
             # Note: You can modify time_index value to get plane visual from other time slices
