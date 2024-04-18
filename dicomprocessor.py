@@ -109,8 +109,7 @@ def process_frame(frame, frame_index):
             slice_image, rotated_coords_2d = PlaneReconstructionUtils.HandleRotationsNumpy(vs, coords_2d, coords_index, up_vector_2d, view)
             slice_image, rotated_coords_2d = PlaneReconstructionUtils.ViewSpecificRotations(slice_image, rotated_coords_2d, view)
             min_y = max_y = min_x = max_x = 0
-            #slice_image, rotated_coords_2d, min_y, max_y, min_x, max_x = PlaneReconstructionUtils.CropImageAndReturnPadding(slice_image, rotated_coords_2d, spacing=10)
-            
+            slice_image, rotated_coords_2d, min_y, max_y, min_x, max_x = PlaneReconstructionUtils.CropImageAndReturnPadding(slice_image, rotated_coords_2d, spacing=10)
             # Convert Image to PIL image
             slice_image = Image.fromarray(slice_image)
             slice_image = slice_image.convert("L")
@@ -173,11 +172,10 @@ def process_frame_with_known_matrix(frame, frame_index, view_to_array_2d):
 
             cx, cy, cz = normalized_point
             # print(f"view: {view}; (cx, cy, cz): ({cx}, {cy}, {cz})")
-
             # Rotate Image
             slice_image, rotated_coords_2d = PlaneReconstructionUtils.HandleRotationsNumpy(visual, mapped_coords, mapped_coords_index, pred_up, view)
             slice_image, rotated_coords_2d = PlaneReconstructionUtils.ViewSpecificRotations(slice_image, rotated_coords_2d, view)
-            # slice_image, rotated_coords_2d = PlaneReconstructionUtils.CropImageWithGivenPadding(slice_image, rotated_coords_2d, min_y, max_y, min_x, max_x, spacing=10)
+            slice_image, rotated_coords_2d = PlaneReconstructionUtils.CropImageWithGivenPadding(slice_image, rotated_coords_2d, min_y, max_y, min_x, max_x, spacing=10)
             
             # Convert Imag eto PIL image
             slice_image = Image.fromarray(slice_image)
@@ -294,9 +292,8 @@ def process_dicom(analyze_all, array_4d, ui: Ui_MainWindow, selected_frame_index
     NUM_FRAMES = data_4d_padded.shape[0]
     print(f"NUM_FRAMES: {NUM_FRAMES}")
 
-    if(selected_frame_index == -1):
+    if (selected_frame_index == -1):
         selected_frame_index = int(NUM_FRAMES / 2)
-        selected_frame_index=10
 
     DataManager().clear_all_results()
     ui.gridWidget.clearAllItems(ui.gridWidget)

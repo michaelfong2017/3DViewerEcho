@@ -198,6 +198,17 @@ def CropImageAndReturnPadding(img, coords, spacing=5):
     min_x -= spacing
     max_x += spacing
 
+    height = max_y - min_y
+    width = max_x - min_x
+    if height > width:
+        diff = height - width
+        min_x = min_x - diff // 2
+        max_x = max_x + diff // 2
+    elif height < width:
+        diff = width - height
+        min_y = min_y - diff // 2
+        max_y = max_y + diff // 2
+
     # Ensure that the bounding box remains within the image boundaries
     min_y = max(0, min_y)
     max_y = min(img.shape[0] - 1, max_y)
