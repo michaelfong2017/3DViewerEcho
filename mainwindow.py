@@ -308,6 +308,7 @@ QMenu::item:selected {
         self.ui.label_10.setText(f"Selected time frame index: {frame_index}")
 
         all_results = DataManager().get_pred_result(frame_index)
+        all_center_images = DataManager().get_center_images(frame_index)
         
         if all_results == None:
             self.clearAllCrossSections()
@@ -316,9 +317,9 @@ QMenu::item:selected {
             app = self.ui.openGLWidget
             app.scene.objects.clear()
             add = app.scene.add_object
-            add(Quad(app, tex_id="x=0", pos=(0, 0, 0), rot=(0, -90, 0), brightness=1.0)) # x=0
-            add(Quad(app, tex_id="y=0", pos=(0, 0, 0), rot=(0, 0, 0), brightness=1.0)) # y=0
-            add(Quad(app, tex_id="z=0", pos=(0, 0, 0), rot=(90, 0, 0), brightness=1.0)) # z=0
+            add(Quad(app, tex_pil=all_center_images.get("x=0"), pos=(0, 0, 0), rot=(0, -90, 0), brightness=1.0)) # x=0
+            add(Quad(app, tex_pil=all_center_images.get("y=0"), pos=(0, 0, 0), rot=(0, 0, 0), brightness=1.0)) # y=0
+            add(Quad(app, tex_pil=all_center_images.get("z=0"), pos=(0, 0, 0), rot=(90, 0, 0), brightness=1.0)) # z=0
             add(Line(app, pos=(1, 0, 0), color=(1, 0, 0, 1))) # x-axis
             add(Line(app, pos=(0, 1, 0), rot=(0, 0, 90), color=(0, 1, 0, 1))) # y-axis
             add(Line(app, pos=(0, 0, 1), rot=(0, 90, 0), color=(0, 0, 1, 1))) # z-axis
@@ -585,7 +586,6 @@ QMenu::item:selected {
             try:
                 with open(resource_path(os.path.join("pickle", "array_4d.pickle")), "rb") as file:
                     array_4d = pickle.load(file)
-                    ui.label_17.setText(f"(Using Sample Data) DICOM File (Video) Info:")
                     print("Loading pickle data...")
                     loader = QtUiTools.QUiLoader()
                     ui_file = QtCore.QFile(resource_path("errordialog.ui"))
@@ -595,6 +595,7 @@ QMenu::item:selected {
                     dialog.label.setText("Server cannot be connected!")
                     dialog.label_2.setText("Loading sample data...")
                     dialog.exec_()
+                    ui.label_17.setText(f"(Using Sample Data) DICOM File (Video) Info:")
             except:
                 ui.label_17.setText(f"Server cannot be connected and no sample data available!")
                 loader = QtUiTools.QUiLoader()
@@ -629,14 +630,15 @@ QMenu::item:selected {
         else:
             DataManager().highlighted_view = view
         all_results = DataManager().get_pred_result(frame_index)
+        all_center_images = DataManager().get_center_images(frame_index)
         if not all_results == None:
             ## Update OpenGL cross sections
             app = self.ui.openGLWidget
             app.scene.objects.clear()
             add = app.scene.add_object
-            add(Quad(app, tex_id="x=0", pos=(0, 0, 0), rot=(0, -90, 0), brightness=1.0)) # x=0
-            add(Quad(app, tex_id="y=0", pos=(0, 0, 0), rot=(0, 0, 0), brightness=1.0)) # y=0
-            add(Quad(app, tex_id="z=0", pos=(0, 0, 0), rot=(90, 0, 0), brightness=1.0)) # z=0
+            add(Quad(app, tex_pil=all_center_images.get("x=0"), pos=(0, 0, 0), rot=(0, -90, 0), brightness=1.0)) # x=0
+            add(Quad(app, tex_pil=all_center_images.get("y=0"), pos=(0, 0, 0), rot=(0, 0, 0), brightness=1.0)) # y=0
+            add(Quad(app, tex_pil=all_center_images.get("z=0"), pos=(0, 0, 0), rot=(90, 0, 0), brightness=1.0)) # z=0
             add(Line(app, pos=(1, 0, 0), color=(1, 0, 0, 1))) # x-axis
             add(Line(app, pos=(0, 1, 0), rot=(0, 0, 90), color=(0, 1, 0, 1))) # y-axis
             add(Line(app, pos=(0, 0, 1), rot=(0, 90, 0), color=(0, 0, 1, 1))) # z-axis

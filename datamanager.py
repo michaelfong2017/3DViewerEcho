@@ -15,6 +15,8 @@ class DataManager:
         self.frame_index_to_pred_result = {}
         self.view_to_pred_result_width = {}
 
+        self.frame_index_to_center_images = {} # for planes x=0, y=0 and z=0
+
         self._dicom_number_of_frames: int = -1
         self._dicom_average_frame_time_in_ms: float = 60.0
         self._dicom_fps: float = -1.0
@@ -86,6 +88,12 @@ class DataManager:
 
     def clear_all_results(self):
         self.frame_index_to_pred_result.clear()
+
+    def get_center_images(self, frame_index: int):
+        return self.frame_index_to_center_images.get(frame_index)
+
+    def update_center_images(self, frame_index: int, all_center_images):
+        self.frame_index_to_center_images.update({frame_index: all_center_images})
 
     def get_result_width(self, view):
         return self.view_to_pred_result_width.get(view)

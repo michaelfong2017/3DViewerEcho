@@ -65,8 +65,9 @@ class Cube(BaseModel):
 
 
 class Quad(BaseModel):
-    def __init__(self, app, vao_name='quad', tex_id=0, pos=(0, 0, 0), rot=(0, 0, 0), scale=(1, 1, 1), brightness=1.0):
+    def __init__(self, app, vao_name='quad', tex_pil=None, tex_id=0, pos=(0, 0, 0), rot=(0, 0, 0), scale=(1, 1, 1), brightness=1.0):
         super().__init__(app, vao_name, tex_id, pos, rot, scale, brightness)
+        self.tex_pil = tex_pil
         self.on_init()
 
     def update(self):
@@ -78,7 +79,10 @@ class Quad(BaseModel):
 
     def on_init(self):
         # texture
-        self.texture = self.app.mesh.texture.textures[self.tex_id]
+        if self.tex_pil == None:
+            self.texture = self.app.mesh.texture.textures[self.tex_id]
+        else:
+            self.texture = self.app.mesh.texture.get_texture_from_pil(self.tex_pil)
         self.program['u_texture_0'] = 0
         self.texture.use()
         # mvp

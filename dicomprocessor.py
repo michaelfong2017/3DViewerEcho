@@ -83,19 +83,7 @@ def process_frame(frame, frame_index):
         st = time.perf_counter()
         # print(all_landmarks)
         try:
-            # v0 = frame[106, :, :]
-            # v0 = Image.fromarray(v0)
-            # v0 = v0.convert("L")
-            # v0.save("x=0.png") # then rotate 270 degree clockwise manually
-            # v1 = frame[:, 106, :]
-            # v1 = Image.fromarray(v1)
-            # v1 = v1.convert("L")
-            # v1.save("y=0.png") # then rotate 270 degree clockwise manually
-            # v2 = frame[:, :, 106]
-            # v2 = Image.fromarray(v2)
-            # v2 = v2.convert("L")
-            # v2.save("z=0.png") # then rotate 270 degree clockwise manually
-            
+
             # extract the content of the plane and project onto 2d image. Also do the same for the coordinates for visualization.
             # pred_vs, pred_mapped_coords, pred_up = FindVisualFromCoords(pred_coords_raw, data_3d_padded)
             # Note: You can modify time_index value to get plane visual from other time slices
@@ -150,7 +138,27 @@ def process_frame(frame, frame_index):
         i += 1
         view_to_array_2d[view] = [coords_2d, coords_raw, coords_index, up_vector_2d, normal_3d, isFlat, axis, axis_index, inslice_coords_vrf, size_slice_x, size_slice_y, min_y, max_y, min_x, max_x]
 
-    return frame_index, all_results, view_to_array_2d
+    v0 = frame[106, :, :]
+    v0 = np.rot90(v0, k=1) # rotate 270 degree clockwise
+    v0 = Image.fromarray(v0)
+    v0 = v0.convert("L")
+    # v0.save("x=0.png") 
+    v1 = frame[:, 106, :]
+    v1 = np.rot90(v1, k=1) # rotate 270 degree clockwise
+    v1 = Image.fromarray(v1)
+    v1 = v1.convert("L")
+    # v1.save("y=0.png")
+    v2 = frame[:, :, 106]
+    v2 = np.rot90(v2, k=1) # rotate 270 degree clockwise
+    v2 = Image.fromarray(v2)
+    v2 = v2.convert("L")
+    # v2.save("z=0.png")
+
+    all_center_images = {}
+    all_center_images.update({"x=0": v0})
+    all_center_images.update({"y=0": v1})
+    all_center_images.update({"z=0": v2})
+    return frame_index, all_results, view_to_array_2d, all_center_images
 
 def process_frame_with_known_matrix(frame, frame_index, view_to_array_2d):
     all_results = {}
@@ -217,7 +225,27 @@ def process_frame_with_known_matrix(frame, frame_index, view_to_array_2d):
         i += 1
 
 
-    return frame_index, all_results
+    v0 = frame[106, :, :]
+    v0 = np.rot90(v0, k=1) # rotate 270 degree clockwise
+    v0 = Image.fromarray(v0)
+    v0 = v0.convert("L")
+    # v0.save("x=0.png") 
+    v1 = frame[:, 106, :]
+    v1 = np.rot90(v1, k=1) # rotate 270 degree clockwise
+    v1 = Image.fromarray(v1)
+    v1 = v1.convert("L")
+    # v1.save("y=0.png")
+    v2 = frame[:, :, 106]
+    v2 = np.rot90(v2, k=1) # rotate 270 degree clockwise
+    v2 = Image.fromarray(v2)
+    v2 = v2.convert("L")
+    # v2.save("z=0.png")
+
+    all_center_images = {}
+    all_center_images.update({"x=0": v0})
+    all_center_images.update({"y=0": v1})
+    all_center_images.update({"z=0": v2})
+    return frame_index, all_results, all_center_images
 
 # def process_frame_with_known_landmarks(frame, frame_index, view_to_array_2d):
 #     all_results = {}
@@ -335,9 +363,10 @@ def process_dicom(analyze_all, array_4d, ui: Ui_MainWindow, selected_frame_index
             ),
         )
 
-        frame_index, all_results, view_to_array_2d = result.get()
+        frame_index, all_results, view_to_array_2d, all_center_images = result.get()
 
         DataManager().update_pred_result(frame_index, all_results)
+        DataManager().update_center_images(frame_index, all_center_images)
 
         results.append(result)
 
@@ -385,9 +414,10 @@ def process_dicom(analyze_all, array_4d, ui: Ui_MainWindow, selected_frame_index
                 ),
             )
 
-            frame_index, all_results = result.get()
+            frame_index, all_results, all_center_images = result.get()
 
             DataManager().update_pred_result(frame_index, all_results)
+            DataManager().update_center_images(frame_index, all_center_images)
     
             results.append(result)
 
