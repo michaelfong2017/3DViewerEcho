@@ -33,6 +33,8 @@ pip install blosc
 
 pip install plotly
 
+pip install opencv-python
+
 pip install auto-py-to-exe
 ```
 

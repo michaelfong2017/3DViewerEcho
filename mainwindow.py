@@ -9,6 +9,8 @@ import pickle
 import blosc
 import base64
 import requests
+import cv2
+import numpy as np
 from formatconverter import dicom_to_array, pad4d
 from dicomprocessor import process_dicom
 from datamanager import DataManager
@@ -155,6 +157,19 @@ QMenu::item:selected {
             dialog.exec_()
             return
         try:
+            ## Save as video
+            view_to_video_writer = {}
+            if not NUM_FRAMES == 0:
+                all_results = DataManager().get_pred_result(0)
+                if not all_results == None:
+                    for view, pred_result in all_results.items():
+                        _, _, annotated_qimage, rx, ry, rz, cx, cy, cz = pred_result
+                        width = annotated_qimage.width()
+                        height = annotated_qimage.height()
+                        output_file = os.path.join(folder_path, f"{view}.mp4")
+                        frame_rate = int(DataManager().dicom_fps)
+                        view_to_video_writer[view] = cv2.VideoWriter(output_file, cv2.VideoWriter_fourcc(*"mp4v"), frame_rate, (width, height))
+            ## Save as video END
             for frame_index in range(NUM_FRAMES):
                 all_results = DataManager().get_pred_result(frame_index)
 
@@ -188,6 +203,27 @@ QMenu::item:selected {
                             if not os.path.exists(frame_index_dir):
                                 os.mkdir(frame_index_dir)
                             annotated_qimage.save(f"{os.path.join(frame_index_dir, filename)}")
+
+                            ## Save as video
+                            # Convert QImage to numpy array
+                            width = annotated_qimage.width()
+                            height = annotated_qimage.height()
+                            annotated_qimage = annotated_qimage.convertToFormat(QtGui.QImage.Format_RGB32)
+                            ptr = annotated_qimage.constBits()
+                            numpy_frame = np.array(ptr).reshape(height, width, 4)  #  Copies the data
+                            numpy_frame = numpy_frame[:, :, :3]
+
+                            # Convert BGR to RGB
+                            numpy_frame = cv2.cvtColor(numpy_frame, cv2.COLOR_BGR2RGB)
+
+                            # Write the frame to the video writer
+                            view_to_video_writer[view].write(numpy_frame)
+                            ## Save as video END
+            
+            ## Save as video
+            for view, video_writer in view_to_video_writer.items():
+                video_writer.release()
+            ## Save as video END
 
             print("All files saved successfully.")
             loader = QtUiTools.QUiLoader()
