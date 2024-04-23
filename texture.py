@@ -11,7 +11,7 @@ class Texture:
         self.textures[1] = self.get_texture(path=resource_path("textures/test.png"))
         self.textures[2] = self.get_texture(path=resource_path("textures/img_2.png"))
         self.textures["skybox"] = self.get_texture(
-            path=resource_path("textures/skybox1/bottom.png")
+            path=resource_path("textures/skybox1/bottom.png"), alpha=0.4
         )
         self.textures["test-A2C-transparent"] = self.get_texture(
             path=resource_path("textures/test-A2C-transparent.png")
@@ -34,7 +34,7 @@ class Texture:
         # self.textures["test-SAXMV"] = self.get_texture(path="textures/test-SAXMV.png")
         # self.textures["test-SAXM"] = self.get_texture(path="textures/test-SAXM.png")
 
-    def get_texture(self, path):
+    def get_texture(self, path, alpha=None):
         # to_transparent('textures/test-A2C.png')
         # to_transparent('textures/test-A4C.png')
         # to_transparent('textures/test-ALAX.png')
@@ -43,6 +43,8 @@ class Texture:
 
         image = Image.open(path)
         image = image.convert("RGBA")
+        if not alpha == None:
+            image.putalpha(int(alpha * 255))
         image = ImageOps.flip(image)
         image_data = image.tobytes()
         texture = self.ctx.texture(size=image.size, components=4, data=image_data)
