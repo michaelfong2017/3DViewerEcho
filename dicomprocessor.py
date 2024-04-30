@@ -46,6 +46,18 @@ def process_frame(frame, frame_index):
             # Deserialize the pickled data to a NumPy array
             view_to_array_2d: dict = pickle.loads(pickled_data)
 
+            if api == "process_frame_model_unified":
+                assert 'all' in view_to_array_2d.keys()
+                new_view_to_array_2d = {}
+                for view, indexes in PlaneReconstructionUtils.VIEW_STRUCTS.items():
+                    if view == 'all':
+                        continue
+                    new_view_to_array_2d[view] = []
+                    for ind in indexes:
+                        new_view_to_array_2d[view].append(np.array(view_to_array_2d['all'][ind]))
+                    new_view_to_array_2d[view] = np.array(new_view_to_array_2d[view])
+                view_to_array_2d = new_view_to_array_2d
+
             with open(resource_path(os.path.join("pickle", f"{frame_index}.pickle")), "wb") as file:
                 pickle.dump(view_to_array_2d, file)
         else:
@@ -58,7 +70,8 @@ def process_frame(frame, frame_index):
             dialog.label_2.setText("")
             dialog.exec_()
             return
-    except:
+    except Exception as e:
+        print(e)
         print("Loading pickle data...")
         ## UI dialog is not needed since it's already displayed during the normalize_dicom_array API call
         try:
