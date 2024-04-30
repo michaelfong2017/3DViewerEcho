@@ -23,6 +23,7 @@ class ScrollAreaWidget(QWidget):
         for label in labels:
             view = label.tag.split(",")[0]
             frame_index = int(label.tag.split(",")[1])
+            degree = int(label.tag.split(",")[2])
 
             all_results = DataManager().get_pred_result(frame_index)
             ## TODO error handling
@@ -33,6 +34,9 @@ class ScrollAreaWidget(QWidget):
             pixmap = QtGui.QPixmap.fromImage(annotated_qimage)
             ## error handling
             if pixmap:
+                transform = QtGui.QTransform().rotate(degree)
+                pixmap = pixmap.transformed(transform)
+
                 resize_width = (event.size().width() - 18 - 12) / 3 # TODO change 3 to N
                 resized_pixmap = pixmap.scaled(resize_width, resize_width)
                 label.setPixmap(resized_pixmap)

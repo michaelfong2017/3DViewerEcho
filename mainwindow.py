@@ -1,6 +1,6 @@
 import sys
 from util import resource_path
-from PySide2 import QtGui, QtUiTools, QtCore
+from PySide2 import QtGui, QtUiTools, QtCore, QtWidgets
 from PySide2.QtWidgets import QApplication, QMainWindow, QFileDialog, QLabel, QPushButton, QAction, QMenu, QInputDialog, QComboBox, QWidgetAction
 from ui_mainwindow import Ui_MainWindow
 import os
@@ -374,8 +374,10 @@ QMenu::item:selected {
         all_center_images = DataManager().get_center_images(frame_index)
         
         if all_results == None:
-            self.clearAllCrossSections()
+            self.ui.gridWidget.setVisible(False)
         else:
+            self.ui.gridWidget.setVisible(True)
+
             ## Update OpenGL cross sections
             app = self.ui.openGLWidget
             app.scene.objects.clear()
@@ -409,9 +411,6 @@ QMenu::item:selected {
                     print(f"At frame index {frame_index}, the pred_result for view {view} is None!")
                     # first_found_width = DataManager().get_result_width(view)
                     # if not first_found_width == None:
-                    # Add placeholder cross section
-                    self.addPlaceholderCrossSection(view)
-                    print(f"Placeholder cross section for view {view} has been added.")
                 else:
                     try:
                         # pred_image, pred_rotated_coords, annotated_qimage = pred_result
@@ -817,8 +816,13 @@ QMenu::item:selected {
         new_pixmap_width = (scrollArea_width - 18 - 12) / 3 # TODO change 3 to N
 
         pixmap = QtGui.QPixmap.fromImage(annotated_qimage)
-        pixmap = pixmap.scaledToWidth(new_pixmap_width)
         label = cross_section.findChild(QLabel, "label_8")
+
+        degree = int(label.tag.split(",")[2])
+        transform = QtGui.QTransform().rotate(degree)
+        pixmap = pixmap.transformed(transform)
+
+        pixmap = pixmap.scaledToWidth(new_pixmap_width)
         label.setPixmap(pixmap)
 
         # if label.tag == "":
@@ -827,7 +831,7 @@ QMenu::item:selected {
         #     # TODO more serious error handling
         #     new_degree = (int(label.tag.split(",")[2]) - 90) % 360
         #     label.tag = f"{view},{frame_index},{new_degree}"
-        label.tag = f"{view},{frame_index},0"
+        label.tag = f"{view},{frame_index},{degree}"
 
         label.show()
 
@@ -867,8 +871,16 @@ QMenu::item:selected {
         new_pixmap_width = (scrollArea_width - 18 - 12) / 3 # TODO change 3 to N
 
         pixmap = QtGui.QPixmap.fromImage(annotated_qimage)
-        pixmap = pixmap.scaledToWidth(new_pixmap_width)
         label = cross_section.findChild(QLabel, "label_8")
+
+        if hasattr(label, 'tag'):
+            degree = int(label.tag.split(",")[2])
+        else:
+            degree = 0
+        transform = QtGui.QTransform().rotate(degree)
+        pixmap = pixmap.transformed(transform)
+
+        pixmap = pixmap.scaledToWidth(new_pixmap_width)
         label.setPixmap(pixmap)
 
         # if label.tag == "":
@@ -877,7 +889,7 @@ QMenu::item:selected {
         #     # TODO more serious error handling
         #     new_degree = (int(label.tag.split(",")[2]) - 90) % 360
         #     label.tag = f"{view},{frame_index},{new_degree}"
-        label.tag = f"{view},{frame_index},0"
+        label.tag = f"{view},{frame_index},{degree}"
 
         label.show()
 
@@ -898,27 +910,27 @@ QMenu::item:selected {
         label.parent().setFixedWidth(fixed_width)
         label.setFixedHeight(fixed_width)
 
-    def addPlaceholderCrossSection(self, view):
-        loader = QtUiTools.QUiLoader()
-        loader.registerCustomWidget(ClickableQLabel)
-        ui_file = QtCore.QFile(resource_path("crosssection.ui"))
-        ui_file.open(QtCore.QFile.ReadOnly)
-        cross_section = loader.load(ui_file)
-        ui_file.close()
+    # def addPlaceholderCrossSection(self, view):
+    #     loader = QtUiTools.QUiLoader()
+    #     loader.registerCustomWidget(ClickableQLabel)
+    #     ui_file = QtCore.QFile(resource_path("crosssection.ui"))
+    #     ui_file.open(QtCore.QFile.ReadOnly)
+    #     cross_section = loader.load(ui_file)
+    #     ui_file.close()
 
-        scrollArea_width = self.ui.scrollAreaWidgetContents_3.width()
-        # print(f"scrollArea_width: {scrollArea_width}")
-        new_pixmap_width = (scrollArea_width - 18 - 12) / 3 # TODO change 3 to N
+    #     scrollArea_width = self.ui.scrollAreaWidgetContents_3.width()
+    #     # print(f"scrollArea_width: {scrollArea_width}")
+    #     new_pixmap_width = (scrollArea_width - 18 - 12) / 3 # TODO change 3 to N
 
-        pixmap = QtGui.QPixmap.fromImage(QtGui.QImage(new_pixmap_width, 0, QtGui.QImage.Format_RGB888))
-        label = cross_section.findChild(QLabel, "label_8")
-        label.setPixmap(pixmap)
-        label.show()
+    #     pixmap = QtGui.QPixmap.fromImage(QtGui.QImage(new_pixmap_width, 0, QtGui.QImage.Format_RGB888))
+    #     label = cross_section.findChild(QLabel, "label_8")
+    #     label.setPixmap(pixmap)
+    #     label.show()
 
-        view_button = cross_section.findChild(QPushButton, "pushButton_13")
-        view_button.setText(view)
+    #     view_button = cross_section.findChild(QPushButton, "pushButton_13")
+    #     view_button.setText(view)
 
-        self.ui.gridWidget.addWidget(cross_section)
+    #     self.ui.gridWidget.addWidget(cross_section)
 
     def clearAllCrossSections(self):
         self.ui.gridWidget.clearAllItems(self.ui.gridWidget)
