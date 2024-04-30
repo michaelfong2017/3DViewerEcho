@@ -15,6 +15,9 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_7">
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_14">
       <item>
@@ -159,6 +162,16 @@
          </size>
         </property>
        </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_22">
+        <property name="styleSheet">
+         <string notr="true">font: 13px &quot;MS Shell Dlg 2&quot;;</string>
+        </property>
+        <property name="text">
+         <string>v1.0</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>
@@ -561,7 +574,7 @@ background-color: rgba(255, 255, 255, 0);</string>
                   <string/>
                  </property>
                  <property name="pixmap">
-                  <pixmap resource="resources/mainwindow.qrc">:/images/annotated_heart_sample.png</pixmap>
+                  <pixmap resource="//wsl.localhost/Ubuntu-20.04/home/michael/3DViewerEcho/resources/mainwindow.qrc">:/images/annotated_heart_sample.png</pixmap>
                  </property>
                  <property name="scaledContents">
                   <bool>true</bool>
@@ -649,7 +662,7 @@ background-color: rgba(255, 255, 255, 0);</string>
                   <string/>
                  </property>
                  <property name="pixmap">
-                  <pixmap resource="resources/mainwindow.qrc">:/images/annotated_heart_sample.png</pixmap>
+                  <pixmap resource="//wsl.localhost/Ubuntu-20.04/home/michael/3DViewerEcho/resources/mainwindow.qrc">:/images/annotated_heart_sample.png</pixmap>
                  </property>
                  <property name="scaledContents">
                   <bool>true</bool>
@@ -737,7 +750,7 @@ background-color: rgba(255, 255, 255, 0);</string>
                   <string/>
                  </property>
                  <property name="pixmap">
-                  <pixmap resource="resources/mainwindow.qrc">:/images/annotated_heart_sample.png</pixmap>
+                  <pixmap resource="//wsl.localhost/Ubuntu-20.04/home/michael/3DViewerEcho/resources/mainwindow.qrc">:/images/annotated_heart_sample.png</pixmap>
                  </property>
                  <property name="scaledContents">
                   <bool>true</bool>
@@ -825,7 +838,7 @@ background-color: rgba(255, 255, 255, 0);</string>
                   <string/>
                  </property>
                  <property name="pixmap">
-                  <pixmap resource="resources/mainwindow.qrc">:/images/annotated_heart_sample.png</pixmap>
+                  <pixmap resource="//wsl.localhost/Ubuntu-20.04/home/michael/3DViewerEcho/resources/mainwindow.qrc">:/images/annotated_heart_sample.png</pixmap>
                  </property>
                  <property name="scaledContents">
                   <bool>true</bool>
@@ -913,7 +926,7 @@ background-color: rgba(255, 255, 255, 0);</string>
                   <string/>
                  </property>
                  <property name="pixmap">
-                  <pixmap resource="resources/mainwindow.qrc">:/images/annotated_heart_sample.png</pixmap>
+                  <pixmap resource="//wsl.localhost/Ubuntu-20.04/home/michael/3DViewerEcho/resources/mainwindow.qrc">:/images/annotated_heart_sample.png</pixmap>
                  </property>
                  <property name="scaledContents">
                   <bool>true</bool>
@@ -1001,7 +1014,7 @@ background-color: rgba(255, 255, 255, 0);</string>
                   <string/>
                  </property>
                  <property name="pixmap">
-                  <pixmap resource="resources/mainwindow.qrc">:/images/annotated_heart_sample.png</pixmap>
+                  <pixmap resource="//wsl.localhost/Ubuntu-20.04/home/michael/3DViewerEcho/resources/mainwindow.qrc">:/images/annotated_heart_sample.png</pixmap>
                  </property>
                  <property name="scaledContents">
                   <bool>true</bool>
@@ -1089,7 +1102,7 @@ background-color: rgba(255, 255, 255, 0);</string>
                   <string/>
                  </property>
                  <property name="pixmap">
-                  <pixmap resource="resources/mainwindow.qrc">:/images/annotated_heart_sample.png</pixmap>
+                  <pixmap resource="//wsl.localhost/Ubuntu-20.04/home/michael/3DViewerEcho/resources/mainwindow.qrc">:/images/annotated_heart_sample.png</pixmap>
                  </property>
                  <property name="scaledContents">
                   <bool>true</bool>
@@ -1177,7 +1190,7 @@ background-color: rgba(255, 255, 255, 0);</string>
                   <string/>
                  </property>
                  <property name="pixmap">
-                  <pixmap resource="resources/mainwindow.qrc">:/images/annotated_heart_sample.png</pixmap>
+                  <pixmap resource="//wsl.localhost/Ubuntu-20.04/home/michael/3DViewerEcho/resources/mainwindow.qrc">:/images/annotated_heart_sample.png</pixmap>
                  </property>
                  <property name="scaledContents">
                   <bool>true</bool>
@@ -1259,7 +1272,7 @@ background-color: rgba(255, 255, 255, 0);</string>
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="resources/mainwindow.qrc"/>
+  <include location="//wsl.localhost/Ubuntu-20.04/home/michael/3DViewerEcho/resources/mainwindow.qrc"/>
  </resources>
  <connections/>
 </ui>

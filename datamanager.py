@@ -20,6 +20,8 @@ class DataManager:
             return
         self.__initialized = True
 
+        self.VERSION = "v1.0.240507"
+
         self.frame_index_to_pred_result = {}
         self.view_to_pred_result_width = {}
 

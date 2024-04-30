@@ -28,6 +28,7 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName(u"centralwidget")
         self.horizontalLayout_7 = QHBoxLayout(self.centralwidget)
         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
+        self.horizontalLayout_7.setContentsMargins(-1, -1, -1, 0)
         self.verticalLayout_14 = QVBoxLayout()
         self.verticalLayout_14.setObjectName(u"verticalLayout_14")
         self.verticalLayout_13 = QVBoxLayout()
@@ -112,6 +113,12 @@ class Ui_MainWindow(object):
         self.verticalSpacer_3 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         self.verticalLayout_14.addItem(self.verticalSpacer_3)
+
+        self.label_22 = QLabel(self.centralwidget)
+        self.label_22.setObjectName(u"label_22")
+        self.label_22.setStyleSheet(u"font: 13px \"MS Shell Dlg 2\";")
+
+        self.verticalLayout_14.addWidget(self.label_22)
 
 
         self.horizontalLayout_7.addLayout(self.verticalLayout_14)
@@ -606,6 +613,7 @@ class Ui_MainWindow(object):
         self.label_19.setText(QCoreApplication.translate("MainWindow", u"Press Q to move camera upward, E to move camera downward", None))
         self.label_20.setText(QCoreApplication.translate("MainWindow", u"Press A to move camera leftward, D to move camera rightward", None))
         self.label_21.setText(QCoreApplication.translate("MainWindow", u"Left click and drag the mouse for arcball rotation", None))
+        self.label_22.setText(QCoreApplication.translate("MainWindow", u"v1.0", None))
         self.label_10.setText(QCoreApplication.translate("MainWindow", u"Selected time frame index: 0", None))
         self.pushButton_21.setText("")
         self.label_12.setText(QCoreApplication.translate("MainWindow", u"0", None))

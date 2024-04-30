@@ -24,6 +24,8 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
+        self.ui.label_22.setText(DataManager().VERSION)
+
         ## private UI data
         self._current_frame_index = 0
         ##
@@ -36,11 +38,11 @@ class MainWindow(QMainWindow):
         self.action_import_selected_time_frame.triggered.connect(self.import_dicom_and_analyze_selected)
 
         ### Export all cross-section images in all time frames
-        self.action_export_all_cross_section_all_time_frames = QAction("Export all cross-section images in all time frames", self)
+        self.action_export_all_cross_section_all_time_frames = QAction("Export videos of all views", self)
         self.action_export_all_cross_section_all_time_frames.triggered.connect(self.export_all)
         
         ### Export all cross-section images in the current time frame
-        self.action_export_all_cross_section_selected_time_frame = QAction("Export all cross-section images in the current time frame", self)
+        self.action_export_all_cross_section_selected_time_frame = QAction("Export images of all views in the current time frame", self)
         self.action_export_all_cross_section_selected_time_frame.triggered.connect(self.export_selected_time_frame)
 
         # Create a Set Server Address action
@@ -220,12 +222,14 @@ QMenu::item:selected {
                         else:
                             _, _, annotated_qimage, rx, ry, rz, cx, cy, cz = pred_result
 
-                            filename = f"frame-{frame_index}-view-{view}.png"
+                            #### Comment out the save all images part
+                            # filename = f"frame-{frame_index}-view-{view}.png"
 
-                            frame_index_dir = os.path.join(folder_path, str(frame_index))
-                            if not os.path.exists(frame_index_dir):
-                                os.mkdir(frame_index_dir)
-                            annotated_qimage.save(f"{os.path.join(frame_index_dir, filename)}")
+                            # frame_index_dir = os.path.join(folder_path, str(frame_index))
+                            # if not os.path.exists(frame_index_dir):
+                            #     os.mkdir(frame_index_dir)
+                            # annotated_qimage.save(f"{os.path.join(frame_index_dir, filename)}")
+                            #### Comment out the save all images part END
 
                             ## Save as video
                             # Convert QImage to numpy array
