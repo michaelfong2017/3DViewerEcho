@@ -1,3 +1,11 @@
+from enum import Enum
+
+
+class ModelType(Enum):
+    MULTIPLE = 'Multiple models'
+    UNIFIED = 'Unified model'
+
+
 class DataManager:
     __instance = None
 
@@ -27,6 +35,7 @@ class DataManager:
         self._highlighted_view: str = ""
 
         self._server_base_url = "http://localhost:8000/"
+        self._model_type = ModelType.UNIFIED
 
     @property
     def dicom_number_of_frames(self):
@@ -76,6 +85,13 @@ class DataManager:
     @server_base_url.setter
     def server_base_url(self, value):
         self._server_base_url = value
+
+    @property
+    def model_type(self):
+        return self._model_type
+    @model_type.setter
+    def model_type(self, value):
+        self._model_type = value
 
     def get_pred_result(self, frame_index: int):
         return self.frame_index_to_pred_result.get(frame_index)

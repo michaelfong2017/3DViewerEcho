@@ -17,7 +17,7 @@ from matplotlib import pyplot
 from PIL import Image
 import io
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from datamanager import DataManager
+from datamanager import DataManager, ModelType
 from euler import eulerFromNormal, find_center_point
 
 
@@ -26,10 +26,13 @@ def process_frame(frame, frame_index):
     compressed_data = blosc.compress(pickled_data)
 
     base_url = DataManager().server_base_url
+    api = "process_frame_model_multiple" if DataManager().model_type == ModelType.MULTIPLE else "process_frame_model_unified"
     if not base_url.endswith("/"):
         base_url = base_url + "/"
-    url = f"{base_url}process_frame"
+    url = f"{base_url}{api}"
     headers = {"Content-Type": "application/octet-stream"}
+
+    print(f"Request URL: {url}")
 
     try:
         response = requests.post(url, data=compressed_data, headers=headers)

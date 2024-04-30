@@ -1,7 +1,7 @@
 import sys
 from util import resource_path
 from PySide2 import QtGui, QtUiTools, QtCore
-from PySide2.QtWidgets import QApplication, QMainWindow, QFileDialog, QLabel, QPushButton, QAction, QMenu, QInputDialog
+from PySide2.QtWidgets import QApplication, QMainWindow, QFileDialog, QLabel, QPushButton, QAction, QMenu, QInputDialog, QComboBox, QWidgetAction
 from ui_mainwindow import Ui_MainWindow
 import os
 import threading
@@ -13,7 +13,7 @@ import cv2
 import numpy as np
 from formatconverter import dicom_to_array, pad4d
 from dicomprocessor import process_dicom
-from datamanager import DataManager
+from datamanager import DataManager, ModelType
 from clickableqlabel import ClickableQLabel
 from model import Quad, Line
 
@@ -58,7 +58,24 @@ class MainWindow(QMainWindow):
 
         self.options_menu = QMenu("Options", self)
         self.options_menu.addAction(self.action_set_server)
-        
+
+        #### Select model
+        # Create the combo box
+        self.select_model_combo_box = QComboBox()
+        self.select_model_combo_box.addItem(ModelType.MULTIPLE.value)
+        self.select_model_combo_box.addItem(ModelType.UNIFIED.value)
+        self.select_model_combo_box.setCurrentText(DataManager().model_type.value)
+        self.select_model_combo_box.activated.connect(self.on_select_model)
+
+        # Create the action for the submenu
+        self.select_model_sub_menu_action = QWidgetAction(self)
+
+        # Set the combo box as the default widget for the action
+        self.select_model_sub_menu_action.setDefaultWidget(self.select_model_combo_box)
+        self.select_model_submenu = self.options_menu.addMenu("Select machine learning model")
+        self.select_model_submenu.addAction(self.select_model_sub_menu_action)
+        #### Select model END
+
         # Create menu bar
         self.menu_bar = self.menuBar()
         self.menu_bar.addMenu(self.import_menu)
@@ -105,6 +122,12 @@ QMenu::item:selected {
         self.ui.horizontalSlider.valueChanged.connect(self.frame_index_changed)
         self.ui.pushButton_21.clicked.connect(lambda: self.play_or_pause_cross_section(self.ui.pushButton_21))
         self.clearAllCrossSections()
+
+    def on_select_model(self, index):
+        combo_box = self.sender()
+        selected_option = combo_box.itemText(index)
+        print(f"Selected Option: {selected_option} combobox[{index}] enum[{ModelType(selected_option).name}]")
+        DataManager().model_type = ModelType(selected_option)
 
     def set_server_address(self):
         address, ok = QInputDialog.getText(self, "Server Address", "Enter the server address:", text=DataManager().server_base_url)
