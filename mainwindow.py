@@ -233,6 +233,15 @@ QMenu::item:selected {
 
                             ## Save as video
                             # Convert QImage to numpy array
+                            ### Rotation
+                            label = self.findLabel(view)
+                            if hasattr(label, 'tag'):
+                                degree = int(label.tag.split(",")[2])
+                            else:
+                                degree = 0
+                            transform = QtGui.QTransform().rotate(degree)
+                            annotated_qimage = annotated_qimage.transformed(transform)
+                            ### Rotation END
                             width = annotated_qimage.width()
                             height = annotated_qimage.height()
                             annotated_qimage = annotated_qimage.convertToFormat(QtGui.QImage.Format_RGB32)
@@ -304,6 +313,16 @@ QMenu::item:selected {
                         raise Exception("Some pred_result is None!")
                     else:
                         _, _, annotated_qimage, rx, ry, rz, cx, cy, cz = pred_result
+
+                        ### Rotation
+                        label = self.findLabel(view)
+                        if hasattr(label, 'tag'):
+                            degree = int(label.tag.split(",")[2])
+                        else:
+                            degree = 0
+                        transform = QtGui.QTransform().rotate(degree)
+                        annotated_qimage = annotated_qimage.transformed(transform)
+                        ### Rotation END
 
                         filename = f"frame-{frame_index}-view-{view}.png"
                         annotated_qimage.save(f"{os.path.join(folder_path, filename)}")
@@ -751,14 +770,32 @@ QMenu::item:selected {
                     except Exception as e:
                         print(e)
 
-    def export(self, annotated_qimage, view, frame_index):
+    def export(self, view):
+        ## Rotation
+        frame_index = self._current_frame_index
+        all_results = DataManager().get_pred_result(frame_index)
+        pred_result = all_results[view]
+        _, _, annotated_qimage, rx, ry, rz, cx, cy, cz = pred_result
+        label = self.findLabel(view)
+        if hasattr(label, 'tag'):
+            degree = int(label.tag.split(",")[2])
+        else:
+            degree = 0
+        transform = QtGui.QTransform().rotate(degree)
+        annotated_qimage.transformed(transform)
+        ## Rotation END
+
         dialog = QFileDialog()
         dialog.setDefaultSuffix(".png")
         default_filename = f"frame-{frame_index}-view-{view}"
         file_path, _ = dialog.getSaveFileName(self, "Save PNG", default_filename, "PNG Files (*.png)")
 
         if file_path:
-            annotated_qimage.save(f"{file_path}.png")
+            ### Rotate
+            transform = QtGui.QTransform().rotate(degree)
+            annotated_qimage = annotated_qimage.transformed(transform)
+            ### END
+            annotated_qimage.save(f"{file_path}")
             print("File saved successfully.")
 
     def counterclockwiseRotate90(self, annotated_qimage, label, view, frame_index):
@@ -792,6 +829,11 @@ QMenu::item:selected {
         label.setPixmap(pixmap)
         label.tag = f"{view},{frame_index},{new_degree}"
         label.show()
+
+    def findLabel(self, view):
+        grid_layout = self.ui.gridWidget.layout()
+        cross_section = self.findCrossSection(grid_layout, view)
+        return cross_section.findChild(QLabel, "label_8")
 
     def findCrossSection(self, grid_layout, view):
         i = 0
@@ -898,7 +940,7 @@ QMenu::item:selected {
         view_button.clicked.connect(lambda: self.setHighlight(view, frame_index))
 
         export_button = cross_section.findChild(QPushButton, "pushButton_9")
-        export_button.clicked.connect(lambda: self.export(annotated_qimage, view, frame_index))
+        export_button.clicked.connect(lambda: self.export(view))
 
         counterclockwise_rotate_button = cross_section.findChild(QPushButton, "pushButton")
         clockwise_rotate_button = cross_section.findChild(QPushButton, "pushButton_2")
