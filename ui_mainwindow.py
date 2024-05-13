@@ -33,6 +33,29 @@ class Ui_MainWindow(object):
         self.verticalLayout_14.setObjectName(u"verticalLayout_14")
         self.verticalLayout_13 = QVBoxLayout()
         self.verticalLayout_13.setObjectName(u"verticalLayout_13")
+        self.verticalLayout_16 = QVBoxLayout()
+        self.verticalLayout_16.setObjectName(u"verticalLayout_16")
+        self.label_24 = QLabel(self.centralwidget)
+        self.label_24.setObjectName(u"label_24")
+        self.label_24.setStyleSheet(u"font: 18px \"MS Shell Dlg 2\";")
+
+        self.verticalLayout_16.addWidget(self.label_24)
+
+        self.label_26 = QLabel(self.centralwidget)
+        self.label_26.setObjectName(u"label_26")
+        self.label_26.setStyleSheet(u"font: 15px \"MS Shell Dlg 2\";")
+
+        self.verticalLayout_16.addWidget(self.label_26)
+
+        self.label_25 = QLabel(self.centralwidget)
+        self.label_25.setObjectName(u"label_25")
+        self.label_25.setStyleSheet(u"font: 15px \"MS Shell Dlg 2\";")
+
+        self.verticalLayout_16.addWidget(self.label_25)
+
+
+        self.verticalLayout_13.addLayout(self.verticalLayout_16)
+
         self.verticalSpacer_7 = QSpacerItem(20, 10, QSizePolicy.Minimum, QSizePolicy.Fixed)
 
         self.verticalLayout_13.addItem(self.verticalSpacer_7)
@@ -632,6 +655,9 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"3D Viewer Echo", None))
+        self.label_24.setText(QCoreApplication.translate("MainWindow", u"Patient Info:", None))
+        self.label_26.setText(QCoreApplication.translate("MainWindow", u"Height: 170cm", None))
+        self.label_25.setText(QCoreApplication.translate("MainWindow", u"Weight: 60kg", None))
         self.label_17.setText(QCoreApplication.translate("MainWindow", u"DICOM File (Video) Info:", None))
         self.label_16.setText(QCoreApplication.translate("MainWindow", u"Video - Number of Frames: ", None))
         self.label_15.setText(QCoreApplication.translate("MainWindow", u"Video - Average Frame Time: ", None))

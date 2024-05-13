@@ -15,6 +15,7 @@ from formatconverter import dicom_to_array, pad4d
 from dicomprocessor import process_dicom
 from datamanager import DataManager, ModelType
 from clickableqlabel import ClickableQLabel
+from patienteditor import PatientEditor
 from model import Quad, Line
 
 
@@ -125,6 +126,8 @@ QMenu::item:selected {
         self.ui.pushButton_21.clicked.connect(lambda: self.play_or_pause_cross_section(self.ui.pushButton_21))
         self.ui.pushButton_11.clicked.connect(self.analyze_a2c_and_a4c_videos)
         self.ui.label_23.setText("")
+        self.ui.label_26.setText("Height:")
+        self.ui.label_25.setText("Weight:")
         self.clearAllCrossSections()
 
     def on_select_model(self, index):
@@ -597,6 +600,13 @@ QMenu::item:selected {
                     except Exception as e:
                         print(e)
 
+    def handle_patient_info(self, height, weight):
+        # print("Received patient info:")
+        # print("Height:", height)
+        # print("Weight:", weight)
+        self.ui.label_26.setText(f"Height: {height}cm")
+        self.ui.label_25.setText(f"Weight: {weight}kg")
+
     def import_dicom_and_analyze_all(self):
         file = QFileDialog.getOpenFileName(
             self,
@@ -616,6 +626,10 @@ QMenu::item:selected {
             dialog.exec_()
             return
         
+        patient_editor_dialog = PatientEditor()
+        patient_editor_dialog.patient_info_updated.connect(self.handle_patient_info)
+        patient_editor_dialog.exec_()
+
         event = threading.Event()
         t1 = threading.Thread(
             target=self.read_dicom,
@@ -673,6 +687,10 @@ QMenu::item:selected {
             dialog.label_2.setText("")
             dialog.exec_()
             return
+        
+        patient_editor_dialog = PatientEditor()
+        patient_editor_dialog.patient_info_updated.connect(self.handle_patient_info)
+        patient_editor_dialog.exec_()
 
         event = threading.Event()
         t1 = threading.Thread(
