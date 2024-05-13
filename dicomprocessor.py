@@ -353,6 +353,8 @@ def process_dicom(analyze_all, array_4d, ui: Ui_MainWindow, selected_frame_index
 
     DataManager().clear_all_results()
     ui.gridWidget.clearAllItems(ui.gridWidget)
+    ui.pushButton_11.setEnabled(False)
+    ui.label_23.setText("")
 
     pool = ThreadPool(21)
     results = []
@@ -451,6 +453,7 @@ def process_dicom(analyze_all, array_4d, ui: Ui_MainWindow, selected_frame_index
 
     ## ui
     # ui.progressBar.setHidden(True)
+    ui.pushButton_11.setEnabled(True)
     ##
 
 def pyplot_to_qimage():

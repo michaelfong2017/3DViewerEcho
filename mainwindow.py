@@ -123,6 +123,8 @@ QMenu::item:selected {
 
         self.ui.horizontalSlider.valueChanged.connect(self.frame_index_changed)
         self.ui.pushButton_21.clicked.connect(lambda: self.play_or_pause_cross_section(self.ui.pushButton_21))
+        self.ui.pushButton_11.clicked.connect(self.analyze_a2c_and_a4c_videos)
+        self.ui.label_23.setText("")
         self.clearAllCrossSections()
 
     def on_select_model(self, index):
@@ -157,6 +159,135 @@ QMenu::item:selected {
                 dialog.label_2.setText("")
                 dialog.exec_()
         
+    def analyze_a2c_and_a4c_videos(self):
+        NUM_FRAMES = DataManager().dicom_number_of_frames
+        if NUM_FRAMES == -1 or NUM_FRAMES == 0:
+            loader = QtUiTools.QUiLoader()
+            ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+            ui_file.open(QtCore.QFile.ReadOnly)
+            dialog = loader.load(ui_file)
+            dialog.label.setText("No result to save yet!")
+            dialog.label_2.setText("")
+            dialog.exec_()
+            return
+        try:
+            a2c_video = []
+            a4c_video = []
+            for frame_index in range(NUM_FRAMES):
+                all_results = DataManager().get_pred_result(frame_index)
+
+                if all_results == None:
+                    loader = QtUiTools.QUiLoader()
+                    ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+                    ui_file.open(QtCore.QFile.ReadOnly)
+                    dialog = loader.load(ui_file)
+                    dialog.setWindowTitle("Notification")
+                    dialog.label.setText("Some results are not ready!")
+                    dialog.label_2.setText("The ready results have been saved.")
+                    dialog.exec_()
+                    raise Exception("Some results are not ready!")
+                else:
+                    for view, pred_result in all_results.items():
+                        if pred_result is None:
+                            loader = QtUiTools.QUiLoader()
+                            ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+                            ui_file.open(QtCore.QFile.ReadOnly)
+                            dialog = loader.load(ui_file)
+                            dialog.label.setText("Some result is broken!")
+                            dialog.label_2.setText("Not all results are saved!")
+                            dialog.exec_()
+                            raise Exception("Some pred_result is None!")
+                        else:
+                            if not view == "A2C" and not view == "A4C":
+                                continue
+
+                            _, _, annotated_qimage, rx, ry, rz, cx, cy, cz = pred_result
+
+                            ### Rotation
+                            label = self.findLabel(view)
+                            if hasattr(label, 'tag'):
+                                degree = int(label.tag.split(",")[2])
+                            else:
+                                degree = 0
+                            transform = QtGui.QTransform().rotate(degree)
+                            annotated_qimage = annotated_qimage.transformed(transform)
+                            ### Rotation END
+                            width = annotated_qimage.width()
+                            height = annotated_qimage.height()
+                            annotated_qimage = annotated_qimage.convertToFormat(QtGui.QImage.Format_RGB32)
+                            ptr = annotated_qimage.constBits()
+                            numpy_frame = np.array(ptr).reshape(height, width, 4)  #  Copies the data
+                            numpy_frame = numpy_frame[:, :, :3]
+                            # Convert BGR to GRAY
+                            numpy_frame = cv2.cvtColor(numpy_frame, cv2.COLOR_BGR2GRAY)
+                            if view == "A2C":
+                                a2c_video.append(numpy_frame.tolist())
+                            elif view == "A4C":
+                                a4c_video.append(numpy_frame.tolist())
+            
+            a2c_video = np.array(a2c_video)
+            a4c_video = np.array(a4c_video)
+            print(a2c_video.shape)
+            print(a4c_video.shape)
+
+            t1 = threading.Thread(
+                target=self.send_a2c_and_a4c_videos,
+                args=(
+                    a2c_video,
+                    a4c_video,
+                    self.ui,
+                ),
+            )
+            t1.start()
+
+        except Exception as e:
+            print(e)
+
+    def send_a2c_and_a4c_videos(self, a2c_video, a4c_video, ui):
+            view_to_video = {
+                "A2C": a2c_video,
+                "A4C": a4c_video
+            }
+
+            pickled_data = pickle.dumps(view_to_video)
+            compressed_data = blosc.compress(pickled_data)
+
+            base_url = DataManager().server_base_url
+            api = "analyze_a2c_and_a4c"
+            if not base_url.endswith("/"):
+                base_url = base_url + "/"
+            url = f"{base_url}{api}"
+            headers = {"Content-Type": "application/octet-stream"}
+
+            print(f"Request URL: {url}")
+
+            try:
+                response = requests.post(url, data=compressed_data, headers=headers)
+
+                if response.status_code == 200:
+                    compressed_data = response.content
+
+                    # Decompress the received data
+                    pickled_data = blosc.decompress(compressed_data)
+
+                    # Deserialize the pickled data to a NumPy array
+                    out_1d = pickle.loads(pickled_data)
+                    array_string = np.array2string(out_1d)
+                    ui.label_23.setText(array_string)
+
+                else:
+                    print("Error:", response.text)
+                    loader = QtUiTools.QUiLoader()
+                    ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+                    ui_file.open(QtCore.QFile.ReadOnly)
+                    dialog = loader.load(ui_file)
+                    dialog.label.setText("analyze_a2c_and_a4c")
+                    dialog.label_2.setText("response is not 200")
+                    dialog.exec_()
+                    return
+            except Exception as e:
+                print(e)
+
     def export_all(self):
         dialog = QFileDialog()        
         folder_path = dialog.getExistingDirectory(self, "Select folder to save PNG files")
