@@ -163,6 +163,10 @@ QMenu::item:selected {
                 dialog.exec_()
         
     def analyze_a2c_and_a4c_videos(self):
+        patient_editor_dialog = PatientEditor()
+        patient_editor_dialog.patient_info_updated.connect(self.handle_patient_info)
+        patient_editor_dialog.exec_()
+    
         NUM_FRAMES = DataManager().dicom_number_of_frames
         if NUM_FRAMES == -1 or NUM_FRAMES == 0:
             loader = QtUiTools.QUiLoader()
@@ -604,8 +608,10 @@ QMenu::item:selected {
         # print("Received patient info:")
         # print("Height:", height)
         # print("Weight:", weight)
-        self.ui.label_26.setText(f"Height: {height}cm")
-        self.ui.label_25.setText(f"Weight: {weight}kg")
+        if not height == "":
+            self.ui.label_26.setText(f"Height: {height}cm")
+        if not weight == "":
+            self.ui.label_25.setText(f"Weight: {weight}kg")
 
     def import_dicom_and_analyze_all(self):
         file = QFileDialog.getOpenFileName(
@@ -626,10 +632,6 @@ QMenu::item:selected {
             dialog.exec_()
             return
         
-        patient_editor_dialog = PatientEditor()
-        patient_editor_dialog.patient_info_updated.connect(self.handle_patient_info)
-        patient_editor_dialog.exec_()
-
         event = threading.Event()
         t1 = threading.Thread(
             target=self.read_dicom,
@@ -688,10 +690,6 @@ QMenu::item:selected {
             dialog.exec_()
             return
         
-        patient_editor_dialog = PatientEditor()
-        patient_editor_dialog.patient_info_updated.connect(self.handle_patient_info)
-        patient_editor_dialog.exec_()
-
         event = threading.Event()
         t1 = threading.Thread(
             target=self.read_dicom,

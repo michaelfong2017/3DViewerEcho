@@ -13,8 +13,8 @@ class PatientEditor(QDialog):
         self.setWindowTitle("Please enter patient info:")
 
         # Create QLabel widgets for displaying the current height and weight
-        self.height_label = QLabel("Height (cm):")
-        self.weight_label = QLabel("Weight (kg):")
+        self.height_label = QLabel("Height (cm): <span style='color:gray;'>(optional)</span>")
+        self.weight_label = QLabel("Weight (kg): <span style='color:gray;'>(optional)</span>")
 
         # Create QLineEdit widgets for editing the height and weight
         self.height_edit = QLineEdit()
