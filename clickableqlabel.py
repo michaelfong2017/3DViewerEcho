@@ -23,19 +23,37 @@ class ClickableQLabel(QLabel):
             cross_section = self.parent()
             view_button = cross_section.findChild(QPushButton, "pushButton_13")
 
-            self.dialog = FullScreenDialog(self.pixmap(), view_button.text())
+            self.dialog = ViewDialog(self.pixmap(), view_button.text())
             self.dialog.show()
 
 
-class FullScreenDialog(QDialog):
+class ViewDialog(QDialog):
     def __init__(self, pixmap, title):
         super().__init__()
         self.setWindowTitle(title)
-        # self.setWindowState(self.windowState() | QtCore.Qt.WindowFullScreen)
+        self.setWindowFlags(QtCore.Qt.Window)
+
+        self.PIXMAP_OCCUPY_RATIO = 4.0 / 5.0
+
+        # Set the initial size of the dialog
+        screen_width = QApplication.desktop().screenGeometry().width()
+        screen_height = QApplication.desktop().screenGeometry().height()
+        self.setMinimumSize(min(400, screen_width), min(300, screen_height))
+        init_width = min(800, screen_width)
+        init_height = min(600, screen_height)
+        self.resize(init_width, init_height)
+
+        self.pixmap = pixmap # Always use the original to avoid quality loss
 
         self.label = QLabel()
         self.label.setAlignment(QtCore.Qt.AlignCenter)
-        scaled_pixmap = pixmap.scaledToHeight(QApplication.desktop().screenGeometry().height() * 3.0 / 5.0, aspectRatioMode=QtCore.Qt.KeepAspectRatio)
+
+        height = init_height * self.PIXMAP_OCCUPY_RATIO
+        scaled_pixmap = pixmap.scaledToHeight(height, aspectRatioMode=QtCore.Qt.KeepAspectRatio)
+
+        width = min(init_width * self.PIXMAP_OCCUPY_RATIO, scaled_pixmap.width())
+        scaled_pixmap = scaled_pixmap.scaledToWidth(width, aspectRatioMode=QtCore.Qt.KeepAspectRatio)
+
         self.label.setPixmap(scaled_pixmap)
 
         layout = QVBoxLayout()
@@ -45,6 +63,19 @@ class FullScreenDialog(QDialog):
         # print(f"self.label: {self.label.width()}, {self.label.height()}")
         # print(f"self: {self.width()}, {self.height()}")
         # print(f"layout: {layout.width()}, {layout.height()}")
+
+    def resizeEvent(self, event):
+        # Handle the resize event here
+        # print("Widget resized:", event.size())
+        pixmap = self.pixmap
+
+        height = event.size().height() * self.PIXMAP_OCCUPY_RATIO
+        scaled_pixmap = pixmap.scaledToHeight(height, aspectRatioMode=QtCore.Qt.KeepAspectRatio)
+
+        width = min(event.size().width() * self.PIXMAP_OCCUPY_RATIO, scaled_pixmap.width())
+        scaled_pixmap = scaled_pixmap.scaledToWidth(width, aspectRatioMode=QtCore.Qt.KeepAspectRatio)
+
+        self.label.setPixmap(scaled_pixmap)
 
     def mousePressEvent(self, event):
         if event.buttons() == QtCore.Qt.LeftButton:
