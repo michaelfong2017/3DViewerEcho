@@ -327,6 +327,15 @@ QMenu::item:selected {
                 if not all_results == None:
                     for view, pred_result in all_results.items():
                         _, _, annotated_qimage, rx, ry, rz, cx, cy, cz = pred_result
+                        ### Rotation
+                        label = self.findLabel(view)
+                        if hasattr(label, 'tag'):
+                            degree = int(label.tag.split(",")[2])
+                        else:
+                            degree = 0
+                        transform = QtGui.QTransform().rotate(degree)
+                        annotated_qimage = annotated_qimage.transformed(transform)
+                        ### Rotation END
                         width = annotated_qimage.width()
                         height = annotated_qimage.height()
                         output_file = os.path.join(folder_path, f"{view}.mp4")
