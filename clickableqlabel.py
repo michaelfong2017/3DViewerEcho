@@ -41,8 +41,8 @@ class ViewDialog(QDialog):
         screen_width = QApplication.desktop().screenGeometry().width()
         screen_height = QApplication.desktop().screenGeometry().height()
         self.setMinimumSize(min(400, screen_width), min(300, screen_height))
-        init_width = min(800, screen_width)
-        init_height = min(600, screen_height)
+        init_width = min(500, screen_width)
+        init_height = min(500, screen_height)
         self.resize(init_width, init_height)
 
         self.pixmap = pixmap # Always use the original to avoid quality loss
