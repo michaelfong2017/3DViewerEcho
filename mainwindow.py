@@ -861,8 +861,8 @@ QMenu::item:selected {
         ui.label_9.setText(f"Video - FPS: {round(DataManager().dicom_fps, 2)}")
         ui.label_14.setText(f"Video - Total Duration: {round(DataManager().dicom_total_duration_in_s, 2)}s")
 
-    def setHighlight(self, view, frame_index):
-        if DataManager().highlighted_view == view:
+    def setHighlight(self, view, frame_index, always_highlight=False):
+        if not always_highlight and DataManager().highlighted_view == view:
             DataManager().highlighted_view = ""
         else:
             DataManager().highlighted_view = view
@@ -1093,7 +1093,9 @@ QMenu::item:selected {
 
         view_button = cross_section.findChild(QPushButton, "pushButton_13")
         view_button.setText(view)
-        view_button.clicked.connect(lambda: self.setHighlight(view, frame_index))
+        view_button.clicked.connect(lambda: self.setHighlight(view, frame_index, always_highlight=False))
+        # Also want ClickableQLabel to highlight the 3D plane, while always_highlight is True
+        label.on_click = lambda: self.setHighlight(view, frame_index, always_highlight=True)
 
         export_button = cross_section.findChild(QPushButton, "pushButton_9")
         export_button.clicked.connect(lambda: self.export(view))

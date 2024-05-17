@@ -23,6 +23,8 @@ class ClickableQLabel(QLabel):
             cross_section = self.parent()
             view_button = cross_section.findChild(QPushButton, "pushButton_13")
 
+            self.on_click()
+
             self.dialog = ViewDialog(self.pixmap(), view_button.text())
             self.dialog.show()
 
