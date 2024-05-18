@@ -11,8 +11,7 @@ import base64
 import requests
 import cv2
 import numpy as np
-from formatconverter import dicom_to_array, pad4d
-from dicomprocessor import process_dicom
+from dicomprocessor import ReadDicomThread, SendDicomThread, process_dicom
 from datamanager import DataManager, ModelType
 from clickableqlabel import ClickableQLabel
 from patienteditor import PatientEditor
@@ -641,44 +640,29 @@ QMenu::item:selected {
             dialog.exec_()
             return
         
-        event = threading.Event()
-        t1 = threading.Thread(
-            target=self.read_dicom,
+        self.read_dicom_thread = ReadDicomThread(filepath, self.ui)
+        self.read_dicom_thread.finished.connect(self.handle_read_dicom_result_analyze_all)
+        self.read_dicom_thread.start()
+
+    def handle_read_dicom_result_analyze_all(self, serialized_data):
+        print("handle_read_dicom_result_analyze_all")
+        
+        self.send_dicom_thread = SendDicomThread(serialized_data, self.ui)
+        self.send_dicom_thread.finished.connect(self.handle_send_dicom_result_analyze_all)
+        self.send_dicom_thread.ui_update.connect(self.handle_send_dicom_ui_update)
+        self.send_dicom_thread.start()
+
+    def handle_send_dicom_result_analyze_all(self, array_4d):
+        t2 = threading.Thread(
+            target=process_dicom,
             args=(
-                filepath,
+                True,
+                array_4d,
                 self.ui,
-                event,
+                -1,
             ),
         )
-        t1.start()
-
-        # Create a QTimer
-        self.read_dicom_timer = QtCore.QTimer()
-        self.read_dicom_timer.timeout.connect(lambda: self.check_completion_analyze_all(event))
-        self.read_dicom_timer.start(16)
-
-    def check_completion_analyze_all(self, event):
-        if not event.is_set():
-            # Perform any non-blocking UI updates or other tasks
-            # print("UI update or other task while waiting...")
-            pass
-        else:
-            self.read_dicom_timer.stop()
-
-            serialized_data = event.result
-
-            array_4d = self.send_dicom(serialized_data, self.ui)
-
-            t2 = threading.Thread(
-                target=process_dicom,
-                args=(
-                    True,
-                    array_4d,
-                    self.ui,
-                    -1,
-                ),
-            )
-            t2.start()
+        t2.start()
 
     def import_dicom_and_analyze_selected(self):
         file = QFileDialog.getOpenFileName(
@@ -699,161 +683,39 @@ QMenu::item:selected {
             dialog.exec_()
             return
         
-        event = threading.Event()
-        t1 = threading.Thread(
-            target=self.read_dicom,
+        self.read_dicom_thread = ReadDicomThread(filepath, self.ui)
+        self.read_dicom_thread.finished.connect(self.handle_read_dicom_result_analyze_selected)
+        self.read_dicom_thread.start()
+
+    def handle_read_dicom_result_analyze_selected(self, serialized_data):
+        print("handle_read_dicom_result_analyze_selected")
+
+        self.send_dicom_thread = SendDicomThread(serialized_data, self.ui)
+        self.send_dicom_thread.finished.connect(self.handle_send_dicom_result_analyze_selected)
+        self.send_dicom_thread.ui_update.connect(self.handle_send_dicom_ui_update)
+        self.send_dicom_thread.start()
+
+    def handle_send_dicom_result_analyze_selected(self, array_4d):
+        print("handle_send_dicom_result_analyze_selected")
+
+        t2 = threading.Thread(
+            target=process_dicom,
             args=(
-                filepath,
+                False,
+                array_4d,
                 self.ui,
-                event,
+                # self.ui.horizontalSlider.value(),
+                -1,
             ),
         )
-        t1.start()
+        t2.start()
 
-        # Create a QTimer
-        self.read_dicom_timer = QtCore.QTimer()
-        self.read_dicom_timer.timeout.connect(lambda: self.check_completion_analyze_selected(event))
-        self.read_dicom_timer.start(16)
-
-    def check_completion_analyze_selected(self, event):
-        if not event.is_set():
-            # Perform any non-blocking UI updates or other tasks
-            # print("UI update or other task while waiting...")
-            pass
-        else:
-            self.read_dicom_timer.stop()
-
-            serialized_data = event.result
-
-            array_4d = self.send_dicom(serialized_data, self.ui)
-
-            t2 = threading.Thread(
-                target=process_dicom,
-                args=(
-                    False,
-                    array_4d,
-                    self.ui,
-                    # self.ui.horizontalSlider.value(),
-                    -1,
-                ),
-            )
-            t2.start()
-
-    def read_dicom(self, filepath, ui, event):
-        try:
-            image4D, spacing4D = dicom_to_array(filepath)
-        except FileNotFoundError as e:
-            loader = QtUiTools.QUiLoader()
-            ui_file = QtCore.QFile(resource_path("errordialog.ui"))
-            ui_file.open(QtCore.QFile.ReadOnly)
-            dialog = loader.load(ui_file)
-            dialog.label.setText("Please select a valid filepath!")
-            dialog.label_2.setText("")
-            dialog.exec_()
-            return
-        
-        self.display_video_info(ui)
-
-        NUM_FRAMES = image4D.shape[0]
-
-        ## ui loading bar
-        # ui.progressBar.setValue(10)
-        # ui.progressBar.setHidden(False)
-        ##
-
-        # ui slider BEGIN
-        ui.horizontalSlider.setMinimum(0)
-        ui.horizontalSlider.setMaximum(NUM_FRAMES - 1)
-        ui.label_12.setText("0")
-        ui.label_13.setText(str(NUM_FRAMES - 1))
-        # ui slider END
-
-        print(image4D.shape)
-        print(spacing4D.shape)
-
-        compressed_data = []
-        for i in range(NUM_FRAMES):
-            pickled_image4D = pickle.dumps(image4D[i])
-            compressed_image4D = blosc.compress(pickled_image4D)
-            encoded_image4D = base64.b64encode(compressed_image4D)
-            compressed_data.append(encoded_image4D)
-
-        pickled_spacing4D = pickle.dumps(spacing4D)
-        compressed_spacing4D = blosc.compress(pickled_spacing4D)
-        encoded_spacing4D = base64.b64encode(compressed_spacing4D)
-        compressed_data.append(encoded_spacing4D)
-
-        serialized_data = b";".join(compressed_data)
-        event.result = serialized_data
-        event.set()
-
-    def send_dicom(self, serialized_data, ui):
-        base_url = DataManager().server_base_url
-        if not base_url.endswith("/"):
-            base_url = base_url + "/"
-        url = f"{base_url}normalize_dicom_array"
-        headers = {"Content-Type": "application/octet-stream"}
-        try:
-            response = requests.post(url, data=serialized_data, headers=headers)
-
-            ui.label_17.setText(f"DICOM File (Video) Info:")
-
-            if response.status_code == 200:
-                compressed_data = response.content
-
-                # Decompress the received data
-                pickled_data = blosc.decompress(compressed_data)
-
-                # Deserialize the pickled data to a NumPy array
-                array_4d = pickle.loads(pickled_data)
-
-                with open(resource_path(os.path.join("pickle", "array_4d.pickle")), "wb") as file:
-                    pickle.dump(array_4d, file)
-            else:
-                print("Error:", response.text)
-                loader = QtUiTools.QUiLoader()
-                ui_file = QtCore.QFile(resource_path("errordialog.ui"))
-                ui_file.open(QtCore.QFile.ReadOnly)
-                dialog = loader.load(ui_file)
-                dialog.label.setText("normalize_dicom_array response is not 200")
-                dialog.label_2.setText("")
-                dialog.exec_()
-                return
-        except:
-            try:
-                with open(resource_path(os.path.join("pickle", "array_4d.pickle")), "rb") as file:
-                    array_4d = pickle.load(file)
-                    print("Loading pickle data...")
-                    loader = QtUiTools.QUiLoader()
-                    ui_file = QtCore.QFile(resource_path("errordialog.ui"))
-                    ui_file.open(QtCore.QFile.ReadOnly)
-                    dialog = loader.load(ui_file)
-                    dialog.setWindowTitle("Notification")
-                    dialog.label.setText("Server cannot be connected!")
-                    dialog.label_2.setText("Loading sample data...")
-                    dialog.exec_()
-                    ui.label_17.setText(f"(Using Sample Data) DICOM File (Video) Info:")
-            except:
-                ui.label_17.setText(f"Server cannot be connected and no sample data available!")
-                loader = QtUiTools.QUiLoader()
-                ui_file = QtCore.QFile(resource_path("errordialog.ui"))
-                ui_file.open(QtCore.QFile.ReadOnly)
-                dialog = loader.load(ui_file)
-                dialog.label.setText("Server cannot be connected")
-                dialog.label_2.setText("and no sample data available!")
-                dialog.exec_()
-                return
-        # except requests.exceptions.ConnectionError as e:
-        #     print(e)
-        #     loader = QtUiTools.QUiLoader()
-        #     ui_file = QtCore.QFile(resource_path("errordialog.ui"))
-        #     ui_file.open(QtCore.QFile.ReadOnly)
-        #     dialog = loader.load(ui_file)
-        #     dialog.label.setText("Server connection error!")
-        #     dialog.label_2.setText("Check server status & server url!")
-        #     dialog.exec_()
-        #     return
-        return array_4d
+    def handle_send_dicom_ui_update(self, function_and_args):
+        print("handle_send_dicom_ui_update")
+        function, *args = function_and_args
+        # print(function)
+        # print(args)
+        function(*args)
     
     def display_video_info(self, ui: Ui_MainWindow):
         ui.label_16.setText(f"Video - Number of Frames: {DataManager().dicom_number_of_frames}")

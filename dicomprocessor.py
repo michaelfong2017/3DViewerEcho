@@ -18,8 +18,154 @@ from PIL import Image
 import io
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from datamanager import DataManager, ModelType
+from formatconverter import dicom_to_array
 from euler import eulerFromNormal, find_center_point
 
+
+class SendDicomThread(QtCore.QThread):
+    finished = QtCore.Signal(object)
+    ui_update = QtCore.Signal(object)
+    def __init__(self, serialized_data, ui):
+        super().__init__()
+        print("init SendDicomThread")
+        self.serialized_data = serialized_data
+        self.ui = ui
+
+    def run(self):
+        print("run SendDicomThread")
+        array_4d = self.send_dicom(self.serialized_data, self.ui)
+        self.finished.emit(array_4d)
+
+    def send_dicom(self, serialized_data, ui):
+        base_url = DataManager().server_base_url
+        if not base_url.endswith("/"):
+            base_url = base_url + "/"
+        url = f"{base_url}normalize_dicom_array"
+        headers = {"Content-Type": "application/octet-stream"}
+        try:
+            response = requests.post(url, data=serialized_data, headers=headers)
+
+            ui.label_17.setText(f"DICOM File (Video) Info:")
+
+            if response.status_code == 200:
+                compressed_data = response.content
+
+                # Decompress the received data
+                pickled_data = blosc.decompress(compressed_data)
+
+                # Deserialize the pickled data to a NumPy array
+                array_4d = pickle.loads(pickled_data)
+
+                with open(resource_path(os.path.join("pickle", "array_4d.pickle")), "wb") as file:
+                    pickle.dump(array_4d, file)
+            else:
+                print("Error:", response.text)
+                loader = QtUiTools.QUiLoader()
+                ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+                ui_file.open(QtCore.QFile.ReadOnly)
+                dialog = loader.load(ui_file)
+                dialog.label.setText("normalize_dicom_array response is not 200")
+                dialog.label_2.setText("")
+                dialog.exec_()
+                return
+        except:
+            try:
+                with open(resource_path(os.path.join("pickle", "array_4d.pickle")), "rb") as file:
+                    array_4d = pickle.load(file)
+                    print("Loading pickle data...")
+                    def alert_use_sample_data(ui):
+                        loader = QtUiTools.QUiLoader()
+                        ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+                        ui_file.open(QtCore.QFile.ReadOnly)
+                        dialog = loader.load(ui_file)
+                        dialog.setWindowTitle("Notification")
+                        dialog.label.setText("Server cannot be connected!")
+                        dialog.label_2.setText("Loading sample data...")
+                        dialog.exec_()
+                        ui.label_17.setText(f"(Using Sample Data) DICOM File (Video) Info:")
+                    self.ui_update.emit((alert_use_sample_data, ui))
+                    
+            except:
+                ui.label_17.setText(f"Server cannot be connected and no sample data available!")
+                loader = QtUiTools.QUiLoader()
+                ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+                ui_file.open(QtCore.QFile.ReadOnly)
+                dialog = loader.load(ui_file)
+                dialog.label.setText("Server cannot be connected")
+                dialog.label_2.setText("and no sample data available!")
+                dialog.exec_()
+                return
+        # except requests.exceptions.ConnectionError as e:
+        #     print(e)
+        #     loader = QtUiTools.QUiLoader()
+        #     ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+        #     ui_file.open(QtCore.QFile.ReadOnly)
+        #     dialog = loader.load(ui_file)
+        #     dialog.label.setText("Server connection error!")
+        #     dialog.label_2.setText("Check server status & server url!")
+        #     dialog.exec_()
+        #     return
+        return array_4d
+
+
+class ReadDicomThread(QtCore.QThread):
+    finished = QtCore.Signal(object)
+    def __init__(self, filepath, ui):
+        super().__init__()
+        print("init ReadDicomThread")
+        self.filepath = filepath
+        self.ui = ui
+
+    def run(self):
+        print("run ReadDicomThread")
+        serialized_data = self.read_dicom(self.filepath, self.ui)
+        self.finished.emit(serialized_data)
+
+    def read_dicom(self, filepath, ui):
+        try:
+            image4D, spacing4D = dicom_to_array(filepath)
+        except FileNotFoundError as e:
+            loader = QtUiTools.QUiLoader()
+            ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+            ui_file.open(QtCore.QFile.ReadOnly)
+            dialog = loader.load(ui_file)
+            dialog.label.setText("Please select a valid filepath!")
+            dialog.label_2.setText("")
+            dialog.exec_()
+            return
+        
+        NUM_FRAMES = image4D.shape[0]
+
+        ## ui loading bar
+        # ui.progressBar.setValue(10)
+        # ui.progressBar.setHidden(False)
+        ##
+
+        # ui slider BEGIN
+        ui.horizontalSlider.setMinimum(0)
+        ui.horizontalSlider.setMaximum(NUM_FRAMES - 1)
+        ui.label_12.setText("0")
+        ui.label_13.setText(str(NUM_FRAMES - 1))
+        # ui slider END
+
+        print(image4D.shape)
+        print(spacing4D.shape)
+
+        compressed_data = []
+        for i in range(NUM_FRAMES):
+            pickled_image4D = pickle.dumps(image4D[i])
+            compressed_image4D = blosc.compress(pickled_image4D)
+            encoded_image4D = base64.b64encode(compressed_image4D)
+            compressed_data.append(encoded_image4D)
+
+        pickled_spacing4D = pickle.dumps(spacing4D)
+        compressed_spacing4D = blosc.compress(pickled_spacing4D)
+        encoded_spacing4D = base64.b64encode(compressed_spacing4D)
+        compressed_data.append(encoded_spacing4D)
+
+        serialized_data = b";".join(compressed_data)
+        return serialized_data
+    
 
 def process_frame(frame, frame_index):
     pickled_data = pickle.dumps(frame)
