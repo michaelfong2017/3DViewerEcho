@@ -22,6 +22,155 @@ from formatconverter import dicom_to_array
 from euler import eulerFromNormal, find_center_point
 
 
+
+class ProcessDicomThread(QtCore.QThread):
+    finished = QtCore.Signal(object)
+    ui_update = QtCore.Signal(object)
+    def __init__(self, analyze_all, array_4d, ui: Ui_MainWindow, selected_frame_index):
+        super().__init__()
+        print("init ProcessDicomThread")
+        self.analyze_all = analyze_all
+        self.array_4d = array_4d
+        self.ui = ui
+        self.selected_frame_index = selected_frame_index
+
+    def run(self):
+        print("run ProcessDicomThread")
+        results = self.process_dicom(self.analyze_all, self.array_4d, self.ui, self.selected_frame_index)
+        self.finished.emit(results)
+
+    def process_dicom(self, analyze_all, array_4d, ui: Ui_MainWindow, selected_frame_index):
+        data_4d_padded = array_4d
+
+        # print(data_4d_padded)
+        print(data_4d_padded.shape)
+
+        DataManager().data_3d_padded_max_length = data_4d_padded.shape[1]
+
+        NUM_FRAMES = data_4d_padded.shape[0]
+        print(f"NUM_FRAMES: {NUM_FRAMES}")
+
+        if (selected_frame_index == -1):
+            selected_frame_index = int(NUM_FRAMES / 2)
+
+        DataManager().clear_all_results()
+
+        def reset_ui(ui):
+            ui.gridWidget.clearAllItems(ui.gridWidget)
+            ui.pushButton_11.setEnabled(False)
+            ui.label_23.setText("")
+        self.ui_update.emit((reset_ui, ui))
+
+        pool = ThreadPool(21)
+        results = []
+        if selected_frame_index >= NUM_FRAMES:
+            selected_frame_index = NUM_FRAMES - 1
+        for i in range(NUM_FRAMES):
+            # Analyze only one time frame
+            if not analyze_all:
+                if not i == selected_frame_index:
+                    continue
+            # Analyze only one time frame END
+
+            data_3d_padded = data_4d_padded[i]
+            if i == 0:
+                print(data_3d_padded.shape)
+
+            # results.append(pool.apply_async(thread_pool_test, args=(data_3d_padded,i)))
+
+            result = pool.apply_async(
+                process_frame,
+                args=(
+                    data_3d_padded,
+                    i,
+                ),
+            )
+
+            frame_index, all_results, view_to_array_2d, all_center_images = result.get()
+
+            DataManager().update_pred_result(frame_index, all_results)
+            DataManager().update_center_images(frame_index, all_center_images)
+
+            results.append(result)
+
+            is_first = True if not analyze_all or (analyze_all and i == 0) else False
+            # Show the result without needing to move the horizontal slider
+            if is_first:
+                def move_slider(ui):
+                    ui.horizontalSlider.setValue(0)
+                    ui.horizontalSlider.setValue(1)
+                    ui.horizontalSlider.setValue(i)
+                self.ui_update.emit((move_slider, ui))
+
+            ## ui progress bar
+            if analyze_all:
+                new_value = round(10 + (i + 1) * 90.0 / NUM_FRAMES)
+                if new_value > 100:
+                    new_value = 100
+            else:
+                new_value = 20
+            def update_progress_bar(ui):
+                ui.progressBar.setValue(new_value)
+            self.ui_update.emit((update_progress_bar, ui))
+            ## END
+
+        pool.close()
+        pool.join()
+        results = [r.get() for r in results]
+        # print(results)
+
+        # If analyze selected frame only, apply the landmark result to all other time frames as well
+        if not analyze_all:
+            assert not view_to_array_2d == None
+
+            pool = ThreadPool(21)
+            results = []
+            for i in range(NUM_FRAMES):
+                if i == selected_frame_index:
+                    continue
+
+                data_3d_padded = data_4d_padded[i]
+
+                result = pool.apply_async(
+                    process_frame_with_known_matrix,
+                    # process_frame_with_known_landmarks,
+                    args=(
+                        data_3d_padded,
+                        i,
+                        view_to_array_2d,
+                    ),
+                )
+
+                frame_index, all_results, all_center_images = result.get()
+
+                DataManager().update_pred_result(frame_index, all_results)
+                DataManager().update_center_images(frame_index, all_center_images)
+        
+                results.append(result)
+
+                ## ui progress bar
+                new_value = round(20 + (i + 1) * 80.0 / NUM_FRAMES)
+                if new_value > 100:
+                    new_value = 100
+                def update_progress_bar(ui):
+                    ui.progressBar.setValue(new_value)
+                self.ui_update.emit((update_progress_bar, ui))
+                ## END
+
+            pool.close()
+            pool.join()
+            results = [r.get() for r in results]
+            # print(results)
+
+        ## ui, ui progress bar
+        def update_progress_bar_and_analyze_button(ui):
+            ui.progressBar.setHidden(True)
+            ui.pushButton_11.setEnabled(True)
+        self.ui_update.emit((update_progress_bar_and_analyze_button, ui))
+        ## END
+        return results
+
+
 class SendDicomThread(QtCore.QThread):
     finished = QtCore.Signal(object)
     ui_update = QtCore.Signal(object)
@@ -45,7 +194,9 @@ class SendDicomThread(QtCore.QThread):
         try:
             response = requests.post(url, data=serialized_data, headers=headers)
 
-            ui.label_17.setText(f"DICOM File (Video) Info:")
+            def set_video_info_title(ui):
+                ui.label_17.setText(f"DICOM File (Video) Info:")
+            self.ui_update.emit((set_video_info_title, ui))
 
             if response.status_code == 200:
                 compressed_data = response.content
@@ -60,13 +211,15 @@ class SendDicomThread(QtCore.QThread):
                     pickle.dump(array_4d, file)
             else:
                 print("Error:", response.text)
-                loader = QtUiTools.QUiLoader()
-                ui_file = QtCore.QFile(resource_path("errordialog.ui"))
-                ui_file.open(QtCore.QFile.ReadOnly)
-                dialog = loader.load(ui_file)
-                dialog.label.setText("normalize_dicom_array response is not 200")
-                dialog.label_2.setText("")
-                dialog.exec_()
+                def alert_response_not_200(ui):
+                    loader = QtUiTools.QUiLoader()
+                    ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+                    ui_file.open(QtCore.QFile.ReadOnly)
+                    dialog = loader.load(ui_file)
+                    dialog.label.setText("normalize_dicom_array response is not 200")
+                    dialog.label_2.setText("")
+                    dialog.exec_()
+                self.ui_update.emit((alert_response_not_200, ui))
                 return
         except:
             try:
@@ -86,14 +239,16 @@ class SendDicomThread(QtCore.QThread):
                     self.ui_update.emit((alert_use_sample_data, ui))
                     
             except:
-                ui.label_17.setText(f"Server cannot be connected and no sample data available!")
-                loader = QtUiTools.QUiLoader()
-                ui_file = QtCore.QFile(resource_path("errordialog.ui"))
-                ui_file.open(QtCore.QFile.ReadOnly)
-                dialog = loader.load(ui_file)
-                dialog.label.setText("Server cannot be connected")
-                dialog.label_2.setText("and no sample data available!")
-                dialog.exec_()
+                def alert_no_sample_data_available(ui):
+                    ui.label_17.setText(f"Server cannot be connected and no sample data available!")
+                    loader = QtUiTools.QUiLoader()
+                    ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+                    ui_file.open(QtCore.QFile.ReadOnly)
+                    dialog = loader.load(ui_file)
+                    dialog.label.setText("Server cannot be connected")
+                    dialog.label_2.setText("and no sample data available!")
+                    dialog.exec_()
+                self.ui_update.emit((alert_no_sample_data_available, ui))
                 return
         # except requests.exceptions.ConnectionError as e:
         #     print(e)
@@ -110,6 +265,7 @@ class SendDicomThread(QtCore.QThread):
 
 class ReadDicomThread(QtCore.QThread):
     finished = QtCore.Signal(object)
+    ui_update = QtCore.Signal(object)
     def __init__(self, filepath, ui):
         super().__init__()
         print("init ReadDicomThread")
@@ -136,16 +292,20 @@ class ReadDicomThread(QtCore.QThread):
         
         NUM_FRAMES = image4D.shape[0]
 
-        ## ui loading bar
-        # ui.progressBar.setValue(10)
-        # ui.progressBar.setHidden(False)
-        ##
+        # ui progress bar
+        def show_progress_bar(ui):
+            ui.progressBar.setValue(10)
+            ui.progressBar.setHidden(False)
+        self.ui_update.emit((show_progress_bar, ui))
+        # END
 
         # ui slider BEGIN
-        ui.horizontalSlider.setMinimum(0)
-        ui.horizontalSlider.setMaximum(NUM_FRAMES - 1)
-        ui.label_12.setText("0")
-        ui.label_13.setText(str(NUM_FRAMES - 1))
+        def update_ui_slider(ui):
+            ui.horizontalSlider.setMinimum(0)
+            ui.horizontalSlider.setMaximum(NUM_FRAMES - 1)
+            ui.label_12.setText("0")
+            ui.label_13.setText(str(NUM_FRAMES - 1))
+        self.ui_update.emit((update_ui_slider, ui))
         # ui slider END
 
         print(image4D.shape)
@@ -482,125 +642,6 @@ def thread_pool_test(frame, frame_index):
     time.sleep(r)
     print("Worker thread finishing")
     return (frame_index, r)
-
-def process_dicom(analyze_all, array_4d, ui: Ui_MainWindow, selected_frame_index):
-    data_4d_padded = array_4d
-
-    # print(data_4d_padded)
-    print(data_4d_padded.shape)
-
-    DataManager().data_3d_padded_max_length = data_4d_padded.shape[1]
-
-    NUM_FRAMES = data_4d_padded.shape[0]
-    print(f"NUM_FRAMES: {NUM_FRAMES}")
-
-    if (selected_frame_index == -1):
-        selected_frame_index = int(NUM_FRAMES / 2)
-
-    DataManager().clear_all_results()
-    ui.gridWidget.clearAllItems(ui.gridWidget)
-    ui.pushButton_11.setEnabled(False)
-    ui.label_23.setText("")
-
-    pool = ThreadPool(21)
-    results = []
-    if selected_frame_index >= NUM_FRAMES:
-        selected_frame_index = NUM_FRAMES - 1
-    for i in range(NUM_FRAMES):
-        # Analyze only one time frame
-        if not analyze_all:
-            if not i == selected_frame_index:
-                continue
-        # Analyze only one time frame END
-
-        data_3d_padded = data_4d_padded[i]
-        if i == 0:
-            print(data_3d_padded.shape)
-
-        # results.append(pool.apply_async(thread_pool_test, args=(data_3d_padded,i)))
-
-        result = pool.apply_async(
-            process_frame,
-            args=(
-                data_3d_padded,
-                i,
-            ),
-        )
-
-        frame_index, all_results, view_to_array_2d, all_center_images = result.get()
-
-        DataManager().update_pred_result(frame_index, all_results)
-        DataManager().update_center_images(frame_index, all_center_images)
-
-        results.append(result)
-
-        is_first = True if not analyze_all or (analyze_all and i == 0) else False
-        # Show the result without needing to move the horizontal slider
-        if is_first:
-            ui.horizontalSlider.setValue(0)
-            ui.horizontalSlider.setValue(1)
-            ui.horizontalSlider.setValue(i)
-
-        # ## ui progress bar
-        # if analyze_all:
-        #     new_value = round(10 + (i + 1) * 90.0 / NUM_FRAMES)
-        #     if new_value > 100:
-        #         new_value = 100
-        #     ui.progressBar.setValue(new_value)
-        # else:
-        #     ui.progressBar.setValue(20)
-        ##
-
-    pool.close()
-    pool.join()
-    results = [r.get() for r in results]
-    # print(results)
-
-    # If analyze selected frame only, apply the landmark result to all other time frames as well
-    if not analyze_all:
-        assert not view_to_array_2d == None
-
-        pool = ThreadPool(21)
-        results = []
-        for i in range(NUM_FRAMES):
-            if i == selected_frame_index:
-                continue
-
-            data_3d_padded = data_4d_padded[i]
-
-            result = pool.apply_async(
-                process_frame_with_known_matrix,
-                # process_frame_with_known_landmarks,
-                args=(
-                    data_3d_padded,
-                    i,
-                    view_to_array_2d,
-                ),
-            )
-
-            frame_index, all_results, all_center_images = result.get()
-
-            DataManager().update_pred_result(frame_index, all_results)
-            DataManager().update_center_images(frame_index, all_center_images)
-    
-            results.append(result)
-
-            ## ui progress bar
-            # new_value = round(20 + (i + 1) * 80.0 / NUM_FRAMES)
-            # if new_value > 100:
-            #     new_value = 100
-            # ui.progressBar.setValue(new_value)
-            ##
-
-        pool.close()
-        pool.join()
-        results = [r.get() for r in results]
-        # print(results)
-
-    ## ui
-    # ui.progressBar.setHidden(True)
-    ui.pushButton_11.setEnabled(True)
-    ##
 
 def pyplot_to_qimage():
     buf = io.BytesIO()

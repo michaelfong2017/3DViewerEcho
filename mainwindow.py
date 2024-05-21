@@ -11,7 +11,7 @@ import base64
 import requests
 import cv2
 import numpy as np
-from dicomprocessor import ReadDicomThread, SendDicomThread, process_dicom
+from dicomprocessor import ReadDicomThread, SendDicomThread, ProcessDicomThread
 from datamanager import DataManager, ModelType
 from clickableqlabel import ClickableQLabel
 from patienteditor import PatientEditor
@@ -642,6 +642,7 @@ QMenu::item:selected {
         
         self.read_dicom_thread = ReadDicomThread(filepath, self.ui)
         self.read_dicom_thread.finished.connect(self.handle_read_dicom_result_analyze_all)
+        self.read_dicom_thread.ui_update.connect(self.handle_read_dicom_ui_update)
         self.read_dicom_thread.start()
 
     def handle_read_dicom_result_analyze_all(self, serialized_data):
@@ -653,16 +654,17 @@ QMenu::item:selected {
         self.send_dicom_thread.start()
 
     def handle_send_dicom_result_analyze_all(self, array_4d):
-        t2 = threading.Thread(
-            target=process_dicom,
-            args=(
-                True,
-                array_4d,
-                self.ui,
-                -1,
-            ),
-        )
-        t2.start()
+        print("handle_send_dicom_result_analyze_all")
+
+        self.process_dicom_thread = ProcessDicomThread(True, array_4d, self.ui, -1)
+        self.process_dicom_thread.finished.connect(self.handle_process_dicom_result_analyze_all)
+        self.process_dicom_thread.ui_update.connect(self.handle_process_dicom_ui_update)
+        self.process_dicom_thread.start()
+
+    def handle_process_dicom_result_analyze_all(self, results):
+        print("handle_process_dicom_result_analyze_all")
+        print(len(results))
+        pass
 
     def import_dicom_and_analyze_selected(self):
         file = QFileDialog.getOpenFileName(
@@ -685,6 +687,7 @@ QMenu::item:selected {
         
         self.read_dicom_thread = ReadDicomThread(filepath, self.ui)
         self.read_dicom_thread.finished.connect(self.handle_read_dicom_result_analyze_selected)
+        self.read_dicom_thread.ui_update.connect(self.handle_read_dicom_ui_update)
         self.read_dicom_thread.start()
 
     def handle_read_dicom_result_analyze_selected(self, serialized_data):
@@ -698,17 +701,21 @@ QMenu::item:selected {
     def handle_send_dicom_result_analyze_selected(self, array_4d):
         print("handle_send_dicom_result_analyze_selected")
 
-        t2 = threading.Thread(
-            target=process_dicom,
-            args=(
-                False,
-                array_4d,
-                self.ui,
-                # self.ui.horizontalSlider.value(),
-                -1,
-            ),
-        )
-        t2.start()
+        self.process_dicom_thread = ProcessDicomThread(False, array_4d, self.ui, -1)
+        self.process_dicom_thread.finished.connect(self.handle_process_dicom_result_analyze_selected)
+        self.process_dicom_thread.ui_update.connect(self.handle_process_dicom_ui_update)
+        self.process_dicom_thread.start()
+
+    def handle_process_dicom_result_analyze_selected(self, results):
+        print("handle_process_dicom_result_analyze_selected")
+        print(len(results))
+
+    def handle_read_dicom_ui_update(self, function_and_args):
+        print("handle_read_dicom_ui_update")
+        function, *args = function_and_args
+        # print(function)
+        # print(args)
+        function(*args)
 
     def handle_send_dicom_ui_update(self, function_and_args):
         print("handle_send_dicom_ui_update")
@@ -716,7 +723,14 @@ QMenu::item:selected {
         # print(function)
         # print(args)
         function(*args)
-    
+
+    def handle_process_dicom_ui_update(self, function_and_args):
+        print("handle_process_dicom_ui_update")
+        function, *args = function_and_args
+        # print(function)
+        # print(args)
+        function(*args)
+
     def display_video_info(self, ui: Ui_MainWindow):
         ui.label_16.setText(f"Video - Number of Frames: {DataManager().dicom_number_of_frames}")
         ui.label_15.setText(f"Video - Average Frame Time: {round(DataManager().dicom_average_frame_time_in_ms, 2)}ms")
