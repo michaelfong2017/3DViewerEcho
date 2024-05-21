@@ -96,11 +96,11 @@ class ProcessDicomThread(QtCore.QThread):
             is_first = True if not analyze_all or (analyze_all and i == 0) else False
             # Show the result without needing to move the horizontal slider
             if is_first:
-                def move_slider(ui):
+                def move_slider(ui, i):
                     ui.horizontalSlider.setValue(0)
                     ui.horizontalSlider.setValue(1)
                     ui.horizontalSlider.setValue(i)
-                self.ui_update.emit((move_slider, ui))
+                self.ui_update.emit((move_slider, ui, i))
 
             ## ui progress bar
             if analyze_all:
