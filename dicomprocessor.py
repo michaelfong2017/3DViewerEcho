@@ -50,8 +50,13 @@ class ProcessDicomThread(QtCore.QThread):
         NUM_FRAMES = data_4d_padded.shape[0]
         print(f"NUM_FRAMES: {NUM_FRAMES}")
 
+        if selected_frame_index >= NUM_FRAMES:
+            selected_frame_index = NUM_FRAMES - 1
+
         if (selected_frame_index == -1):
             selected_frame_index = int(NUM_FRAMES / 2)
+
+        five_indexes: list = self.select_five_indexes(NUM_FRAMES, selected_frame_index)
 
         DataManager().clear_all_results()
 
@@ -63,29 +68,63 @@ class ProcessDicomThread(QtCore.QThread):
 
         pool = ThreadPool(21)
         results = []
-        if selected_frame_index >= NUM_FRAMES:
-            selected_frame_index = NUM_FRAMES - 1
-        for i in range(NUM_FRAMES):
-            # Analyze only one time frame
-            if not analyze_all:
-                if not i == selected_frame_index:
-                    continue
-            # Analyze only one time frame END
 
-            data_3d_padded = data_4d_padded[i]
-            if i == 0:
-                print(data_3d_padded.shape)
+        if analyze_all:
+            for i in range(NUM_FRAMES):
+                data_3d_padded = data_4d_padded[i]
+                if i == 0:
+                    print(data_3d_padded.shape)
 
-            # results.append(pool.apply_async(thread_pool_test, args=(data_3d_padded,i)))
+                # results.append(pool.apply_async(thread_pool_test, args=(data_3d_padded,i)))
+
+                result = pool.apply_async(
+                    process_frame,
+                    args=(
+                        data_3d_padded,
+                        i,
+                    ),
+                )
+
+                frame_index, all_results, view_to_array_2d, all_center_images = result.get()
+
+                DataManager().update_pred_result(frame_index, all_results)
+                DataManager().update_center_images(frame_index, all_center_images)
+
+                results.append(result)
+
+                is_first = True if i == 0 else False
+                # Show the result without needing to move the horizontal slider
+                if is_first:
+                    def move_slider(ui, i):
+                        ui.horizontalSlider.setValue(0)
+                        ui.horizontalSlider.setValue(1)
+                        ui.horizontalSlider.setValue(i)
+                    self.ui_update.emit((move_slider, ui, i))
+
+                ## ui progress bar
+                new_value = round(10 + (i + 1) * 90.0 / NUM_FRAMES)
+                if new_value > 100:
+                    new_value = 100
+                def update_progress_bar(ui):
+                    ui.progressBar.setValue(new_value)
+                self.ui_update.emit((update_progress_bar, ui))
+                ## END
+        else:
+            five_frames = [data_4d_padded[frame_index] for frame_index in five_indexes]
+            data_3d_padded = data_4d_padded[selected_frame_index]
+            print(data_3d_padded.shape)
 
             result = pool.apply_async(
-                process_frame,
+                process_five_frames,
                 args=(
                     data_3d_padded,
-                    i,
+                    selected_frame_index,
+                    five_frames,
+                    five_indexes,
                 ),
             )
 
+            # Returned frame_index must be the same as the originally passed selected_frame_index
             frame_index, all_results, view_to_array_2d, all_center_images = result.get()
 
             DataManager().update_pred_result(frame_index, all_results)
@@ -93,22 +132,15 @@ class ProcessDicomThread(QtCore.QThread):
 
             results.append(result)
 
-            is_first = True if not analyze_all or (analyze_all and i == 0) else False
             # Show the result without needing to move the horizontal slider
-            if is_first:
-                def move_slider(ui, i):
-                    ui.horizontalSlider.setValue(0)
-                    ui.horizontalSlider.setValue(1)
-                    ui.horizontalSlider.setValue(i)
-                self.ui_update.emit((move_slider, ui, i))
+            def move_slider(ui, frame_index):
+                ui.horizontalSlider.setValue(0)
+                ui.horizontalSlider.setValue(1)
+                ui.horizontalSlider.setValue(frame_index)
+            self.ui_update.emit((move_slider, ui, frame_index))
 
             ## ui progress bar
-            if analyze_all:
-                new_value = round(10 + (i + 1) * 90.0 / NUM_FRAMES)
-                if new_value > 100:
-                    new_value = 100
-            else:
-                new_value = 20
+            new_value = 20
             def update_progress_bar(ui):
                 ui.progressBar.setValue(new_value)
             self.ui_update.emit((update_progress_bar, ui))
@@ -170,6 +202,31 @@ class ProcessDicomThread(QtCore.QThread):
         ## END
         return results
 
+    def select_five_indexes(self, num_frames, selected_frame_index):
+        if selected_frame_index < 0 or selected_frame_index >= num_frames:
+            raise Exception("Input Error: selected_frame_index must be >=0 and < num_frames")
+        N = 5
+        if num_frames < N:
+            return list(range(num_frames))
+        selected = [selected_frame_index]
+
+        max_num_left = selected_frame_index - 0
+        max_num_right = num_frames - 1 - selected_frame_index
+
+        num_left = int(N / 2)
+        num_right = int(N / 2)
+        if max_num_left < num_left:
+            num_right = num_right + (num_left - max_num_left)
+            num_left = max_num_left
+        elif max_num_right < num_right:
+            num_left = num_left + (num_right - max_num_right)
+            num_right = max_num_right
+
+        for i in range(num_left):
+            selected.append(selected_frame_index - 1 - i)
+        for i in range(num_right):
+            selected.append(selected_frame_index + 1 + i)
+        return sorted(selected)
 
 class SendDicomThread(QtCore.QThread):
     finished = QtCore.Signal(object)
@@ -326,6 +383,160 @@ class ReadDicomThread(QtCore.QThread):
         serialized_data = b";".join(compressed_data)
         return serialized_data
     
+def process_five_frames(frame, frame_index, five_frames, five_indexes):
+    pickled_data = pickle.dumps(frame)
+    compressed_data = blosc.compress(pickled_data)
+
+    base_url = DataManager().server_base_url
+    api = "process_frame_model_multiple" if DataManager().model_type == ModelType.MULTIPLE else "process_frame_model_unified"
+    if not base_url.endswith("/"):
+        base_url = base_url + "/"
+    url = f"{base_url}{api}"
+    headers = {"Content-Type": "application/octet-stream"}
+
+    print(f"Request URL: {url}")
+
+    try:
+        response = requests.post(url, data=compressed_data, headers=headers)
+
+        if response.status_code == 200:
+            compressed_data = response.content
+
+            # Decompress the received data
+            pickled_data = blosc.decompress(compressed_data)
+
+            # Deserialize the pickled data to a NumPy array
+            view_to_array_2d: dict = pickle.loads(pickled_data)
+
+            if api == "process_frame_model_unified":
+                assert 'all' in view_to_array_2d.keys()
+                new_view_to_array_2d = {}
+                for view, indexes in PlaneReconstructionUtils.VIEW_STRUCTS.items():
+                    if view == 'all':
+                        continue
+                    new_view_to_array_2d[view] = []
+                    for ind in indexes:
+                        new_view_to_array_2d[view].append(np.array(view_to_array_2d['all'][ind]))
+                    new_view_to_array_2d[view] = np.array(new_view_to_array_2d[view])
+                view_to_array_2d = new_view_to_array_2d
+
+            with open(resource_path(os.path.join("pickle", f"{frame_index}.pickle")), "wb") as file:
+                pickle.dump(view_to_array_2d, file)
+        else:
+            print("Error:", response.text)
+            loader = QtUiTools.QUiLoader()
+            ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+            ui_file.open(QtCore.QFile.ReadOnly)
+            dialog = loader.load(ui_file)
+            dialog.label.setText("process_frame response is not 200")
+            dialog.label_2.setText("")
+            dialog.exec_()
+            return
+    except Exception as e:
+        print(e)
+        print("Loading pickle data...")
+        ## UI dialog is not needed since it's already displayed during the normalize_dicom_array API call
+        try:
+            with open(resource_path(os.path.join("pickle", f"{frame_index}.pickle")), "rb") as file:
+                view_to_array_2d = pickle.load(file)
+        except:
+            ## TODO UI show error
+            pass
+
+    all_results = {}
+    all_landmarks = {}
+    i = 0
+    for view, array_2d in view_to_array_2d.items():
+        print("---------------------------------------------------------------")
+        print(view)
+        coords_raw = array_2d
+
+        structures = PlaneReconstructionUtils.VIEW_STRUCTS[view]
+        print("Received: ", coords_raw)
+        struct_counter=0
+        for s in structures:
+            all_landmarks[s] = coords_raw[struct_counter]
+            struct_counter+=1
+
+        st = time.perf_counter()
+        # print(all_landmarks)
+        try:
+
+            # extract the content of the plane and project onto 2d image. Also do the same for the coordinates for visualization.
+            # pred_vs, pred_mapped_coords, pred_up = FindVisualFromCoords(pred_coords_raw, data_3d_padded)
+            # Note: You can modify time_index value to get plane visual from other time slices
+            vs, coords_2d, coords_index, up_vector_2d, normal_3d, isFlat, axis, axis_index, inslice_coords_vrf, size_slice_x, size_slice_y = PlaneReconstructionUtils.FindVisualFromCoordsOnce(
+                    coords_raw, frame, view, truth=False, all_landmarks=all_landmarks)
+
+            nx, ny, nz = normal_3d[0], normal_3d[1], normal_3d[2]
+            rx, ry, rz = eulerFromNormal(nx, ny, nz)
+            # print(f"view: {view}; (rx, ry, rz): ({rx}, {ry}, {rz})")
+
+            points = [coords_raw[i] for i in coords_index]
+            center_point = find_center_point(points, DataManager().data_3d_padded_max_length)
+
+            normalized_point = np.zeros(3)
+            normalized_point[0] = center_point[0] / DataManager().data_3d_padded_max_length * 1.0
+            normalized_point[1] = center_point[1] / DataManager().data_3d_padded_max_length * 1.0
+            normalized_point[2] = center_point[2] / DataManager().data_3d_padded_max_length * 1.0
+
+            cx, cy, cz = normalized_point
+            # print(f"view: {view}; (cx, cy, cz): ({cx}, {cy}, {cz})")
+
+            # Rotate Image
+            slice_image, rotated_coords_2d = PlaneReconstructionUtils.HandleRotationsNumpy(vs, coords_2d, coords_index, up_vector_2d, view)
+            slice_image, rotated_coords_2d = PlaneReconstructionUtils.ViewSpecificRotations(slice_image, rotated_coords_2d, view)
+            min_y = max_y = min_x = max_x = 0
+            slice_image, rotated_coords_2d, min_y, max_y, min_x, max_x = PlaneReconstructionUtils.CropImageAndReturnPadding(slice_image, rotated_coords_2d, spacing=10)
+            # Convert Image to PIL image
+            slice_image = Image.fromarray(slice_image)
+            slice_image = slice_image.convert("L")
+            # pred_image.save(view + 'testing_pred.png')
+
+            width, height = slice_image.size
+            px = 1 / pyplot.rcParams['figure.dpi']
+            pyplot.figure(frame_index * len(view_to_array_2d) + i, figsize=(width * px, height * px))
+            pyplot.margins(x=0)
+            pyplot.gca().xaxis.set_major_locator(pyplot.NullLocator())
+            pyplot.gca().yaxis.set_major_locator(pyplot.NullLocator())
+            pyplot.imshow(slice_image, cmap='gray')
+            # pyplot.scatter(pred_rotated_coords[:,0], pred_rotated_coords[:,1], c='red', marker='x')
+            # pyplot.savefig(str(frame_index * len(view_to_array_2d) + i) + '.png', bbox_inches='tight', pad_inches=0)
+            annotated_qimage = pyplot_to_qimage()
+
+            et = time.perf_counter()
+            # print("Execution time: ", et - st)
+
+            all_results.update({view: (slice_image, rotated_coords_2d, annotated_qimage, rx, ry, rz, cx, cy, cz)})
+
+        except Exception as e:
+            print(e)
+            all_results.update({view: None})
+
+        i += 1
+        view_to_array_2d[view] = [coords_2d, coords_raw, coords_index, up_vector_2d, normal_3d, isFlat, axis, axis_index, inslice_coords_vrf, size_slice_x, size_slice_y, min_y, max_y, min_x, max_x]
+
+    v0 = frame[106, :, :]
+    v0 = np.rot90(v0, k=1) # rotate 270 degree clockwise
+    v0 = Image.fromarray(v0)
+    v0 = v0.convert("L")
+    # v0.save("x=0.png") 
+    v1 = frame[:, 106, :]
+    v1 = np.rot90(v1, k=1) # rotate 270 degree clockwise
+    v1 = Image.fromarray(v1)
+    v1 = v1.convert("L")
+    # v1.save("y=0.png")
+    v2 = frame[:, :, 106]
+    v2 = np.rot90(v2, k=1) # rotate 270 degree clockwise
+    v2 = Image.fromarray(v2)
+    v2 = v2.convert("L")
+    # v2.save("z=0.png")
+
+    all_center_images = {}
+    all_center_images.update({"x=0": v0})
+    all_center_images.update({"y=0": v1})
+    all_center_images.update({"z=0": v2})
+    return frame_index, all_results, view_to_array_2d, all_center_images
 
 def process_frame(frame, frame_index):
     pickled_data = pickle.dumps(frame)
