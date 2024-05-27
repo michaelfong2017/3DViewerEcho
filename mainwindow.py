@@ -593,7 +593,7 @@ QMenu::item:selected {
                         brightness = 1.0
                         highlighted_view = DataManager().highlighted_view
                         if highlighted_view == view:
-                            print(f"Highlighted view: {view}")
+                            # print(f"Highlighted view: {view}")
                             brightness = 45.0
                         # else:
                             # print("Highlighted view does not match with the current")
