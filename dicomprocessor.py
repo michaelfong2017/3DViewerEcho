@@ -110,7 +110,7 @@ class ProcessDicomThread(QtCore.QThread):
                 self.ui_update.emit((update_progress_bar, ui))
                 ## END
         else:
-            five_frames = [data_4d_padded[frame_index] for frame_index in five_indexes]
+            five_frames = np.array([data_4d_padded[frame_index] for frame_index in five_indexes])
             data_3d_padded = data_4d_padded[selected_frame_index]
             print(data_3d_padded.shape)
 
@@ -384,11 +384,11 @@ class ReadDicomThread(QtCore.QThread):
         return serialized_data
     
 def process_five_frames(frame, frame_index, five_frames, five_indexes):
-    pickled_data = pickle.dumps(frame)
+    pickled_data = pickle.dumps(five_frames)
     compressed_data = blosc.compress(pickled_data)
 
     base_url = DataManager().server_base_url
-    api = "process_frame_model_multiple" if DataManager().model_type == ModelType.MULTIPLE else "process_frame_model_unified"
+    api = "process_five_frames_model_multiple" if DataManager().model_type == ModelType.MULTIPLE else "process_five_frames_model_unified"
     if not base_url.endswith("/"):
         base_url = base_url + "/"
     url = f"{base_url}{api}"
@@ -408,7 +408,7 @@ def process_five_frames(frame, frame_index, five_frames, five_indexes):
             # Deserialize the pickled data to a NumPy array
             view_to_array_2d: dict = pickle.loads(pickled_data)
 
-            if api == "process_frame_model_unified":
+            if api == "process_five_frames_model_unified":
                 assert 'all' in view_to_array_2d.keys()
                 new_view_to_array_2d = {}
                 for view, indexes in PlaneReconstructionUtils.VIEW_STRUCTS.items():
