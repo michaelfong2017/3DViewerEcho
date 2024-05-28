@@ -203,6 +203,7 @@ class ProcessDicomThread(QtCore.QThread):
         return results
 
     def select_five_indexes(self, num_frames, selected_frame_index):
+        ## TODO REVIEW select which five indexes
         if selected_frame_index < 0 or selected_frame_index >= num_frames:
             raise Exception("Input Error: selected_frame_index must be >=0 and < num_frames")
         N = 5
