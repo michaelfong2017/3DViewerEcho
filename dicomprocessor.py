@@ -202,32 +202,42 @@ class ProcessDicomThread(QtCore.QThread):
         ## END
         return results
 
-    def select_five_indexes(self, num_frames, selected_frame_index):
-        ## TODO REVIEW select which five indexes
+    def select_five_indexes(self, num_frames, selected_frame_index, mode='consecutive'):
+
         if selected_frame_index < 0 or selected_frame_index >= num_frames:
             raise Exception("Input Error: selected_frame_index must be >=0 and < num_frames")
         N = 5
         if num_frames < N:
             return list(range(num_frames))
-        selected = [selected_frame_index]
+        
+        if mode == 'consecutive':
+            selected = [selected_frame_index]
+            max_num_left = selected_frame_index
+            max_num_right = num_frames - 1 - selected_frame_index
 
-        max_num_left = selected_frame_index - 0
-        max_num_right = num_frames - 1 - selected_frame_index
+            num_left = int(N / 2)
+            num_right = int(N / 2)
 
-        num_left = int(N / 2)
-        num_right = int(N / 2)
-        if max_num_left < num_left:
-            num_right = num_right + (num_left - max_num_left)
-            num_left = max_num_left
-        elif max_num_right < num_right:
-            num_left = num_left + (num_right - max_num_right)
-            num_right = max_num_right
+            if max_num_left < num_left:
+                num_right = num_right + (num_left - max_num_left)
+                num_left = max_num_left
+            elif max_num_right < num_right:
+                num_left = num_left + (num_right - max_num_right)
+                num_right = max_num_right
 
-        for i in range(num_left):
-            selected.append(selected_frame_index - 1 - i)
-        for i in range(num_right):
-            selected.append(selected_frame_index + 1 + i)
-        return sorted(selected)
+            for i in range(num_left):
+                selected.append(selected_frame_index - 1 - i)
+            for i in range(num_right):
+                selected.append(selected_frame_index + 1 + i)
+
+            return sorted(selected)
+
+        elif mode == 'randomized':
+            all_indices = list(range(num_frames))
+            return sorted(random.sample(all_indices, N))
+
+        else:
+            raise ValueError("Unknown mode. Use 'consecutive' or 'randomized'")
 
 class SendDicomThread(QtCore.QThread):
     finished = QtCore.Signal(object)

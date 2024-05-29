@@ -21,7 +21,6 @@ from mpl_toolkits.mplot3d import Axes3D
 from scipy.interpolate import RegularGridInterpolator, interp2d
 
 sys.path.append('../')
-#import SAXAGetPlane TODO
 import RotateImage
 
 def get_plane_equation_from_points(P, Q, R):  
