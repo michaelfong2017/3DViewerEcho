@@ -25,7 +25,12 @@ class ScrollAreaWidget(QWidget):
             frame_index = int(label.tag.split(",")[1])
             degree = int(label.tag.split(",")[2])
 
-            all_results = DataManager().get_pred_result(frame_index)
+            current_tab_index = self.parent().parent().parent().parent().currentIndex()
+            view_analyze_all_tab = current_tab_index == 1
+            if view_analyze_all_tab:
+                all_results = DataManager().get_pred_result_analyze_all(frame_index)
+            else:
+                all_results = DataManager().get_pred_result(frame_index)
             ## TODO error handling
             for v, pred_result in all_results.items():
                 if v == view:

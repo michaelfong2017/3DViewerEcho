@@ -31,8 +31,8 @@ class MainWindow(QMainWindow):
         ##
 
         #### Top Menu Bar BEGIN ####
-        self.action_import_all_time_frame = QAction("Analyze all time frames", self)
-        self.action_import_all_time_frame.triggered.connect(self.import_dicom_and_analyze_all)
+        self.action_import_five_time_frames = QAction("Analyze five time frames", self)
+        self.action_import_five_time_frames.triggered.connect(self.import_dicom_and_analyze_five_frames)
 
         self.action_import_selected_time_frame = QAction("Analyze only the selected time frame", self)
         self.action_import_selected_time_frame.triggered.connect(self.import_dicom_and_analyze_selected)
@@ -51,7 +51,7 @@ class MainWindow(QMainWindow):
 
         # Create menus
         self.import_menu = QMenu("Import and Process DICOM file", self)
-        self.import_menu.addAction(self.action_import_all_time_frame)
+        self.import_menu.addAction(self.action_import_five_time_frames)
         self.import_menu.addAction(self.action_import_selected_time_frame)
 
         self.export_menu = QMenu("Export cross-section images", self)
@@ -122,12 +122,13 @@ QMenu::item:selected {
         self.ui.progressBar.setHidden(True)
 
         self.ui.horizontalSlider.valueChanged.connect(self.frame_index_changed)
+        self.ui.tabWidget.currentChanged.connect(self.on_tab_changed)
         self.ui.pushButton_21.clicked.connect(lambda: self.play_or_pause_cross_section(self.ui.pushButton_21))
         self.ui.pushButton_11.clicked.connect(self.analyze_a2c_and_a4c_videos)
         self.ui.label_23.setText("")
         self.ui.label_26.setText("Height:")
         self.ui.label_25.setText("Weight:")
-        self.clearAllCrossSections()
+        self.initClearAllCrossSections()
 
     def on_select_model(self, index):
         combo_box = self.sender()
@@ -162,6 +163,9 @@ QMenu::item:selected {
                 dialog.exec_()
         
     def analyze_a2c_and_a4c_videos(self):
+        view_analyze_all_tab = self.ui.tabWidget.currentIndex() == 1
+        gridWidget = self.ui.gridWidget_2 if view_analyze_all_tab else self.ui.gridWidget
+
         patient_editor_dialog = PatientEditor()
         patient_editor_dialog.patient_info_updated.connect(self.handle_patient_info)
         patient_editor_dialog.exec_()
@@ -180,7 +184,10 @@ QMenu::item:selected {
             a2c_video = []
             a4c_video = []
             for frame_index in range(NUM_FRAMES):
-                all_results = DataManager().get_pred_result(frame_index)
+                if view_analyze_all_tab:
+                    all_results = DataManager().get_pred_result_analyze_all(frame_index)
+                else:
+                    all_results = DataManager().get_pred_result(frame_index)
 
                 if all_results == None:
                     loader = QtUiTools.QUiLoader()
@@ -210,7 +217,7 @@ QMenu::item:selected {
                             _, _, annotated_qimage, rx, ry, rz, cx, cy, cz = pred_result
 
                             ### Rotation
-                            label = self.findLabel(view)
+                            label = self.findLabel(view, gridWidget)
                             if hasattr(label, 'tag'):
                                 degree = int(label.tag.split(",")[2])
                             else:
@@ -308,6 +315,9 @@ QMenu::item:selected {
             dialog.exec_()
             return
         
+        view_analyze_all_tab = self.ui.tabWidget.currentIndex() == 1
+        gridWidget = self.ui.gridWidget_2 if view_analyze_all_tab else self.ui.gridWidget
+
         NUM_FRAMES = DataManager().dicom_number_of_frames
         if NUM_FRAMES == -1 or NUM_FRAMES == 0:
             loader = QtUiTools.QUiLoader()
@@ -322,12 +332,15 @@ QMenu::item:selected {
             ## Save as video
             view_to_video_writer = {}
             if not NUM_FRAMES == 0:
-                all_results = DataManager().get_pred_result(0)
+                if view_analyze_all_tab:
+                    all_results = DataManager().get_pred_result_analyze_all(0)
+                else:
+                    all_results = DataManager().get_pred_result(0)
                 if not all_results == None:
                     for view, pred_result in all_results.items():
                         _, _, annotated_qimage, rx, ry, rz, cx, cy, cz = pred_result
                         ### Rotation
-                        label = self.findLabel(view)
+                        label = self.findLabel(view, gridWidget)
                         if hasattr(label, 'tag'):
                             degree = int(label.tag.split(",")[2])
                         else:
@@ -342,7 +355,10 @@ QMenu::item:selected {
                         view_to_video_writer[view] = cv2.VideoWriter(output_file, cv2.VideoWriter_fourcc(*"mp4v"), frame_rate, (width, height))
             ## Save as video END
             for frame_index in range(NUM_FRAMES):
-                all_results = DataManager().get_pred_result(frame_index)
+                if view_analyze_all_tab:
+                    all_results = DataManager().get_pred_result_analyze_all(frame_index)
+                else:
+                    all_results = DataManager().get_pred_result(frame_index)
 
                 if all_results == None:
                     loader = QtUiTools.QUiLoader()
@@ -380,7 +396,7 @@ QMenu::item:selected {
                             ## Save as video
                             # Convert QImage to numpy array
                             ### Rotation
-                            label = self.findLabel(view)
+                            label = self.findLabel(view, gridWidget)
                             if hasattr(label, 'tag'):
                                 degree = int(label.tag.split(",")[2])
                             else:
@@ -433,9 +449,16 @@ QMenu::item:selected {
             dialog.label.setText("Please select a valid folder!")
             dialog.label_2.setText("")
             dialog.exec_()
-            return 
+            return
+        
+        view_analyze_all_tab = self.ui.tabWidget.currentIndex() == 1
+        gridWidget = self.ui.gridWidget_2 if view_analyze_all_tab else self.ui.gridWidget
+
         try:
-            all_results = DataManager().get_pred_result(frame_index)
+            if view_analyze_all_tab:
+                all_results = DataManager().get_pred_result_analyze_all(frame_index)
+            else:
+                all_results = DataManager().get_pred_result(frame_index)
 
             if all_results == None:
                 loader = QtUiTools.QUiLoader()
@@ -461,7 +484,7 @@ QMenu::item:selected {
                         _, _, annotated_qimage, rx, ry, rz, cx, cy, cz = pred_result
 
                         ### Rotation
-                        label = self.findLabel(view)
+                        label = self.findLabel(view, gridWidget)
                         if hasattr(label, 'tag'):
                             degree = int(label.tag.split(",")[2])
                         else:
@@ -527,21 +550,36 @@ QMenu::item:selected {
         else:
             self.ui.horizontalSlider.setValue(current + 1)
 
+    def on_tab_changed(self, index):
+        current_tab_index = index
+        frame_index = self._current_frame_index
+        self.refresh_cross_sections(frame_index, current_tab_index)
+
     def frame_index_changed(self, slider_value):
         # print(slider_value)
-
         frame_index: int = slider_value
         self._current_frame_index = frame_index
 
+        current_tab_index = self.ui.tabWidget.currentIndex()
+        self.refresh_cross_sections(frame_index, current_tab_index)
+
+    def refresh_cross_sections(self, frame_index, current_tab_index):
         self.ui.label_10.setText(f"Selected time frame index: {frame_index}")
 
-        all_results = DataManager().get_pred_result(frame_index)
-        all_center_images = DataManager().get_center_images(frame_index)
+        view_analyze_all_tab = current_tab_index == 1
+        gridWidget = self.ui.gridWidget_2 if view_analyze_all_tab else self.ui.gridWidget
+
+        if view_analyze_all_tab:
+            all_results = DataManager().get_pred_result_analyze_all(frame_index)
+            all_center_images = DataManager().get_center_images_analyze_all(frame_index)
+        else:
+            all_results = DataManager().get_pred_result(frame_index)
+            all_center_images = DataManager().get_center_images(frame_index)
         
         if all_results == None:
-            self.ui.gridWidget.setVisible(False)
+            gridWidget.setVisible(False)
         else:
-            self.ui.gridWidget.setVisible(True)
+            gridWidget.setVisible(True)
 
             ## Update OpenGL cross sections
             app = self.ui.openGLWidget
@@ -567,7 +605,7 @@ QMenu::item:selected {
             add(Line(app, pos=(1, 0, 1), rot=(0, 0, 90)))
             ####
 
-            if self.shouldInit():
+            if self.shouldInit(gridWidget):
                 initAll = True
             else:
                 initAll = False
@@ -603,12 +641,12 @@ QMenu::item:selected {
                         add(crossSection3D)
                         ####
                         
-                        DataManager().update_result_width(view, annotated_qimage.width())
+                        # DataManager().update_result_width(view, annotated_qimage.width())
 
                         if initAll:
-                            self.addCrossSection(annotated_qimage, view, frame_index)
+                            self.addCrossSection(annotated_qimage, view, frame_index, gridWidget)
                         else:
-                            self.modifyCrossSection(annotated_qimage, view, frame_index)
+                            self.modifyCrossSection(annotated_qimage, view, frame_index, gridWidget)
                     except Exception as e:
                         print(e)
 
@@ -621,6 +659,52 @@ QMenu::item:selected {
         if not weight == "":
             self.ui.label_25.setText(f"Weight: {weight}kg")
 
+    def import_dicom_and_analyze_five_frames(self):
+        file = QFileDialog.getOpenFileName(
+            self,
+            self.tr("Select DICOM File, in which five time frames will be analyzed"),
+            os.getcwd(),
+            self.tr("DICOM File (*.dcm)"),
+        )
+        filepath = file[0]
+        
+        if filepath == "": # No file is selected
+            loader = QtUiTools.QUiLoader()
+            ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+            ui_file.open(QtCore.QFile.ReadOnly)
+            dialog = loader.load(ui_file)
+            dialog.label.setText("Please select a valid filepath!")
+            dialog.label_2.setText("")
+            dialog.exec_()
+            return
+        
+        self.read_dicom_thread = ReadDicomThread(filepath, self.ui)
+        self.read_dicom_thread.finished.connect(self.handle_read_dicom_result_analyze_five_frames)
+        self.read_dicom_thread.ui_update.connect(self.handle_read_dicom_ui_update)
+        self.read_dicom_thread.start()
+
+    def handle_read_dicom_result_analyze_five_frames(self, serialized_data):
+        print("handle_read_dicom_result_analyze_five_frames")
+        
+        self.send_dicom_thread = SendDicomThread(serialized_data, self.ui)
+        self.send_dicom_thread.finished.connect(self.handle_send_dicom_result_analyze_five_frames)
+        self.send_dicom_thread.ui_update.connect(self.handle_send_dicom_ui_update)
+        self.send_dicom_thread.start()
+
+    def handle_send_dicom_result_analyze_five_frames(self, array_4d):
+        print("handle_send_dicom_result_analyze_five_frames")
+
+        self.process_dicom_thread = ProcessDicomThread(False, array_4d, self.ui, -1, True)
+        self.process_dicom_thread.finished.connect(self.handle_process_dicom_result_analyze_five_frames)
+        self.process_dicom_thread.ui_update.connect(self.handle_process_dicom_ui_update)
+        self.process_dicom_thread.start()
+
+    def handle_process_dicom_result_analyze_five_frames(self, results):
+        print("handle_process_dicom_result_analyze_five_frames")
+        print(len(results))
+        self.handle_send_dicom_result_analyze_all(DataManager().data_4d_padded)
+
+    ## Not used
     def import_dicom_and_analyze_all(self):
         file = QFileDialog.getOpenFileName(
             self,
@@ -645,6 +729,7 @@ QMenu::item:selected {
         self.read_dicom_thread.ui_update.connect(self.handle_read_dicom_ui_update)
         self.read_dicom_thread.start()
 
+    ## Not used
     def handle_read_dicom_result_analyze_all(self, serialized_data):
         print("handle_read_dicom_result_analyze_all")
         
@@ -656,7 +741,7 @@ QMenu::item:selected {
     def handle_send_dicom_result_analyze_all(self, array_4d):
         print("handle_send_dicom_result_analyze_all")
 
-        self.process_dicom_thread = ProcessDicomThread(True, array_4d, self.ui, -1)
+        self.process_dicom_thread = ProcessDicomThread(True, array_4d, self.ui, -1, False)
         self.process_dicom_thread.finished.connect(self.handle_process_dicom_result_analyze_all)
         self.process_dicom_thread.ui_update.connect(self.handle_process_dicom_ui_update)
         self.process_dicom_thread.start()
@@ -701,7 +786,7 @@ QMenu::item:selected {
     def handle_send_dicom_result_analyze_selected(self, array_4d):
         print("handle_send_dicom_result_analyze_selected")
 
-        self.process_dicom_thread = ProcessDicomThread(False, array_4d, self.ui, -1)
+        self.process_dicom_thread = ProcessDicomThread(False, array_4d, self.ui, -1, False)
         self.process_dicom_thread.finished.connect(self.handle_process_dicom_result_analyze_selected)
         self.process_dicom_thread.ui_update.connect(self.handle_process_dicom_ui_update)
         self.process_dicom_thread.start()
@@ -709,6 +794,7 @@ QMenu::item:selected {
     def handle_process_dicom_result_analyze_selected(self, results):
         print("handle_process_dicom_result_analyze_selected")
         print(len(results))
+        self.handle_send_dicom_result_analyze_all(DataManager().data_4d_padded)
 
     def handle_read_dicom_ui_update(self, function_and_args):
         print("handle_read_dicom_ui_update")
@@ -738,12 +824,18 @@ QMenu::item:selected {
         ui.label_14.setText(f"Video - Total Duration: {round(DataManager().dicom_total_duration_in_s, 2)}s")
 
     def setHighlight(self, view, frame_index, always_highlight=False):
+        view_analyze_all_tab = self.ui.tabWidget.currentIndex() == 1
+    
         if not always_highlight and DataManager().highlighted_view == view:
             DataManager().highlighted_view = ""
         else:
             DataManager().highlighted_view = view
-        all_results = DataManager().get_pred_result(frame_index)
-        all_center_images = DataManager().get_center_images(frame_index)
+        if view_analyze_all_tab:
+            all_results = DataManager().get_pred_result_analyze_all(frame_index)
+            all_center_images = DataManager().get_center_images_analyze_all(frame_index)
+        else:
+            all_results = DataManager().get_pred_result(frame_index)
+            all_center_images = DataManager().get_center_images(frame_index)
         if not all_results == None:
             ## Update OpenGL cross sections
             app = self.ui.openGLWidget
@@ -803,12 +895,18 @@ QMenu::item:selected {
                         print(e)
 
     def export(self, view):
+        view_analyze_all_tab = self.ui.tabWidget.currentIndex() == 1
+        gridWidget = self.ui.gridWidget_2 if view_analyze_all_tab else self.ui.gridWidget
+    
         ## Rotation
         frame_index = self._current_frame_index
-        all_results = DataManager().get_pred_result(frame_index)
+        if view_analyze_all_tab:
+            all_results = DataManager().get_pred_result_analyze_all(frame_index)
+        else:
+            all_results = DataManager().get_pred_result(frame_index)
         pred_result = all_results[view]
         _, _, annotated_qimage, rx, ry, rz, cx, cy, cz = pred_result
-        label = self.findLabel(view)
+        label = self.findLabel(view, gridWidget)
         if hasattr(label, 'tag'):
             degree = int(label.tag.split(",")[2])
         else:
@@ -862,8 +960,8 @@ QMenu::item:selected {
         label.tag = f"{view},{frame_index},{new_degree}"
         label.show()
 
-    def findLabel(self, view):
-        grid_layout = self.ui.gridWidget.layout()
+    def findLabel(self, view, gridWidget):
+        grid_layout = gridWidget.layout()
         cross_section = self.findCrossSection(grid_layout, view)
         return cross_section.findChild(QLabel, "label_8")
 
@@ -881,8 +979,8 @@ QMenu::item:selected {
                     return None
         return None
 
-    def modifyCrossSection(self, annotated_qimage, view, frame_index):
-        grid_layout = self.ui.gridWidget.layout()
+    def modifyCrossSection(self, annotated_qimage, view, frame_index, gridWidget):
+        grid_layout = gridWidget.layout()
         cross_section = self.findCrossSection(grid_layout, view)
 
         scrollArea_width = self.ui.scrollAreaWidgetContents_3.width()
@@ -926,13 +1024,13 @@ QMenu::item:selected {
         label.parent().setFixedWidth(fixed_width)
         label.setFixedHeight(fixed_width)
 
-    def shouldInit(self):
-        count = self.ui.gridWidget.layout().count()
+    def shouldInit(self, gridWidget):
+        count = gridWidget.layout().count()
         if count == 0:
             return True
         return False
 
-    def addCrossSection(self, annotated_qimage, view, frame_index):
+    def addCrossSection(self, annotated_qimage, view, frame_index, gridWidget):
         loader = QtUiTools.QUiLoader()
         loader.registerCustomWidget(ClickableQLabel)
         ui_file = QtCore.QFile(resource_path("crosssection.ui"))
@@ -981,7 +1079,7 @@ QMenu::item:selected {
         counterclockwise_rotate_button.clicked.connect(lambda: self.counterclockwiseRotate90(annotated_qimage, label, view, frame_index))
         clockwise_rotate_button.clicked.connect(lambda: self.clockwiseRotate90(annotated_qimage, label, view, frame_index))
 
-        self.ui.gridWidget.addWidget(cross_section)
+        gridWidget.addWidget(cross_section)
         fixed_width = new_pixmap_width
         label.parent().setFixedWidth(fixed_width)
         label.setFixedHeight(fixed_width)
@@ -1008,8 +1106,9 @@ QMenu::item:selected {
 
     #     self.ui.gridWidget.addWidget(cross_section)
 
-    def clearAllCrossSections(self):
+    def initClearAllCrossSections(self):
         self.ui.gridWidget.clearAllItems(self.ui.gridWidget)
+        self.ui.gridWidget_2.clearAllItems(self.ui.gridWidget_2)
 
 
 if __name__ == "__main__":

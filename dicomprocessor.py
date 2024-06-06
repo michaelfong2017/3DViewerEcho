@@ -26,20 +26,25 @@ from euler import eulerFromNormal, find_center_point
 class ProcessDicomThread(QtCore.QThread):
     finished = QtCore.Signal(object)
     ui_update = QtCore.Signal(object)
-    def __init__(self, analyze_all, array_4d, ui: Ui_MainWindow, selected_frame_index):
+    def __init__(self, analyze_all, array_4d, ui: Ui_MainWindow, selected_frame_index, use_five_frames):
         super().__init__()
         print("init ProcessDicomThread")
         self.analyze_all = analyze_all
         self.array_4d = array_4d
         self.ui = ui
         self.selected_frame_index = selected_frame_index
+        self.use_five_frames = use_five_frames
+
+        ## if not analyze_all, store array_4d for future use by analyze_all
+        if not analyze_all:
+            DataManager().data_4d_padded = array_4d
 
     def run(self):
         print("run ProcessDicomThread")
-        results = self.process_dicom(self.analyze_all, self.array_4d, self.ui, self.selected_frame_index)
+        results = self.process_dicom(self.analyze_all, self.array_4d, self.ui, self.selected_frame_index, self.use_five_frames)
         self.finished.emit(results)
 
-    def process_dicom(self, analyze_all, array_4d, ui: Ui_MainWindow, selected_frame_index):
+    def process_dicom(self, analyze_all, array_4d, ui: Ui_MainWindow, selected_frame_index, use_five_frames):
         data_4d_padded = array_4d
 
         # print(data_4d_padded)
@@ -56,15 +61,24 @@ class ProcessDicomThread(QtCore.QThread):
         if (selected_frame_index == -1):
             selected_frame_index = int(NUM_FRAMES / 2)
 
-        five_indexes: list = self.select_five_indexes(NUM_FRAMES, selected_frame_index)
+        if use_five_frames:
+            five_indexes: list = self.select_five_indexes(NUM_FRAMES, selected_frame_index)
 
-        DataManager().clear_all_results()
+        if analyze_all:
+            DataManager().clear_pred_results_analyze_all()
+            DataManager().clear_center_images_analyze_all()
+        else:
+            DataManager().clear_pred_results()
+            DataManager().clear_center_images()
 
-        def reset_ui(ui):
-            ui.gridWidget.clearAllItems(ui.gridWidget)
+        def reset_ui(ui, analyze_all):
+            if analyze_all:
+                ui.gridWidget_2.clearAllItems(ui.gridWidget_2)
+            else:
+                ui.gridWidget.clearAllItems(ui.gridWidget)
             ui.pushButton_11.setEnabled(False)
             ui.label_23.setText("")
-        self.ui_update.emit((reset_ui, ui))
+        self.ui_update.emit((reset_ui, ui, analyze_all))
 
         pool = ThreadPool(21)
         results = []
@@ -87,8 +101,8 @@ class ProcessDicomThread(QtCore.QThread):
 
                 frame_index, all_results, view_to_array_2d, all_center_images = result.get()
 
-                DataManager().update_pred_result(frame_index, all_results)
-                DataManager().update_center_images(frame_index, all_center_images)
+                DataManager().update_pred_result_analyze_all(frame_index, all_results)
+                DataManager().update_center_images_analyze_all(frame_index, all_center_images)
 
                 results.append(result)
 
@@ -110,19 +124,32 @@ class ProcessDicomThread(QtCore.QThread):
                 self.ui_update.emit((update_progress_bar, ui))
                 ## END
         else:
-            five_frames = np.array([data_4d_padded[frame_index] for frame_index in five_indexes])
-            data_3d_padded = data_4d_padded[selected_frame_index]
-            print(data_3d_padded.shape)
+            if use_five_frames:
+                five_frames = np.array([data_4d_padded[frame_index] for frame_index in five_indexes])
+                data_3d_padded = data_4d_padded[selected_frame_index]
+                print(data_3d_padded.shape)
 
-            result = pool.apply_async(
-                process_five_frames,
-                args=(
-                    data_3d_padded,
-                    selected_frame_index,
-                    five_frames,
-                    five_indexes,
-                ),
-            )
+                result = pool.apply_async(
+                    process_five_frames,
+                    args=(
+                        data_3d_padded,
+                        selected_frame_index,
+                        five_frames,
+                        five_indexes,
+                    ),
+                )
+
+            else:
+                data_3d_padded = data_4d_padded[selected_frame_index]
+                print(data_3d_padded.shape)
+
+                result = pool.apply_async(
+                    process_frame,
+                    args=(
+                        data_3d_padded,
+                        selected_frame_index
+                    ),
+                )
 
             # Returned frame_index must be the same as the originally passed selected_frame_index
             frame_index, all_results, view_to_array_2d, all_center_images = result.get()

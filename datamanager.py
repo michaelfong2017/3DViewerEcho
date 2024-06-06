@@ -23,9 +23,12 @@ class DataManager:
         self.VERSION = "v1.0.240528"
 
         self.frame_index_to_pred_result = {}
-        self.view_to_pred_result_width = {}
+        self.frame_index_to_center_images = {}  # for planes x=0, y=0 and z=0
 
-        self.frame_index_to_center_images = {} # for planes x=0, y=0 and z=0
+        self.frame_index_to_pred_result_analyze_all = {}
+        self.frame_index_to_center_images_analyze_all = {}  # for planes x=0, y=0 and z=0
+
+        # self.view_to_pred_result_width = {}
 
         self._dicom_number_of_frames: int = -1
         self._dicom_average_frame_time_in_ms: float = 60.0
@@ -33,6 +36,7 @@ class DataManager:
         self._dicom_total_duration_in_s: float = -1.0
 
         self._data_3d_padded_max_length: int = -1   # e.g. data_4d_padded.shape is (42, 213, 213, 213)
+        self._data_4d_padded = None    # set by analyze five frames or analyze one frame, used by analyze_all
 
         self._highlighted_view: str = ""
 
@@ -75,6 +79,13 @@ class DataManager:
         self._data_3d_padded_max_length = value
 
     @property
+    def data_4d_padded(self):
+        return self._data_4d_padded
+    @data_4d_padded.setter
+    def data_4d_padded(self, value):
+        self._data_4d_padded = value
+
+    @property
     def highlighted_view(self):
         return self._highlighted_view
     @highlighted_view.setter
@@ -95,16 +106,17 @@ class DataManager:
     def model_type(self, value):
         self._model_type = value
 
+    # prediction based on one/five frame(s)
     def get_pred_result(self, frame_index: int):
         return self.frame_index_to_pred_result.get(frame_index)
 
     def update_pred_result(self, frame_index: int, all_results):
         self.frame_index_to_pred_result.update({frame_index: all_results})
 
-    def remove_pred_result(self, frame_index: int):
-        self.frame_index_to_pred_result.pop(frame_index)
+    # def remove_pred_result(self, frame_index: int):
+    #     self.frame_index_to_pred_result.pop(frame_index)
 
-    def clear_all_results(self):
+    def clear_pred_results(self):
         self.frame_index_to_pred_result.clear()
 
     def get_center_images(self, frame_index: int):
@@ -113,11 +125,35 @@ class DataManager:
     def update_center_images(self, frame_index: int, all_center_images):
         self.frame_index_to_center_images.update({frame_index: all_center_images})
 
-    def get_result_width(self, view):
-        return self.view_to_pred_result_width.get(view)
+    def clear_center_images(self):
+        self.frame_index_to_center_images.clear()
+    # prediction based on one/five frame(s) END
 
-    def update_result_width(self, view, width):
-        self.view_to_pred_result_width.update({view: width})
+    # prediction based on all frames
+    def get_pred_result_analyze_all(self, frame_index: int):
+        return self.frame_index_to_pred_result_analyze_all.get(frame_index)
 
-    def remove_result_width(self, view):
-        self.view_to_pred_result_width.pop(view)
+    def update_pred_result_analyze_all(self, frame_index: int, all_results):
+        self.frame_index_to_pred_result_analyze_all.update({frame_index: all_results})
+
+    def clear_pred_results_analyze_all(self):
+        self.frame_index_to_pred_result_analyze_all.clear()
+
+    def get_center_images_analyze_all(self, frame_index: int):
+        return self.frame_index_to_center_images_analyze_all.get(frame_index)
+
+    def update_center_images_analyze_all(self, frame_index: int, all_center_images):
+        self.frame_index_to_center_images_analyze_all.update({frame_index: all_center_images})
+
+    def clear_center_images_analyze_all(self):
+        self.frame_index_to_center_images_analyze_all.clear()
+    # prediction based on all frames END
+
+    # def get_result_width(self, view):
+    #     return self.view_to_pred_result_width.get(view)
+
+    # def update_result_width(self, view, width):
+    #     self.view_to_pred_result_width.update({view: width})
+
+    # def remove_result_width(self, view):
+    #     self.view_to_pred_result_width.pop(view)
