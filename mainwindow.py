@@ -28,6 +28,9 @@ class MainWindow(QMainWindow):
 
         ## private UI data
         self._current_frame_index = 0
+        self.read_dicom_thread = None
+        self.send_dicom_thread = None
+        self.process_dicom_thread = None
         ##
 
         #### Top Menu Bar BEGIN ####
@@ -678,6 +681,12 @@ QMenu::item:selected {
             dialog.exec_()
             return
         
+        # Reset part 1
+        if not self.process_dicom_thread == None:
+            self.process_dicom_thread.stop()
+        self.reset_results()
+        ##
+        
         self.read_dicom_thread = ReadDicomThread(filepath, self.ui)
         self.read_dicom_thread.finished.connect(self.handle_read_dicom_result_analyze_five_frames)
         self.read_dicom_thread.ui_update.connect(self.handle_read_dicom_ui_update)
@@ -693,6 +702,11 @@ QMenu::item:selected {
 
     def handle_send_dicom_result_analyze_five_frames(self, array_4d):
         print("handle_send_dicom_result_analyze_five_frames")
+
+        # Reset part 2
+        if not self.process_dicom_thread == None:
+            self.process_dicom_thread.wait()
+        ##
 
         self.process_dicom_thread = ProcessDicomThread(False, array_4d, self.ui, -1, True)
         self.process_dicom_thread.finished.connect(self.handle_process_dicom_result_analyze_five_frames)
@@ -751,6 +765,19 @@ QMenu::item:selected {
         print(len(results))
         pass
 
+    '''
+    Reset when new patient data is fed
+    '''
+    def reset_results(self):
+        DataManager().clear_pred_results_analyze_all()
+        DataManager().clear_center_images_analyze_all()
+        DataManager().clear_pred_results()
+        DataManager().clear_center_images()
+        frame_index = self._current_frame_index
+        self.ui.horizontalSlider.setValue(0)
+        self.ui.horizontalSlider.setValue(1)
+        self.ui.horizontalSlider.setValue(frame_index)
+
     def import_dicom_and_analyze_selected(self):
         file = QFileDialog.getOpenFileName(
             self,
@@ -770,6 +797,12 @@ QMenu::item:selected {
             dialog.exec_()
             return
         
+        # Reset part 1
+        if not self.process_dicom_thread == None:
+            self.process_dicom_thread.stop()
+        self.reset_results()
+        ##
+        
         self.read_dicom_thread = ReadDicomThread(filepath, self.ui)
         self.read_dicom_thread.finished.connect(self.handle_read_dicom_result_analyze_selected)
         self.read_dicom_thread.ui_update.connect(self.handle_read_dicom_ui_update)
@@ -785,6 +818,11 @@ QMenu::item:selected {
 
     def handle_send_dicom_result_analyze_selected(self, array_4d):
         print("handle_send_dicom_result_analyze_selected")
+
+        # Reset part 2
+        if not self.process_dicom_thread == None:
+            self.process_dicom_thread.wait()
+        ##
 
         self.process_dicom_thread = ProcessDicomThread(False, array_4d, self.ui, -1, False)
         self.process_dicom_thread.finished.connect(self.handle_process_dicom_result_analyze_selected)

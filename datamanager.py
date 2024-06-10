@@ -20,7 +20,7 @@ class DataManager:
             return
         self.__initialized = True
 
-        self.VERSION = "v1.0.240528"
+        self.VERSION = "v1.0.240611"
 
         self.frame_index_to_pred_result = {}
         self.frame_index_to_center_images = {}  # for planes x=0, y=0 and z=0

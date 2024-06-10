@@ -29,6 +29,7 @@ class ProcessDicomThread(QtCore.QThread):
     def __init__(self, analyze_all, array_4d, ui: Ui_MainWindow, selected_frame_index, use_five_frames):
         super().__init__()
         print("init ProcessDicomThread")
+        self._is_running = True
         self.analyze_all = analyze_all
         self.array_4d = array_4d
         self.ui = ui
@@ -39,10 +40,15 @@ class ProcessDicomThread(QtCore.QThread):
         if not analyze_all:
             DataManager().data_4d_padded = array_4d
 
+    def stop(self):
+        self._is_running = False
+
     def run(self):
         print("run ProcessDicomThread")
         results = self.process_dicom(self.analyze_all, self.array_4d, self.ui, self.selected_frame_index, self.use_five_frames)
-        self.finished.emit(results)
+        # The only case that the results is None is when this thread is interrupted during one/five frame(s) analysis
+        if not results == None:
+            self.finished.emit(results)
 
     def process_dicom(self, analyze_all, array_4d, ui: Ui_MainWindow, selected_frame_index, use_five_frames):
         data_4d_padded = array_4d
@@ -74,6 +80,10 @@ class ProcessDicomThread(QtCore.QThread):
         def reset_ui(ui, analyze_all):
             if analyze_all:
                 ui.gridWidget_2.clearAllItems(ui.gridWidget_2)
+                # ui progress bar
+                ui.progressBar.setValue(10)
+                ui.progressBar.setHidden(False)
+                # END
             else:
                 ui.gridWidget.clearAllItems(ui.gridWidget)
             ui.pushButton_11.setEnabled(False)
@@ -101,6 +111,12 @@ class ProcessDicomThread(QtCore.QThread):
 
                 frame_index, all_results, view_to_array_2d, all_center_images = result.get()
 
+                if not self._is_running:
+                    pool.close()
+                    pool.join()
+                    results = [r.get() for r in results]
+                    return results
+                
                 DataManager().update_pred_result_analyze_all(frame_index, all_results)
                 DataManager().update_center_images_analyze_all(frame_index, all_center_images)
 
@@ -123,6 +139,7 @@ class ProcessDicomThread(QtCore.QThread):
                     ui.progressBar.setValue(new_value)
                 self.ui_update.emit((update_progress_bar, ui))
                 ## END
+
         else:
             if use_five_frames:
                 five_frames = np.array([data_4d_padded[frame_index] for frame_index in five_indexes])
@@ -201,6 +218,11 @@ class ProcessDicomThread(QtCore.QThread):
                 )
 
                 frame_index, all_results, all_center_images = result.get()
+
+                if not self._is_running:
+                    pool.close()
+                    pool.join()
+                    return None
 
                 DataManager().update_pred_result(frame_index, all_results)
                 DataManager().update_center_images(frame_index, all_center_images)

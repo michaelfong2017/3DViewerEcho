@@ -31,7 +31,8 @@ class ScrollAreaWidget(QWidget):
                 all_results = DataManager().get_pred_result_analyze_all(frame_index)
             else:
                 all_results = DataManager().get_pred_result(frame_index)
-            ## TODO error handling
+            if all_results == None:
+                return
             for v, pred_result in all_results.items():
                 if v == view:
                     _, _, annotated_qimage, rx, ry, rz, cx, cy, cz = pred_result
