@@ -86,8 +86,7 @@ class ProcessDicomThread(QtCore.QThread):
                 # END
             else:
                 ui.gridWidget.clearAllItems(ui.gridWidget)
-            ui.pushButton_11.setEnabled(False)
-            ui.label_23.setText("")
+                ui.label_23.setText("")
         self.ui_update.emit((reset_ui, ui, analyze_all))
 
         pool = ThreadPool(21)
@@ -246,7 +245,8 @@ class ProcessDicomThread(QtCore.QThread):
         ## ui, ui progress bar
         def update_progress_bar_and_analyze_button(ui):
             ui.progressBar.setHidden(True)
-            ui.pushButton_11.setEnabled(True)
+            if not analyze_all:
+                ui.pushButton_11.setEnabled(True)
         self.ui_update.emit((update_progress_bar_and_analyze_button, ui))
         ## END
         return results
@@ -313,6 +313,12 @@ class SendDicomThread(QtCore.QThread):
 
             def set_video_info_title(ui):
                 ui.label_17.setText(f"DICOM File (Video) Info:")
+                # Display video info
+                ui.label_16.setText(f"Video - Number of Frames: {DataManager().dicom_number_of_frames}")
+                ui.label_15.setText(f"Video - Average Frame Time: {round(DataManager().dicom_average_frame_time_in_ms, 2)}ms")
+                ui.label_9.setText(f"Video - FPS: {round(DataManager().dicom_fps, 2)}")
+                ui.label_14.setText(f"Video - Total Duration: {round(DataManager().dicom_total_duration_in_s, 2)}s")
+                # END
             self.ui_update.emit((set_video_info_title, ui))
 
             if response.status_code == 200:
@@ -353,6 +359,12 @@ class SendDicomThread(QtCore.QThread):
                         dialog.label_2.setText("Loading sample data...")
                         dialog.exec_()
                         ui.label_17.setText(f"(Using Sample Data) DICOM File (Video) Info:")
+                        # Display video info
+                        ui.label_16.setText(f"Video - Number of Frames: {DataManager().dicom_number_of_frames}")
+                        ui.label_15.setText(f"Video - Average Frame Time: {round(DataManager().dicom_average_frame_time_in_ms, 2)}ms")
+                        ui.label_9.setText(f"Video - FPS: {round(DataManager().dicom_fps, 2)}")
+                        ui.label_14.setText(f"Video - Total Duration: {round(DataManager().dicom_total_duration_in_s, 2)}s")
+                        # END
                     self.ui_update.emit((alert_use_sample_data, ui))
                     
             except:

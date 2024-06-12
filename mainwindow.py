@@ -166,12 +166,13 @@ QMenu::item:selected {
                 dialog.exec_()
         
     def analyze_a2c_and_a4c_videos(self):
-        view_analyze_all_tab = self.ui.tabWidget.currentIndex() == 1
-        gridWidget = self.ui.gridWidget_2 if view_analyze_all_tab else self.ui.gridWidget
+        # Always use the one/five frame(s) results
+        gridWidget = self.ui.gridWidget
 
         patient_editor_dialog = PatientEditor()
         patient_editor_dialog.patient_info_updated.connect(self.handle_patient_info)
-        patient_editor_dialog.exec_()
+        if not patient_editor_dialog.exec_() == QtWidgets.QDialog.Accepted:
+            return
     
         NUM_FRAMES = DataManager().dicom_number_of_frames
         if NUM_FRAMES == -1 or NUM_FRAMES == 0:
@@ -187,10 +188,8 @@ QMenu::item:selected {
             a2c_video = []
             a4c_video = []
             for frame_index in range(NUM_FRAMES):
-                if view_analyze_all_tab:
-                    all_results = DataManager().get_pred_result_analyze_all(frame_index)
-                else:
-                    all_results = DataManager().get_pred_result(frame_index)
+                # Always use the one/five frame(s) results
+                all_results = DataManager().get_pred_result(frame_index)
 
                 if all_results == None:
                     loader = QtUiTools.QUiLoader()
@@ -769,6 +768,20 @@ QMenu::item:selected {
     Reset when new patient data is fed
     '''
     def reset_results(self):
+        self.ui.label_26.setText(f"Height: ")
+        self.ui.label_25.setText(f"Weight: ")
+        self.ui.label_23.setText("")
+        # Reset video info
+        DataManager()._dicom_number_of_frames = -1
+        DataManager()._dicom_average_frame_time_in_ms = 60.0
+        DataManager()._dicom_fps = -1.0
+        DataManager()._dicom_total_duration_in_s = -1.0
+        self.ui.label_16.setText(f"Video - Number of Frames: ")
+        self.ui.label_15.setText(f"Video - Average Frame Time: ")
+        self.ui.label_9.setText(f"Video - FPS: ")
+        self.ui.label_14.setText(f"Video - Total Duration: ")
+        # Reset video info END
+        self.ui.pushButton_11.setEnabled(False)
         DataManager().clear_pred_results_analyze_all()
         DataManager().clear_center_images_analyze_all()
         DataManager().clear_pred_results()
@@ -854,12 +867,6 @@ QMenu::item:selected {
         # print(function)
         # print(args)
         function(*args)
-
-    def display_video_info(self, ui: Ui_MainWindow):
-        ui.label_16.setText(f"Video - Number of Frames: {DataManager().dicom_number_of_frames}")
-        ui.label_15.setText(f"Video - Average Frame Time: {round(DataManager().dicom_average_frame_time_in_ms, 2)}ms")
-        ui.label_9.setText(f"Video - FPS: {round(DataManager().dicom_fps, 2)}")
-        ui.label_14.setText(f"Video - Total Duration: {round(DataManager().dicom_total_duration_in_s, 2)}s")
 
     def setHighlight(self, view, frame_index, always_highlight=False):
         view_analyze_all_tab = self.ui.tabWidget.currentIndex() == 1
