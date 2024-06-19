@@ -28,6 +28,7 @@ class MainWindow(QMainWindow):
 
         ## private UI data
         self._current_frame_index = 0
+        self._is_first_patient = True
         self.read_dicom_thread = None
         self.send_dicom_thread = None
         self.process_dicom_thread = None
@@ -661,6 +662,20 @@ QMenu::item:selected {
         if not weight == "":
             self.ui.label_25.setText(f"Weight: {weight}kg")
 
+    def alert_removing_patient_data(self):
+        if self._is_first_patient:
+            self._is_first_patient = False
+        else:
+            # Alert
+            loader = QtUiTools.QUiLoader()
+            ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+            ui_file.open(QtCore.QFile.ReadOnly)
+            dialog = loader.load(ui_file)
+            dialog.setWindowTitle("Notification")
+            dialog.label.setText("Any previous patient data, if exists,")
+            dialog.label_2.setText("will be deleted")
+            dialog.exec_()
+
     def import_dicom_and_analyze_five_frames(self):
         file = QFileDialog.getOpenFileName(
             self,
@@ -680,11 +695,22 @@ QMenu::item:selected {
             dialog.exec_()
             return
         
+        self.alert_removing_patient_data()
+
         # Reset part 1
+        if not self.read_dicom_thread == None:
+            self.read_dicom_thread.stop()
+        if not self.send_dicom_thread == None:
+            self.send_dicom_thread.stop()
+            
         if not self.process_dicom_thread == None:
             self.process_dicom_thread.stop()
         self.reset_results()
         ##
+        
+        # Reset part 1.1
+        if not self.read_dicom_thread == None:
+            self.read_dicom_thread.wait()
         
         self.read_dicom_thread = ReadDicomThread(filepath, self.ui)
         self.read_dicom_thread.finished.connect(self.handle_read_dicom_result_analyze_five_frames)
@@ -694,6 +720,10 @@ QMenu::item:selected {
     def handle_read_dicom_result_analyze_five_frames(self, serialized_data):
         print("handle_read_dicom_result_analyze_five_frames")
         
+        # Reset part 1.2
+        if not self.send_dicom_thread == None:
+            self.send_dicom_thread.wait()
+
         self.send_dicom_thread = SendDicomThread(serialized_data, self.ui)
         self.send_dicom_thread.finished.connect(self.handle_send_dicom_result_analyze_five_frames)
         self.send_dicom_thread.ui_update.connect(self.handle_send_dicom_ui_update)
@@ -736,7 +766,7 @@ QMenu::item:selected {
             dialog.label_2.setText("")
             dialog.exec_()
             return
-        
+                
         self.read_dicom_thread = ReadDicomThread(filepath, self.ui)
         self.read_dicom_thread.finished.connect(self.handle_read_dicom_result_analyze_all)
         self.read_dicom_thread.ui_update.connect(self.handle_read_dicom_ui_update)
@@ -810,12 +840,23 @@ QMenu::item:selected {
             dialog.exec_()
             return
         
+        self.alert_removing_patient_data()
+
         # Reset part 1
+        if not self.read_dicom_thread == None:
+            self.read_dicom_thread.stop()
+        if not self.send_dicom_thread == None:
+            self.send_dicom_thread.stop()
+        
         if not self.process_dicom_thread == None:
             self.process_dicom_thread.stop()
         self.reset_results()
         ##
-        
+
+        # Reset part 1.1
+        if not self.read_dicom_thread == None:
+            self.read_dicom_thread.wait()
+
         self.read_dicom_thread = ReadDicomThread(filepath, self.ui)
         self.read_dicom_thread.finished.connect(self.handle_read_dicom_result_analyze_selected)
         self.read_dicom_thread.ui_update.connect(self.handle_read_dicom_ui_update)
@@ -823,6 +864,10 @@ QMenu::item:selected {
 
     def handle_read_dicom_result_analyze_selected(self, serialized_data):
         print("handle_read_dicom_result_analyze_selected")
+
+        # Reset part 1.2
+        if not self.send_dicom_thread == None:
+            self.send_dicom_thread.wait()
 
         self.send_dicom_thread = SendDicomThread(serialized_data, self.ui)
         self.send_dicom_thread.finished.connect(self.handle_send_dicom_result_analyze_selected)

@@ -294,13 +294,18 @@ class SendDicomThread(QtCore.QThread):
     def __init__(self, serialized_data, ui):
         super().__init__()
         print("init SendDicomThread")
+        self._is_running = True
         self.serialized_data = serialized_data
         self.ui = ui
+
+    def stop(self):
+        self._is_running = False
 
     def run(self):
         print("run SendDicomThread")
         array_4d = self.send_dicom(self.serialized_data, self.ui)
-        self.finished.emit(array_4d)
+        if self._is_running:
+            self.finished.emit(array_4d)
 
     def send_dicom(self, serialized_data, ui):
         base_url = DataManager().server_base_url
@@ -398,13 +403,18 @@ class ReadDicomThread(QtCore.QThread):
     def __init__(self, filepath, ui):
         super().__init__()
         print("init ReadDicomThread")
+        self._is_running = True
         self.filepath = filepath
         self.ui = ui
+
+    def stop(self):
+        self._is_running = False
 
     def run(self):
         print("run ReadDicomThread")
         serialized_data = self.read_dicom(self.filepath, self.ui)
-        self.finished.emit(serialized_data)
+        if self._is_running:
+            self.finished.emit(serialized_data)
 
     def read_dicom(self, filepath, ui):
         try:
