@@ -133,19 +133,19 @@ class DataManager:
     def get_pred_result_analyze_all(self, frame_index: int):
         return self.frame_index_to_pred_result_analyze_all.get(frame_index)
 
-    def update_pred_result_analyze_all(self, frame_index: int, all_results):
+    def update_pred_result_2(self, frame_index: int, all_results):
         self.frame_index_to_pred_result_analyze_all.update({frame_index: all_results})
 
-    def clear_pred_results_analyze_all(self):
+    def clear_pred_results_2(self):
         self.frame_index_to_pred_result_analyze_all.clear()
 
     def get_center_images_analyze_all(self, frame_index: int):
         return self.frame_index_to_center_images_analyze_all.get(frame_index)
 
-    def update_center_images_analyze_all(self, frame_index: int, all_center_images):
+    def update_center_images_2(self, frame_index: int, all_center_images):
         self.frame_index_to_center_images_analyze_all.update({frame_index: all_center_images})
 
-    def clear_center_images_analyze_all(self):
+    def clear_center_images_2(self):
         self.frame_index_to_center_images_analyze_all.clear()
     # prediction based on all frames END
 

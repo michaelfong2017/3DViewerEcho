@@ -26,18 +26,18 @@ from euler import eulerFromNormal, find_center_point
 class ProcessDicomThread(QtCore.QThread):
     finished = QtCore.Signal(object)
     ui_update = QtCore.Signal(object)
-    def __init__(self, analyze_all, array_4d, ui: Ui_MainWindow, selected_frame_index, use_five_frames):
+    def __init__(self, second_tab, array_4d, ui: Ui_MainWindow, selected_frame_index, use_five_frames):
         super().__init__()
         print("init ProcessDicomThread")
         self._is_running = True
-        self.analyze_all = analyze_all
+        self.second_tab = second_tab
         self.array_4d = array_4d
         self.ui = ui
         self.selected_frame_index = selected_frame_index
         self.use_five_frames = use_five_frames
 
         ## if not analyze_all, store array_4d for future use by analyze_all
-        if not analyze_all:
+        if not second_tab:
             DataManager().data_4d_padded = array_4d
 
     def stop(self):
@@ -45,12 +45,12 @@ class ProcessDicomThread(QtCore.QThread):
 
     def run(self):
         print("run ProcessDicomThread")
-        results = self.process_dicom(self.analyze_all, self.array_4d, self.ui, self.selected_frame_index, self.use_five_frames)
+        results = self.process_dicom(self.second_tab, self.array_4d, self.ui, self.selected_frame_index, self.use_five_frames)
         # The only case that the results is None is when this thread is interrupted during one/five frame(s) analysis
         if not results == None:
             self.finished.emit(results)
 
-    def process_dicom(self, analyze_all, array_4d, ui: Ui_MainWindow, selected_frame_index, use_five_frames):
+    def process_dicom(self, second_tab, array_4d, ui: Ui_MainWindow, selected_frame_index, use_five_frames):
         data_4d_padded = array_4d
 
         # print(data_4d_padded)
@@ -70,15 +70,15 @@ class ProcessDicomThread(QtCore.QThread):
         if use_five_frames:
             five_indexes: list = self.select_five_indexes(NUM_FRAMES, selected_frame_index)
 
-        if analyze_all:
-            DataManager().clear_pred_results_analyze_all()
-            DataManager().clear_center_images_analyze_all()
+        if second_tab:
+            DataManager().clear_pred_results_2()
+            DataManager().clear_center_images_2()
         else:
             DataManager().clear_pred_results()
             DataManager().clear_center_images()
 
-        def reset_ui(ui, analyze_all):
-            if analyze_all:
+        def reset_ui(ui, second_tab):
+            if second_tab:
                 ui.gridWidget_2.clearAllItems(ui.gridWidget_2)
                 # ui progress bar
                 ui.progressBar.setValue(10)
@@ -87,85 +87,114 @@ class ProcessDicomThread(QtCore.QThread):
             else:
                 ui.gridWidget.clearAllItems(ui.gridWidget)
                 ui.label_23.setText("")
-        self.ui_update.emit((reset_ui, ui, analyze_all))
+        self.ui_update.emit((reset_ui, ui, second_tab))
 
         pool = ThreadPool(21)
         results = []
 
-        if analyze_all:
-            for i in range(NUM_FRAMES):
-                data_3d_padded = data_4d_padded[i]
-                if i == 0:
-                    print(data_3d_padded.shape)
+        # if second_tab:
+        #     for i in range(NUM_FRAMES):
+        #         data_3d_padded = data_4d_padded[i]
+        #         if i == 0:
+        #             print(data_3d_padded.shape)
 
-                # results.append(pool.apply_async(thread_pool_test, args=(data_3d_padded,i)))
+        #         # results.append(pool.apply_async(thread_pool_test, args=(data_3d_padded,i)))
 
-                result = pool.apply_async(
-                    process_frame,
-                    args=(
-                        data_3d_padded,
-                        i,
-                    ),
-                )
+        #         result = pool.apply_async(
+        #             process_frame,
+        #             args=(
+        #                 data_3d_padded,
+        #                 i,
+        #             ),
+        #         )
 
-                frame_index, all_results, view_to_array_2d, all_center_images = result.get()
+        #         frame_index, all_results, view_to_array_2d, all_center_images = result.get()
 
-                if not self._is_running:
-                    pool.close()
-                    pool.join()
-                    results = [r.get() for r in results]
-                    return results
+        #         if not self._is_running:
+        #             pool.close()
+        #             pool.join()
+        #             results = [r.get() for r in results]
+        #             return results
                 
-                DataManager().update_pred_result_analyze_all(frame_index, all_results)
-                DataManager().update_center_images_analyze_all(frame_index, all_center_images)
+        #         DataManager().update_pred_result_2(frame_index, all_results)
+        #         DataManager().update_center_images_2(frame_index, all_center_images)
 
-                results.append(result)
+        #         results.append(result)
 
-                is_first = True if i == 0 else False
-                # Show the result without needing to move the horizontal slider
-                if is_first:
-                    def move_slider(ui, i):
-                        ui.horizontalSlider.setValue(0)
-                        ui.horizontalSlider.setValue(1)
-                        ui.horizontalSlider.setValue(i)
-                    self.ui_update.emit((move_slider, ui, i))
+        #         is_first = True if i == 0 else False
+        #         # Show the result without needing to move the horizontal slider
+        #         if is_first:
+        #             def move_slider(ui, i):
+        #                 ui.horizontalSlider.setValue(0)
+        #                 ui.horizontalSlider.setValue(1)
+        #                 ui.horizontalSlider.setValue(i)
+        #             self.ui_update.emit((move_slider, ui, i))
 
-                ## ui progress bar
-                new_value = round(10 + (i + 1) * 90.0 / NUM_FRAMES)
-                if new_value > 100:
-                    new_value = 100
-                def update_progress_bar(ui):
-                    ui.progressBar.setValue(new_value)
-                self.ui_update.emit((update_progress_bar, ui))
-                ## END
+        #         ## ui progress bar
+        #         new_value = round(10 + (i + 1) * 90.0 / NUM_FRAMES)
+        #         if new_value > 100:
+        #             new_value = 100
+        #         def update_progress_bar(ui):
+        #             ui.progressBar.setValue(new_value)
+        #         self.ui_update.emit((update_progress_bar, ui))
+        #         ## END
 
-        else:
-            if use_five_frames:
-                five_frames = np.array([data_4d_padded[frame_index] for frame_index in five_indexes])
-                data_3d_padded = data_4d_padded[selected_frame_index]
-                print(data_3d_padded.shape)
+        # else:
+        if use_five_frames:
+            print('5 frames')
+            five_frames = np.array([data_4d_padded[frame_index] for frame_index in five_indexes])
+            data_3d_padded = data_4d_padded[selected_frame_index]
+            print("data3d: ", data_3d_padded.shape)
 
-                result = pool.apply_async(
-                    process_five_frames,
-                    args=(
-                        data_3d_padded,
-                        selected_frame_index,
-                        five_frames,
-                        five_indexes,
-                    ),
-                )
+            result = pool.apply_async(
+                process_five_frames,
+                args=(
+                    data_3d_padded,
+                    selected_frame_index,
+                    five_frames,
+                    five_indexes,
+                ),
+            )
 
-            else:
-                data_3d_padded = data_4d_padded[selected_frame_index]
-                print(data_3d_padded.shape)
+            frame_index, all_results, view_to_array_2d, all_center_images = result.get()
 
-                result = pool.apply_async(
-                    process_frame,
-                    args=(
-                        data_3d_padded,
-                        selected_frame_index
-                    ),
-                )
+            # if not self._is_running:
+            #     pool.close()
+            #     pool.join()
+            #     results = [r.get() for r in results]
+            #     return results
+            
+            DataManager().update_pred_result_2(frame_index, all_results)
+            DataManager().update_center_images_2(frame_index, all_center_images)
+
+            results.append(result)
+
+            # Show the result without needing to move the horizontal slider
+            def move_slider(ui, frame_index):
+                ui.horizontalSlider.setValue(0)
+                ui.horizontalSlider.setValue(1)
+                ui.horizontalSlider.setValue(frame_index)
+            self.ui_update.emit((move_slider, ui, frame_index))
+
+            ## ui progress bar
+            new_value = 20
+            def update_progress_bar(ui):
+                ui.progressBar.setValue(new_value)
+            self.ui_update.emit((update_progress_bar, ui))
+            ## END
+
+        else: # single frame
+
+            data_3d_padded = data_4d_padded[selected_frame_index]
+            print("data3d: ", data_3d_padded.shape)
+
+            result = pool.apply_async(
+                process_frame,
+                args=(
+                    data_3d_padded,
+                    selected_frame_index
+                ),
+            )
 
             # Returned frame_index must be the same as the originally passed selected_frame_index
             frame_index, all_results, view_to_array_2d, all_center_images = result.get()
@@ -195,57 +224,61 @@ class ProcessDicomThread(QtCore.QThread):
         # print(results)
 
         # If analyze selected frame only, apply the landmark result to all other time frames as well
-        if not analyze_all:
-            assert not view_to_array_2d == None
+        # if not second_tab:
+        assert not view_to_array_2d == None
 
-            pool = ThreadPool(21)
-            results = []
-            for i in range(NUM_FRAMES):
-                if i == selected_frame_index:
-                    continue
+        pool = ThreadPool(21)
+        results = []
+        for i in range(NUM_FRAMES):
+            if i == selected_frame_index:
+                continue
 
-                data_3d_padded = data_4d_padded[i]
+            data_3d_padded = data_4d_padded[i]
 
-                result = pool.apply_async(
-                    process_frame_with_known_matrix,
-                    # process_frame_with_known_landmarks,
-                    args=(
-                        data_3d_padded,
-                        i,
-                        view_to_array_2d,
-                    ),
-                )
+            result = pool.apply_async(
+                process_frame_with_known_matrix,
+                # process_frame_with_known_landmarks,
+                args=(
+                    data_3d_padded,
+                    i,
+                    view_to_array_2d,
+                ),
+            )
 
-                frame_index, all_results, all_center_images = result.get()
+            frame_index, all_results, all_center_images = result.get()
 
-                if not self._is_running:
-                    pool.close()
-                    pool.join()
-                    return None
+            if not self._is_running:
+                pool.close()
+                pool.join()
+                return None
 
+            if not second_tab:
                 DataManager().update_pred_result(frame_index, all_results)
                 DataManager().update_center_images(frame_index, all_center_images)
-        
-                results.append(result)
+            else:
+                DataManager().update_pred_result_2(frame_index, all_results)
+                DataManager().update_center_images_2(frame_index, all_center_images)
+    
+            results.append(result)
 
-                ## ui progress bar
-                new_value = round(20 + (i + 1) * 80.0 / NUM_FRAMES)
-                if new_value > 100:
-                    new_value = 100
-                def update_progress_bar(ui):
-                    ui.progressBar.setValue(new_value)
-                self.ui_update.emit((update_progress_bar, ui))
-                ## END
+            ## ui progress bar
+            new_value = round(20 + (i + 1) * 80.0 / NUM_FRAMES)
+            if new_value > 100:
+                new_value = 100
+            def update_progress_bar(ui):
+                ui.progressBar.setValue(new_value)
+            self.ui_update.emit((update_progress_bar, ui))
+            ## END
 
-            pool.close()
-            pool.join()
-            results = [r.get() for r in results]
+        pool.close()
+        pool.join()
+        results = [r.get() for r in results]
             # print(results)
 
         ## ui, ui progress bar
         def update_progress_bar_and_analyze_button(ui):
             ui.progressBar.setHidden(True)
-            if not analyze_all:
+            if not second_tab:
                 ui.pushButton_11.setEnabled(True)
         self.ui_update.emit((update_progress_bar_and_analyze_button, ui))
         ## END
@@ -529,12 +562,12 @@ def process_five_frames(frame, frame_index, five_frames, five_indexes):
     all_landmarks = {}
     i = 0
     for view, array_2d in view_to_array_2d.items():
-        print("---------------------------------------------------------------")
-        print(view)
+        # print("---------------------------------------------------------------")
+        # print(view)
         coords_raw = array_2d
 
         structures = PlaneReconstructionUtils.VIEW_STRUCTS[view]
-        print("Received: ", coords_raw)
+        # print("Received: ", coords_raw)
         struct_counter=0
         for s in structures:
             all_landmarks[s] = coords_raw[struct_counter]
@@ -684,12 +717,12 @@ def process_frame(frame, frame_index):
     all_landmarks = {}
     i = 0
     for view, array_2d in view_to_array_2d.items():
-        print("---------------------------------------------------------------")
-        print(view)
+        # print("---------------------------------------------------------------")
+        # print(view)
         coords_raw = array_2d
 
         structures = PlaneReconstructionUtils.VIEW_STRUCTS[view]
-        print("Received: ", coords_raw)
+        # print("Received: ", coords_raw)
         struct_counter=0
         for s in structures:
             all_landmarks[s] = coords_raw[struct_counter]

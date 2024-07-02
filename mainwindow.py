@@ -19,6 +19,7 @@ from model import Quad, Line
 
 
 class MainWindow(QMainWindow):
+
     def __init__(self):
         super(MainWindow, self).__init__()
         self.ui = Ui_MainWindow()
@@ -35,10 +36,10 @@ class MainWindow(QMainWindow):
         ##
 
         #### Top Menu Bar BEGIN ####
-        self.action_import_five_time_frames = QAction("Analyze five time frames", self)
-        self.action_import_five_time_frames.triggered.connect(self.import_dicom_and_analyze_five_frames)
+        # self.action_import_five_time_frames = QAction("Analyze five time frames", self)
+        # self.action_import_five_time_frames.triggered.connect(self.import_dicom_and_analyze_five_frames)
 
-        self.action_import_selected_time_frame = QAction("Analyze only the selected time frame", self)
+        self.action_import_selected_time_frame = QAction("Apical View", self)
         self.action_import_selected_time_frame.triggered.connect(self.import_dicom_and_analyze_selected)
 
         ### Export all cross-section images in all time frames
@@ -55,7 +56,7 @@ class MainWindow(QMainWindow):
 
         # Create menus
         self.import_menu = QMenu("Import and Process DICOM file", self)
-        self.import_menu.addAction(self.action_import_five_time_frames)
+        # self.import_menu.addAction(self.action_import_five_time_frames)
         self.import_menu.addAction(self.action_import_selected_time_frame)
 
         self.export_menu = QMenu("Export cross-section images", self)
@@ -134,12 +135,14 @@ QMenu::item:selected {
         self.ui.label_25.setText("Weight:")
         self.initClearAllCrossSections()
 
+    # Select the machine learning model type. Unified model or separate view model.
     def on_select_model(self, index):
         combo_box = self.sender()
         selected_option = combo_box.itemText(index)
         print(f"Selected Option: {selected_option} combobox[{index}] enum[{ModelType(selected_option).name}]")
         DataManager().model_type = ModelType(selected_option)
 
+    # Set the server address
     def set_server_address(self):
         address, ok = QInputDialog.getText(self, "Server Address", "Enter the server address:", text=DataManager().server_base_url)
 
@@ -165,7 +168,8 @@ QMenu::item:selected {
                 dialog.label.setText("Server cannot be connected!")
                 dialog.label_2.setText("")
                 dialog.exec_()
-        
+    
+    # button on click
     def analyze_a2c_and_a4c_videos(self):
         # Always use the one/five frame(s) results
         gridWidget = self.ui.gridWidget
@@ -259,6 +263,7 @@ QMenu::item:selected {
         except Exception as e:
             print(e)
 
+    # send 2 video streams to server
     def send_a2c_and_a4c_videos(self, a2c_video, a4c_video, ui):
             view_to_video = {
                 "A2C": a2c_video,
@@ -304,9 +309,10 @@ QMenu::item:selected {
             except Exception as e:
                 print(e)
 
+    # export videos
     def export_all(self):
         dialog = QFileDialog()        
-        folder_path = dialog.getExistingDirectory(self, "Select folder to save PNG files")
+        folder_path = dialog.getExistingDirectory(self, "Select folder to save MP4 files")
        
         if folder_path == "":
             loader = QtUiTools.QUiLoader()
@@ -438,6 +444,7 @@ QMenu::item:selected {
         except Exception as e:
             print(e)
 
+    # export images
     def export_selected_time_frame(self):
         frame_index = self._current_frame_index
 
@@ -511,6 +518,7 @@ QMenu::item:selected {
         except Exception as e:
             print(e)
 
+    # play/pause playing of frames
     def play_or_pause_cross_section(self, button):
         if self.is_playing(button) == None:
             print(f"Play/Pause button {button} is broken!")
@@ -535,6 +543,7 @@ QMenu::item:selected {
 
             self.play_timer.stop()
 
+    # check if frames are playing
     def is_playing(self, button):
         if ":/images/icons8-play-button-48.png" in button.styleSheet():
             return False
@@ -566,6 +575,7 @@ QMenu::item:selected {
         current_tab_index = self.ui.tabWidget.currentIndex()
         self.refresh_cross_sections(frame_index, current_tab_index)
 
+    # refresh UI display on tab and frame index
     def refresh_cross_sections(self, frame_index, current_tab_index):
         self.ui.label_10.setText(f"Selected time frame index: {frame_index}")
 
@@ -676,151 +686,8 @@ QMenu::item:selected {
             dialog.label_2.setText("will be deleted")
             dialog.exec_()
 
-    def import_dicom_and_analyze_five_frames(self):
-        file = QFileDialog.getOpenFileName(
-            self,
-            self.tr("Select DICOM File, in which five time frames will be analyzed"),
-            os.getcwd(),
-            self.tr("DICOM File (*.dcm)"),
-        )
-        filepath = file[0]
-        
-        if filepath == "": # No file is selected
-            loader = QtUiTools.QUiLoader()
-            ui_file = QtCore.QFile(resource_path("errordialog.ui"))
-            ui_file.open(QtCore.QFile.ReadOnly)
-            dialog = loader.load(ui_file)
-            dialog.label.setText("Please select a valid filepath!")
-            dialog.label_2.setText("")
-            dialog.exec_()
-            return
-        
-        self.alert_removing_patient_data()
-
-        # Reset part 1
-        if not self.read_dicom_thread == None:
-            self.read_dicom_thread.stop()
-        if not self.send_dicom_thread == None:
-            self.send_dicom_thread.stop()
-            
-        if not self.process_dicom_thread == None:
-            self.process_dicom_thread.stop()
-        self.reset_results()
-        ##
-        
-        # Reset part 1.1
-        if not self.read_dicom_thread == None:
-            self.read_dicom_thread.wait()
-        
-        self.read_dicom_thread = ReadDicomThread(filepath, self.ui)
-        self.read_dicom_thread.finished.connect(self.handle_read_dicom_result_analyze_five_frames)
-        self.read_dicom_thread.ui_update.connect(self.handle_read_dicom_ui_update)
-        self.read_dicom_thread.start()
-
-    def handle_read_dicom_result_analyze_five_frames(self, serialized_data):
-        print("handle_read_dicom_result_analyze_five_frames")
-        
-        # Reset part 1.2
-        if not self.send_dicom_thread == None:
-            self.send_dicom_thread.wait()
-
-        self.send_dicom_thread = SendDicomThread(serialized_data, self.ui)
-        self.send_dicom_thread.finished.connect(self.handle_send_dicom_result_analyze_five_frames)
-        self.send_dicom_thread.ui_update.connect(self.handle_send_dicom_ui_update)
-        self.send_dicom_thread.start()
-
-    def handle_send_dicom_result_analyze_five_frames(self, array_4d):
-        print("handle_send_dicom_result_analyze_five_frames")
-
-        # Reset part 2
-        if not self.process_dicom_thread == None:
-            self.process_dicom_thread.wait()
-        ##
-
-        self.process_dicom_thread = ProcessDicomThread(False, array_4d, self.ui, -1, True)
-        self.process_dicom_thread.finished.connect(self.handle_process_dicom_result_analyze_five_frames)
-        self.process_dicom_thread.ui_update.connect(self.handle_process_dicom_ui_update)
-        self.process_dicom_thread.start()
-
-    def handle_process_dicom_result_analyze_five_frames(self, results):
-        print("handle_process_dicom_result_analyze_five_frames")
-        print(len(results))
-        self.handle_send_dicom_result_analyze_all(DataManager().data_4d_padded)
-
-    ## Not used
-    def import_dicom_and_analyze_all(self):
-        file = QFileDialog.getOpenFileName(
-            self,
-            self.tr("Select DICOM File, in which all time frames will be analyzed"),
-            os.getcwd(),
-            self.tr("DICOM File (*.dcm)"),
-        )
-        filepath = file[0]
-        
-        if filepath == "": # No file is selected
-            loader = QtUiTools.QUiLoader()
-            ui_file = QtCore.QFile(resource_path("errordialog.ui"))
-            ui_file.open(QtCore.QFile.ReadOnly)
-            dialog = loader.load(ui_file)
-            dialog.label.setText("Please select a valid filepath!")
-            dialog.label_2.setText("")
-            dialog.exec_()
-            return
-                
-        self.read_dicom_thread = ReadDicomThread(filepath, self.ui)
-        self.read_dicom_thread.finished.connect(self.handle_read_dicom_result_analyze_all)
-        self.read_dicom_thread.ui_update.connect(self.handle_read_dicom_ui_update)
-        self.read_dicom_thread.start()
-
-    ## Not used
-    def handle_read_dicom_result_analyze_all(self, serialized_data):
-        print("handle_read_dicom_result_analyze_all")
-        
-        self.send_dicom_thread = SendDicomThread(serialized_data, self.ui)
-        self.send_dicom_thread.finished.connect(self.handle_send_dicom_result_analyze_all)
-        self.send_dicom_thread.ui_update.connect(self.handle_send_dicom_ui_update)
-        self.send_dicom_thread.start()
-
-    def handle_send_dicom_result_analyze_all(self, array_4d):
-        print("handle_send_dicom_result_analyze_all")
-
-        self.process_dicom_thread = ProcessDicomThread(True, array_4d, self.ui, -1, False)
-        self.process_dicom_thread.finished.connect(self.handle_process_dicom_result_analyze_all)
-        self.process_dicom_thread.ui_update.connect(self.handle_process_dicom_ui_update)
-        self.process_dicom_thread.start()
-
-    def handle_process_dicom_result_analyze_all(self, results):
-        print("handle_process_dicom_result_analyze_all")
-        print(len(results))
-        pass
-
-    '''
-    Reset when new patient data is fed
-    '''
-    def reset_results(self):
-        self.ui.label_26.setText(f"Height: ")
-        self.ui.label_25.setText(f"Weight: ")
-        self.ui.label_23.setText("")
-        # Reset video info
-        DataManager()._dicom_number_of_frames = -1
-        DataManager()._dicom_average_frame_time_in_ms = 60.0
-        DataManager()._dicom_fps = -1.0
-        DataManager()._dicom_total_duration_in_s = -1.0
-        self.ui.label_16.setText(f"Video - Number of Frames: ")
-        self.ui.label_15.setText(f"Video - Average Frame Time: ")
-        self.ui.label_9.setText(f"Video - FPS: ")
-        self.ui.label_14.setText(f"Video - Total Duration: ")
-        # Reset video info END
-        self.ui.pushButton_11.setEnabled(False)
-        DataManager().clear_pred_results_analyze_all()
-        DataManager().clear_center_images_analyze_all()
-        DataManager().clear_pred_results()
-        DataManager().clear_center_images()
-        frame_index = self._current_frame_index
-        self.ui.horizontalSlider.setValue(0)
-        self.ui.horizontalSlider.setValue(1)
-        self.ui.horizontalSlider.setValue(frame_index)
-
+    ''' Single Frame'''
+    # on click
     def import_dicom_and_analyze_selected(self):
         file = QFileDialog.getOpenFileName(
             self,
@@ -862,6 +729,7 @@ QMenu::item:selected {
         self.read_dicom_thread.ui_update.connect(self.handle_read_dicom_ui_update)
         self.read_dicom_thread.start()
 
+    # Starts thread to send data to server. SendDicomThread
     def handle_read_dicom_result_analyze_selected(self, serialized_data):
         print("handle_read_dicom_result_analyze_selected")
 
@@ -874,6 +742,7 @@ QMenu::item:selected {
         self.send_dicom_thread.ui_update.connect(self.handle_send_dicom_ui_update)
         self.send_dicom_thread.start()
 
+    # callback for SendDicomThread. Start ProcessDicomThread thread. Analyze 1 frame
     def handle_send_dicom_result_analyze_selected(self, array_4d):
         print("handle_send_dicom_result_analyze_selected")
 
@@ -887,10 +756,171 @@ QMenu::item:selected {
         self.process_dicom_thread.ui_update.connect(self.handle_process_dicom_ui_update)
         self.process_dicom_thread.start()
 
+    # called once simple predictions are all completed. Call detailed predictions
     def handle_process_dicom_result_analyze_selected(self, results):
         print("handle_process_dicom_result_analyze_selected")
         print(len(results))
-        self.handle_send_dicom_result_analyze_all(DataManager().data_4d_padded)
+        # self.handle_send_dicom_result_analyze_all(DataManager().data_4d_padded)
+        self.handle_send_dicom_result_analyze_five_frames(DataManager().data_4d_padded)
+
+    ''' 5 Frames '''
+    ## No longer used. No longer in UI
+    # on click
+    def import_dicom_and_analyze_five_frames(self):
+        file = QFileDialog.getOpenFileName(
+            self,
+            self.tr("Select DICOM File, in which five time frames will be analyzed"),
+            os.getcwd(),
+            self.tr("DICOM File (*.dcm)"),
+        )
+        filepath = file[0]
+        
+        if filepath == "": # No file is selected
+            loader = QtUiTools.QUiLoader()
+            ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+            ui_file.open(QtCore.QFile.ReadOnly)
+            dialog = loader.load(ui_file)
+            dialog.label.setText("Please select a valid filepath!")
+            dialog.label_2.setText("")
+            dialog.exec_()
+            return
+        
+        self.alert_removing_patient_data()
+
+        # Reset part 1
+        if not self.read_dicom_thread == None:
+            self.read_dicom_thread.stop()
+        if not self.send_dicom_thread == None:
+            self.send_dicom_thread.stop()
+            
+        if not self.process_dicom_thread == None:
+            self.process_dicom_thread.stop()
+        self.reset_results()
+        ##
+        
+        # Reset part 1.1
+        if not self.read_dicom_thread == None:
+            self.read_dicom_thread.wait()
+        
+        self.read_dicom_thread = ReadDicomThread(filepath, self.ui)
+        self.read_dicom_thread.finished.connect(self.handle_read_dicom_result_analyze_five_frames)
+        self.read_dicom_thread.ui_update.connect(self.handle_read_dicom_ui_update)
+        self.read_dicom_thread.start()
+
+    # Starts thread to send data to server. SendDicomThread
+    def handle_read_dicom_result_analyze_five_frames(self, serialized_data):
+        print("handle_read_dicom_result_analyze_five_frames")
+        
+        # Reset part 1.2
+        if not self.send_dicom_thread == None:
+            self.send_dicom_thread.wait()
+
+        self.send_dicom_thread = SendDicomThread(serialized_data, self.ui)
+        self.send_dicom_thread.finished.connect(self.handle_send_dicom_result_analyze_five_frames)
+        self.send_dicom_thread.ui_update.connect(self.handle_send_dicom_ui_update)
+        self.send_dicom_thread.start()
+
+    # callback for SendDicomThread. Start ProcessDicomThread thread. Analyze 5 frames
+    def handle_send_dicom_result_analyze_five_frames(self, array_4d):
+        print("handle_send_dicom_result_analyze_five_frames")
+
+        # Reset part 2
+        if not self.process_dicom_thread == None:
+            self.process_dicom_thread.wait()
+        ##
+
+        self.process_dicom_thread = ProcessDicomThread(True, array_4d, self.ui, -1, True) # -1 = mid-point time frame
+        self.process_dicom_thread.finished.connect(self.handle_process_dicom_result_analyze_five_frames)
+        self.process_dicom_thread.ui_update.connect(self.handle_process_dicom_ui_update)
+        self.process_dicom_thread.start()
+
+    def handle_process_dicom_result_analyze_five_frames(self, results):
+        print("handle_process_dicom_result_analyze_five_frames")
+        print("results: ", len(results))
+        pass
+        # self.handle_send_dicom_result_analyze_all(DataManager().data_4d_padded)
+
+    ''' All Frames '''
+    ## No longer used. No longer in UI
+    # on click
+    def import_dicom_and_analyze_all(self):
+        file = QFileDialog.getOpenFileName(
+            self,
+            self.tr("Select DICOM File, in which all time frames will be analyzed"),
+            os.getcwd(),
+            self.tr("DICOM File (*.dcm)"),
+        )
+        filepath = file[0]
+        
+        if filepath == "": # No file is selected
+            loader = QtUiTools.QUiLoader()
+            ui_file = QtCore.QFile(resource_path("errordialog.ui"))
+            ui_file.open(QtCore.QFile.ReadOnly)
+            dialog = loader.load(ui_file)
+            dialog.label.setText("Please select a valid filepath!")
+            dialog.label_2.setText("")
+            dialog.exec_()
+            return
+                
+        self.read_dicom_thread = ReadDicomThread(filepath, self.ui)
+        self.read_dicom_thread.finished.connect(self.handle_read_dicom_result_analyze_all)
+        self.read_dicom_thread.ui_update.connect(self.handle_read_dicom_ui_update)
+        self.read_dicom_thread.start()
+
+    ## No longer used. No longer in UI
+    def handle_read_dicom_result_analyze_all(self, serialized_data):
+        print("handle_read_dicom_result_analyze_all")
+        
+        self.send_dicom_thread = SendDicomThread(serialized_data, self.ui)
+        self.send_dicom_thread.finished.connect(self.handle_send_dicom_result_analyze_all)
+        self.send_dicom_thread.ui_update.connect(self.handle_send_dicom_ui_update)
+        self.send_dicom_thread.start()
+
+    ## No longer used.
+    # Start ProcessDicomThread thread. Analyze all frames
+    def handle_send_dicom_result_analyze_all(self, array_4d):
+        print("handle_send_dicom_result_analyze_all")
+
+        self.process_dicom_thread = ProcessDicomThread(True, array_4d, self.ui, -1, False)
+        self.process_dicom_thread.finished.connect(self.handle_process_dicom_result_analyze_all)
+        self.process_dicom_thread.ui_update.connect(self.handle_process_dicom_ui_update)
+        self.process_dicom_thread.start()
+
+    ## No longer used
+    def handle_process_dicom_result_analyze_all(self, results):
+        print("handle_process_dicom_result_analyze_all")
+        print(len(results))
+        pass
+
+    # endregion
+
+    '''
+    Reset when new patient data is fed
+    '''
+    def reset_results(self):
+        print("reset_results")
+        self.ui.label_26.setText(f"Height: ")
+        self.ui.label_25.setText(f"Weight: ")
+        self.ui.label_23.setText("")
+        # Reset video info
+        DataManager()._dicom_number_of_frames = -1
+        DataManager()._dicom_average_frame_time_in_ms = 60.0
+        DataManager()._dicom_fps = -1.0
+        DataManager()._dicom_total_duration_in_s = -1.0
+        self.ui.label_16.setText(f"Video - Number of Frames: ")
+        self.ui.label_15.setText(f"Video - Average Frame Time: ")
+        self.ui.label_9.setText(f"Video - FPS: ")
+        self.ui.label_14.setText(f"Video - Total Duration: ")
+        # Reset video info END
+        self.ui.pushButton_11.setEnabled(False)
+        DataManager().clear_pred_results_2()
+        DataManager().clear_center_images_2()
+        DataManager().clear_pred_results()
+        DataManager().clear_center_images()
+        frame_index = self._current_frame_index
+        self.ui.horizontalSlider.setValue(0)
+        self.ui.horizontalSlider.setValue(1)
+        self.ui.horizontalSlider.setValue(frame_index)
 
     def handle_read_dicom_ui_update(self, function_and_args):
         print("handle_read_dicom_ui_update")
