@@ -21,7 +21,7 @@ class MyGLWidget(QtOpenGL.QGLWidget):
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.setAcceptDrops(True)
 
-        self.delta_time = 40
+        self.delta_time = 40 # 40ms per frame
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.updateGL)
         self.timer.start(self.delta_time)
@@ -70,6 +70,8 @@ class MyGLWidget(QtOpenGL.QGLWidget):
     def get_time(self):
         self.time = self.elapsed_timer.elapsed() * 0.001
 
+    # Note: WIN_SIZE might not be accurate. sometimes 100x100.
+    # https://www.youtube.com/watch?v=eJDIsFJN4OQ&ab_channel=CoderSpace
     def initializeGL(self):
         # window size
         self.WIN_SIZE = (self.width(), self.height())
@@ -77,12 +79,12 @@ class MyGLWidget(QtOpenGL.QGLWidget):
         # detect and use existing opengl context
         self.ctx = mgl.create_context()
         # self.ctx.front_face = 'cw'
-        self.ctx.enable(flags=mgl.DEPTH_TEST | mgl.CULL_FACE)
+        self.ctx.enable(flags=mgl.DEPTH_TEST | mgl.CULL_FACE) # look into or outside of view
         # Enable blending
-        self.ctx.enable(mgl.BLEND)
+        self.ctx.enable(mgl.BLEND) # how to render front and back objects. occulsion.
         self.ctx.blend_func = mgl.SRC_ALPHA, mgl.ONE_MINUS_SRC_ALPHA
         # init arcball
-        self.init_arcball()
+        self.init_arcball() # mouse controls for rotating view
         # create an object to help track time
         self.time = 0
         self.elapsed_timer = QtCore.QElapsedTimer()
