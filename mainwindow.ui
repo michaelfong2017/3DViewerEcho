@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>3D Viewer Echo</string>
+   <string>3D Echocardiography Assistant</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -203,7 +203,7 @@
          <string notr="true">font: 13px &quot;MS Shell Dlg 2&quot;;</string>
         </property>
         <property name="text">
-         <string>v2.0</string>
+         <string>v1.0</string>
         </property>
        </widget>
       </item>
@@ -2259,8 +2259,6 @@ background-color: rgba(255, 255, 255, 0);</string>
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="../../../../Ubuntu-20.04/home/michael/3DViewerEcho/resources/mainwindow.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>
