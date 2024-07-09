@@ -268,8 +268,8 @@ QMenu::item:selected {
             
             a2c_video = np.array(a2c_video)
             a4c_video = np.array(a4c_video)
-            print(a2c_video.shape)
-            print(a4c_video.shape)
+            print("a2c_video: ", a2c_video.shape)
+            print("a4c_video: ", a4c_video.shape)
 
             t1 = threading.Thread(
                 target=self.send_a2c_and_a4c_videos,
@@ -315,7 +315,9 @@ QMenu::item:selected {
                     # Deserialize the pickled data to a NumPy array
                     out_1d = pickle.loads(pickled_data)
                     array_string = np.array2string(out_1d)
-                    ui.label_23.setText(array_string)
+                    print('LVEF & LAV: ', array_string)
+                    display_string = 'LVEF: ' + str(round(out_1d[5]), 2) + ' LAV: ' + str(round(out_1d[2]), 2)
+                    ui.label_23.setText(display_string)
 
                 else:
                     print("Error:", response.text)
