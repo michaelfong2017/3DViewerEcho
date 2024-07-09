@@ -316,7 +316,7 @@ QMenu::item:selected {
                     out_1d = pickle.loads(pickled_data)
                     array_string = np.array2string(out_1d)
                     print('LVEF & LAV: ', array_string)
-                    display_string = 'LVEF: ' + str(round(out_1d[5]), 2) + ' LAV: ' + str(round(out_1d[2]), 2)
+                    display_string = 'LVEF: ' + str(round(out_1d[5], 2)) + ' LAV: ' + str(round(out_1d[2], 2))
                     ui.label_23.setText(display_string)
 
                 else:
