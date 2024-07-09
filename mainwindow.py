@@ -64,6 +64,8 @@ class MainWindow(QMainWindow):
         self.export_menu.addAction(self.action_export_all_cross_section_all_time_frames)
         self.export_menu.addAction(self.action_export_all_cross_section_selected_time_frame)
 
+        self.options_menu = QMenu("Options", self)
+
         # Enable LVEF & LAV
         self.toggle_action = QAction("Toggle LVEF & LAV predictions", self)
         self.toggle_action.triggered.connect(self.toggle_layout_visibility)
@@ -80,14 +82,13 @@ class MainWindow(QMainWindow):
         self.select_model_sub_menu_action = QWidgetAction(self)
 
         # Set the combo box as the default widget for the action
+        self.select_model_submenu = self.options_menu.addMenu("Select machine learning model")
         self.select_model_sub_menu_action.setDefaultWidget(self.select_model_combo_box)
         self.select_model_submenu.addAction(self.select_model_sub_menu_action)
         #### Select model END
 
-        self.options_menu = QMenu("Options", self)
         self.options_menu.addAction(self.action_set_server)
         self.options_menu.addAction(self.toggle_action)
-        self.select_model_submenu = self.options_menu.addMenu("Select machine learning model")
 
         # Create menu bar
         self.menu_bar = self.menuBar()
@@ -141,6 +142,11 @@ QMenu::item:selected {
         self.ui.label_25.setText("Weight:")
         self.initClearAllCrossSections()
 
+        for i in range(self.ui.horizontalLayout_3.count()):
+            widget = self.ui.horizontalLayout_3.itemAt(i).widget()
+            if widget:
+                widget.setVisible(False)
+
     # Select the machine learning model type. Unified model or separate view model.
     def on_select_model(self, index):
         combo_box = self.sender()
@@ -151,7 +157,6 @@ QMenu::item:selected {
     # LVEF & LAV layout
     def toggle_layout_visibility(self):
         visible = self.ui.horizontalLayout_3.itemAt(0).widget().isVisible()
-        print(visible)
         for i in range(self.ui.horizontalLayout_3.count()):
             widget = self.ui.horizontalLayout_3.itemAt(i).widget()
             if widget:
