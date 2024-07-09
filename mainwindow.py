@@ -1,6 +1,7 @@
 import sys
 from util import resource_path
 from PySide2 import QtGui, QtUiTools, QtCore, QtWidgets
+from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import QApplication, QMainWindow, QFileDialog, QLabel, QPushButton, QAction, QMenu, QInputDialog, QComboBox, QWidgetAction
 from ui_mainwindow import Ui_MainWindow
 import os
@@ -63,8 +64,9 @@ class MainWindow(QMainWindow):
         self.export_menu.addAction(self.action_export_all_cross_section_all_time_frames)
         self.export_menu.addAction(self.action_export_all_cross_section_selected_time_frame)
 
-        self.options_menu = QMenu("Options", self)
-        self.options_menu.addAction(self.action_set_server)
+        # Enable LVEF & LAV
+        self.toggle_action = QAction("Toggle LVEF & LAV predictions", self)
+        self.toggle_action.triggered.connect(self.toggle_layout_visibility)
 
         #### Select model
         # Create the combo box
@@ -79,9 +81,13 @@ class MainWindow(QMainWindow):
 
         # Set the combo box as the default widget for the action
         self.select_model_sub_menu_action.setDefaultWidget(self.select_model_combo_box)
-        self.select_model_submenu = self.options_menu.addMenu("Select machine learning model")
         self.select_model_submenu.addAction(self.select_model_sub_menu_action)
         #### Select model END
+
+        self.options_menu = QMenu("Options", self)
+        self.options_menu.addAction(self.action_set_server)
+        self.options_menu.addAction(self.toggle_action)
+        self.select_model_submenu = self.options_menu.addMenu("Select machine learning model")
 
         # Create menu bar
         self.menu_bar = self.menuBar()
@@ -141,6 +147,16 @@ QMenu::item:selected {
         selected_option = combo_box.itemText(index)
         print(f"Selected Option: {selected_option} combobox[{index}] enum[{ModelType(selected_option).name}]")
         DataManager().model_type = ModelType(selected_option)
+
+    # LVEF & LAV layout
+    def toggle_layout_visibility(self):
+        visible = self.ui.horizontalLayout_3.itemAt(0).widget().isVisible()
+        print(visible)
+        for i in range(self.ui.horizontalLayout_3.count()):
+            widget = self.ui.horizontalLayout_3.itemAt(i).widget()
+            if widget:
+                widget.setVisible(not visible)
+        
 
     # Set the server address
     def set_server_address(self):
@@ -527,6 +543,7 @@ QMenu::item:selected {
             old_style_sheet = self.ui.pushButton_21.styleSheet()
             new_style_sheet = old_style_sheet.replace(":/images/icons8-play-button-48.png", ":/images/icons8-pause-button-48.png")
             self.ui.pushButton_21.setStyleSheet(new_style_sheet)
+            self.ui.pushButton_21.setIcon(QIcon('./resources/icons8-pause-button-48.png'))
 
             current = self.ui.horizontalSlider.value()
             if current == self.ui.horizontalSlider.maximum():
@@ -540,6 +557,7 @@ QMenu::item:selected {
             old_style_sheet = self.ui.pushButton_21.styleSheet()
             new_style_sheet = old_style_sheet.replace(":/images/icons8-pause-button-48.png", ":/images/icons8-play-button-48.png")
             self.ui.pushButton_21.setStyleSheet(new_style_sheet)
+            self.ui.pushButton_21.setIcon(QIcon('./resources/icons8-play-button-48.png'))
 
             self.play_timer.stop()
 
@@ -937,7 +955,7 @@ QMenu::item:selected {
         function(*args)
 
     def handle_process_dicom_ui_update(self, function_and_args):
-        print("handle_process_dicom_ui_update")
+        # print("handle_process_dicom_ui_update")
         function, *args = function_and_args
         # print(function)
         # print(args)
