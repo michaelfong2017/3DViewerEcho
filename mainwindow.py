@@ -1,7 +1,7 @@
 import sys
 from util import resource_path
 from PySide2 import QtGui, QtUiTools, QtCore, QtWidgets
-from PySide2.QtGui import QIcon
+# from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import QApplication, QMainWindow, QFileDialog, QLabel, QPushButton, QAction, QMenu, QInputDialog, QComboBox, QWidgetAction
 from ui_mainwindow import Ui_MainWindow
 import os
@@ -550,7 +550,7 @@ QMenu::item:selected {
             old_style_sheet = self.ui.pushButton_21.styleSheet()
             new_style_sheet = old_style_sheet.replace(":/images/icons8-play-button-48.png", ":/images/icons8-pause-button-48.png")
             self.ui.pushButton_21.setStyleSheet(new_style_sheet)
-            self.ui.pushButton_21.setIcon(QIcon(resource_path('/resources/icons8-pause-button-48.png')))
+            # self.ui.pushButton_21.setIcon(QIcon(resource_path('/resources/icons8-pause-button-48.png')))
 
             current = self.ui.horizontalSlider.value()
             if current == self.ui.horizontalSlider.maximum():
@@ -564,7 +564,7 @@ QMenu::item:selected {
             old_style_sheet = self.ui.pushButton_21.styleSheet()
             new_style_sheet = old_style_sheet.replace(":/images/icons8-pause-button-48.png", ":/images/icons8-play-button-48.png")
             self.ui.pushButton_21.setStyleSheet(new_style_sheet)
-            self.ui.pushButton_21.setIcon(QIcon(resource_path('/resources/icons8-play-button-48.png')))
+            # self.ui.pushButton_21.setIcon(QIcon(resource_path('/resources/icons8-play-button-48.png')))
 
             self.play_timer.stop()
 
