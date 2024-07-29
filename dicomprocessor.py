@@ -26,31 +26,29 @@ from euler import eulerFromNormal, find_center_point
 class ProcessDicomThread(QtCore.QThread):
     finished = QtCore.Signal(object)
     ui_update = QtCore.Signal(object)
-    def __init__(self, second_tab, array_4d, ui: Ui_MainWindow, selected_frame_index, use_five_frames):
+    def __init__(self, array_4d, ui: Ui_MainWindow, selected_frame_index, use_five_frames):
         super().__init__()
         print("init ProcessDicomThread")
         self._is_running = True
-        self.second_tab = second_tab
         self.array_4d = array_4d
         self.ui = ui
         self.selected_frame_index = selected_frame_index
         self.use_five_frames = use_five_frames
 
         ## if not analyze_all, store array_4d for future use by analyze_all
-        if not second_tab:
-            DataManager().data_4d_padded = array_4d
+        DataManager().data_4d_padded = array_4d
 
     def stop(self):
         self._is_running = False
 
     def run(self):
         print("run ProcessDicomThread")
-        results = self.process_dicom(self.second_tab, self.array_4d, self.ui, self.selected_frame_index, self.use_five_frames)
+        results = self.process_dicom(self.array_4d, self.ui, self.selected_frame_index, self.use_five_frames)
         # The only case that the results is None is when this thread is interrupted during one/five frame(s) analysis
         if not results == None:
             self.finished.emit(results)
 
-    def process_dicom(self, second_tab, array_4d, ui: Ui_MainWindow, selected_frame_index, use_five_frames):
+    def process_dicom(self, array_4d, ui: Ui_MainWindow, selected_frame_index, use_five_frames):
         data_4d_padded = array_4d
 
         # print(data_4d_padded)
@@ -70,76 +68,18 @@ class ProcessDicomThread(QtCore.QThread):
         if use_five_frames:
             five_indexes: list = self.select_five_indexes(NUM_FRAMES, selected_frame_index)
 
-        if second_tab:
-            DataManager().clear_pred_results_2()
-            DataManager().clear_center_images_2()
-        else:
-            DataManager().clear_pred_results()
-            DataManager().clear_center_images()
+        DataManager().clear_pred_results()
+        DataManager().clear_center_images()
 
-        def reset_ui(ui, second_tab):
-            if second_tab:
-                ui.gridWidget_2.clearAllItems(ui.gridWidget_2)
-                # ui progress bar
-                ui.progressBar.setValue(10)
-                ui.progressBar.setHidden(False)
-                # END
-            else:
-                ui.gridWidget.clearAllItems(ui.gridWidget)
-                ui.label_23.setText("")
-        self.ui_update.emit((reset_ui, ui, second_tab))
+        def reset_ui(ui):
+            ui.gridWidget.clearAllItems(ui.gridWidget)
+            ui.label_23.setText("")
+
+        self.ui_update.emit((reset_ui, ui))
 
         pool = ThreadPool(21)
         results = []
 
-        # if second_tab:
-        #     for i in range(NUM_FRAMES):
-        #         data_3d_padded = data_4d_padded[i]
-        #         if i == 0:
-        #             print(data_3d_padded.shape)
-
-        #         # results.append(pool.apply_async(thread_pool_test, args=(data_3d_padded,i)))
-
-        #         result = pool.apply_async(
-        #             process_frame,
-        #             args=(
-        #                 data_3d_padded,
-        #                 i,
-        #             ),
-        #         )
-
-        #         frame_index, all_results, view_to_array_2d, all_center_images = result.get()
-
-        #         if not self._is_running:
-        #             pool.close()
-        #             pool.join()
-        #             results = [r.get() for r in results]
-        #             return results
-                
-        #         DataManager().update_pred_result_2(frame_index, all_results)
-        #         DataManager().update_center_images_2(frame_index, all_center_images)
-
-        #         results.append(result)
-
-        #         is_first = True if i == 0 else False
-        #         # Show the result without needing to move the horizontal slider
-        #         if is_first:
-        #             def move_slider(ui, i):
-        #                 ui.horizontalSlider.setValue(0)
-        #                 ui.horizontalSlider.setValue(1)
-        #                 ui.horizontalSlider.setValue(i)
-        #             self.ui_update.emit((move_slider, ui, i))
-
-        #         ## ui progress bar
-        #         new_value = round(10 + (i + 1) * 90.0 / NUM_FRAMES)
-        #         if new_value > 100:
-        #             new_value = 100
-        #         def update_progress_bar(ui):
-        #             ui.progressBar.setValue(new_value)
-        #         self.ui_update.emit((update_progress_bar, ui))
-        #         ## END
-
-        # else:
         if use_five_frames:
             print('5 frames')
             five_frames = np.array([data_4d_padded[frame_index] for frame_index in five_indexes])
@@ -164,8 +104,8 @@ class ProcessDicomThread(QtCore.QThread):
             #     results = [r.get() for r in results]
             #     return results
             
-            DataManager().update_pred_result_2(frame_index, all_results)
-            DataManager().update_center_images_2(frame_index, all_center_images)
+            DataManager().update_pred_result(frame_index, all_results)
+            DataManager().update_center_images(frame_index, all_center_images)
 
             results.append(result)
 
@@ -224,7 +164,6 @@ class ProcessDicomThread(QtCore.QThread):
         # print(results)
 
         # If analyze selected frame only, apply the landmark result to all other time frames as well
-        # if not second_tab:
         assert not view_to_array_2d == None
 
         pool = ThreadPool(21)
@@ -252,12 +191,8 @@ class ProcessDicomThread(QtCore.QThread):
                 pool.join()
                 return None
 
-            if not second_tab:
-                DataManager().update_pred_result(frame_index, all_results)
-                DataManager().update_center_images(frame_index, all_center_images)
-            else:
-                DataManager().update_pred_result_2(frame_index, all_results)
-                DataManager().update_center_images_2(frame_index, all_center_images)
+            DataManager().update_pred_result(frame_index, all_results)
+            DataManager().update_center_images(frame_index, all_center_images)
     
             results.append(result)
 
@@ -278,8 +213,7 @@ class ProcessDicomThread(QtCore.QThread):
         ## ui, ui progress bar
         def update_progress_bar_and_analyze_button(ui):
             ui.progressBar.setHidden(True)
-            if not second_tab:
-                ui.pushButton_11.setEnabled(True)
+            ui.pushButton_11.setEnabled(True)
         self.ui_update.emit((update_progress_bar_and_analyze_button, ui))
         ## END
         return results
@@ -352,10 +286,11 @@ class SendDicomThread(QtCore.QThread):
             def set_video_info_title(ui):
                 ui.label_17.setText(f"DICOM File (Video) Info:")
                 # Display video info
-                ui.label_16.setText(f"Video - Number of Frames: {DataManager().dicom_number_of_frames}")
-                ui.label_15.setText(f"Video - Average Frame Time: {round(DataManager().dicom_average_frame_time_in_ms, 2)}ms")
-                ui.label_9.setText(f"Video - FPS: {round(DataManager().dicom_fps, 2)}")
-                ui.label_14.setText(f"Video - Total Duration: {round(DataManager().dicom_total_duration_in_s, 2)}s")
+                ui.label_36.setText(f"File: {DataManager().filename}")
+                ui.label_16.setText(f"Number of Frames: {DataManager().dicom_number_of_frames}")
+                ui.label_15.setText(f"Average Frame Time: {round(DataManager().dicom_average_frame_time_in_ms, 2)}ms")
+                ui.label_9.setText(f"FPS: {round(DataManager().dicom_fps, 2)}")
+                ui.label_14.setText(f"Total Duration: {round(DataManager().dicom_total_duration_in_s, 2)}s")
                 # END
             self.ui_update.emit((set_video_info_title, ui))
 
@@ -398,10 +333,11 @@ class SendDicomThread(QtCore.QThread):
                         dialog.exec_()
                         ui.label_17.setText(f"(Using Sample Data) DICOM File (Video) Info:")
                         # Display video info
-                        ui.label_16.setText(f"Video - Number of Frames: {DataManager().dicom_number_of_frames}")
-                        ui.label_15.setText(f"Video - Average Frame Time: {round(DataManager().dicom_average_frame_time_in_ms, 2)}ms")
-                        ui.label_9.setText(f"Video - FPS: {round(DataManager().dicom_fps, 2)}")
-                        ui.label_14.setText(f"Video - Total Duration: {round(DataManager().dicom_total_duration_in_s, 2)}s")
+                        ui.label_36.setText(f"File: Sample Data")
+                        ui.label_16.setText(f"Number of Frames: {DataManager().dicom_number_of_frames}")
+                        ui.label_15.setText(f"Average Frame Time: {round(DataManager().dicom_average_frame_time_in_ms, 2)}ms")
+                        ui.label_9.setText(f"FPS: {round(DataManager().dicom_fps, 2)}")
+                        ui.label_14.setText(f"Total Duration: {round(DataManager().dicom_total_duration_in_s, 2)}s")
                         # END
                     self.ui_update.emit((alert_use_sample_data, ui))
                     
@@ -535,6 +471,8 @@ def process_five_frames(frame, frame_index, five_frames, five_indexes):
                     new_view_to_array_2d[view] = np.array(new_view_to_array_2d[view])
                 view_to_array_2d = new_view_to_array_2d
 
+            print('Landmarks(Advanced): ')
+            print(view_to_array_2d)
             with open(resource_path(os.path.join("pickle", f"{frame_index}.pickle")), "wb") as file:
                 pickle.dump(view_to_array_2d, file)
         else:
@@ -690,6 +628,8 @@ def process_frame(frame, frame_index):
                     new_view_to_array_2d[view] = np.array(new_view_to_array_2d[view])
                 view_to_array_2d = new_view_to_array_2d
 
+            print('Landmarks(Simple): ')
+            print(view_to_array_2d)
             with open(resource_path(os.path.join("pickle", f"{frame_index}.pickle")), "wb") as file:
                 pickle.dump(view_to_array_2d, file)
         else:

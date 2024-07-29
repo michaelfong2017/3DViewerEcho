@@ -30,12 +30,14 @@ def dicom_to_array(dicom_filePath):
     frameTimeMsec = ds.FrameTime
 
     ## Save video info BEGIN
-    print(f"Video info - numberOfFrames: {frames}")
-    print(f"Video info - frameTimeMsec: {frameTimeMsec}")
+    # print(f"Video info - filename: {dicom_filePath}")
+    # print(f"Video info - numberOfFrames: {frames}")
+    # print(f"Video info - frameTimeMsec: {frameTimeMsec}")
     fps = 1000 / frameTimeMsec
     total_duration_in_second = frames * frameTimeMsec / 1000
-    print(f"Video info - fps: {fps}")
-    print(f"Video info - total_duration_in_second: {total_duration_in_second}")
+    # print(f"Video info - fps: {fps}")
+    # print(f"Video info - total_duration_in_second: {total_duration_in_second}")
+    DataManager().filename = os.path.basename(dicom_filePath)
     DataManager().dicom_number_of_frames = frames
     DataManager().dicom_average_frame_time_in_ms = frameTimeMsec
     DataManager().dicom_fps = fps

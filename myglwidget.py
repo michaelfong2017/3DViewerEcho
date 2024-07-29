@@ -73,7 +73,7 @@ class MyGLWidget(QtOpenGL.QGLWidget):
     def initializeGL(self):
         # window size
         self.WIN_SIZE = (self.width(), self.height())
-        print(f"WIN_SIZE: {self.WIN_SIZE}")
+        # print(f"WIN_SIZE: {self.WIN_SIZE}")
         # detect and use existing opengl context
         self.ctx = mgl.create_context()
         # self.ctx.front_face = 'cw'

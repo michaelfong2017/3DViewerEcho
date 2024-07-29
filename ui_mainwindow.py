@@ -68,6 +68,12 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_15.addWidget(self.label_17)
 
+        self.label_36 = QLabel(self.centralwidget)
+        self.label_36.setObjectName(u"label_36")
+        self.label_36.setStyleSheet(u"font: 15px \"MS Shell Dlg 2\";")
+
+        self.verticalLayout_15.addWidget(self.label_36)
+
         self.label_16 = QLabel(self.centralwidget)
         self.label_16.setObjectName(u"label_16")
         self.label_16.setStyleSheet(u"font: 15px \"MS Shell Dlg 2\";")
@@ -270,9 +276,13 @@ class Ui_MainWindow(object):
 
         self.tabWidget = QTabWidget(self.centralwidget)
         self.tabWidget.setObjectName(u"tabWidget")
+        self.tabWidget.setEnabled(True)
+        self.tabWidget.setCursor(QCursor(Qt.ArrowCursor))
         self.tabWidget.setStyleSheet(u"font: 14px \"MS Shell Dlg 2\";")
+        self.tabWidget.setUsesScrollButtons(True)
         self.tab = QWidget()
         self.tab.setObjectName(u"tab")
+        self.tab.setEnabled(True)
         self.verticalLayout_17 = QVBoxLayout(self.tab)
         self.verticalLayout_17.setObjectName(u"verticalLayout_17")
         self.scrollArea = QScrollArea(self.tab)
@@ -645,365 +655,6 @@ class Ui_MainWindow(object):
         self.verticalLayout_17.addWidget(self.scrollArea)
 
         self.tabWidget.addTab(self.tab, "")
-        self.tab_2 = QWidget()
-        self.tab_2.setObjectName(u"tab_2")
-        self.verticalLayout_27 = QVBoxLayout(self.tab_2)
-        self.verticalLayout_27.setObjectName(u"verticalLayout_27")
-        self.scrollArea_2 = QScrollArea(self.tab_2)
-        self.scrollArea_2.setObjectName(u"scrollArea_2")
-        sizePolicy3.setHeightForWidth(self.scrollArea_2.sizePolicy().hasHeightForWidth())
-        self.scrollArea_2.setSizePolicy(sizePolicy3)
-        self.scrollArea_2.setMinimumSize(QSize(0, 0))
-        self.scrollArea_2.setWidgetResizable(True)
-        self.scrollAreaWidgetContents_4 = ScrollAreaWidget()
-        self.scrollAreaWidgetContents_4.setObjectName(u"scrollAreaWidgetContents_4")
-        self.scrollAreaWidgetContents_4.setGeometry(QRect(0, 0, 729, 972))
-        sizePolicy4.setHeightForWidth(self.scrollAreaWidgetContents_4.sizePolicy().hasHeightForWidth())
-        self.scrollAreaWidgetContents_4.setSizePolicy(sizePolicy4)
-        self.scrollAreaWidgetContents_4.setMinimumSize(QSize(0, 0))
-        self.scrollAreaWidgetContents_4.setMaximumSize(QSize(16777215, 16777215))
-        self.verticalLayout_18 = QVBoxLayout(self.scrollAreaWidgetContents_4)
-        self.verticalLayout_18.setObjectName(u"verticalLayout_18")
-        self.horizontalLayout_4 = QHBoxLayout()
-        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
-        self.label_27 = QLabel(self.scrollAreaWidgetContents_4)
-        self.label_27.setObjectName(u"label_27")
-        sizePolicy5.setHeightForWidth(self.label_27.sizePolicy().hasHeightForWidth())
-        self.label_27.setSizePolicy(sizePolicy5)
-        self.label_27.setFont(font)
-        self.label_27.setStyleSheet(u"font: 20px \"MS Shell Dlg 2\";")
-        self.label_27.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignTop)
-        self.label_27.setWordWrap(False)
-
-        self.horizontalLayout_4.addWidget(self.label_27)
-
-        self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.horizontalLayout_4.addItem(self.horizontalSpacer_4)
-
-
-        self.verticalLayout_18.addLayout(self.horizontalLayout_4)
-
-        self.gridWidget_2 = MyGridWidget(self.scrollAreaWidgetContents_4)
-        self.gridWidget_2.setObjectName(u"gridWidget_2")
-        sizePolicy3.setHeightForWidth(self.gridWidget_2.sizePolicy().hasHeightForWidth())
-        self.gridWidget_2.setSizePolicy(sizePolicy3)
-        self.gridLayout_3 = QGridLayout(self.gridWidget_2)
-        self.gridLayout_3.setObjectName(u"gridLayout_3")
-        self.gridLayout_3.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout_19 = QVBoxLayout()
-        self.verticalLayout_19.setObjectName(u"verticalLayout_19")
-        self.horizontalLayout_8 = QHBoxLayout()
-        self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
-        self.pushButton_22 = QPushButton(self.gridWidget_2)
-        self.pushButton_22.setObjectName(u"pushButton_22")
-        sizePolicy6.setHeightForWidth(self.pushButton_22.sizePolicy().hasHeightForWidth())
-        self.pushButton_22.setSizePolicy(sizePolicy6)
-        self.pushButton_22.setMinimumSize(QSize(0, 0))
-        self.pushButton_22.setMaximumSize(QSize(16777215, 16777215))
-        self.pushButton_22.setStyleSheet(u"font: 10px \"MS Shell Dlg 2\";")
-
-        self.horizontalLayout_8.addWidget(self.pushButton_22)
-
-        self.pushButton_12 = QPushButton(self.gridWidget_2)
-        self.pushButton_12.setObjectName(u"pushButton_12")
-        sizePolicy.setHeightForWidth(self.pushButton_12.sizePolicy().hasHeightForWidth())
-        self.pushButton_12.setSizePolicy(sizePolicy)
-        self.pushButton_12.setMaximumSize(QSize(23, 16777215))
-        self.pushButton_12.setStyleSheet(u"image: url(:/images/Counterclockwise_rotating_circular_arrow_symbol.png);\n"
-"background-color: rgba(255, 255, 255, 0);")
-
-        self.horizontalLayout_8.addWidget(self.pushButton_12)
-
-        self.pushButton_23 = QPushButton(self.gridWidget_2)
-        self.pushButton_23.setObjectName(u"pushButton_23")
-        sizePolicy.setHeightForWidth(self.pushButton_23.sizePolicy().hasHeightForWidth())
-        self.pushButton_23.setSizePolicy(sizePolicy)
-        self.pushButton_23.setMaximumSize(QSize(23, 16777215))
-        self.pushButton_23.setStyleSheet(u"image: url(:/images/Clockwise_rotating_circular_arrow_symbol.png);\n"
-"background-color: rgba(255, 255, 255, 0);")
-
-        self.horizontalLayout_8.addWidget(self.pushButton_23)
-
-
-        self.verticalLayout_19.addLayout(self.horizontalLayout_8)
-
-        self.label_28 = QLabel(self.gridWidget_2)
-        self.label_28.setObjectName(u"label_28")
-        sizePolicy3.setHeightForWidth(self.label_28.sizePolicy().hasHeightForWidth())
-        self.label_28.setSizePolicy(sizePolicy3)
-        self.label_28.setMinimumSize(QSize(0, 240))
-        self.label_28.setMaximumSize(QSize(16777215, 16777215))
-        self.label_28.setPixmap(QPixmap(u":/images/annotated_heart_sample.png"))
-        self.label_28.setScaledContents(True)
-
-        self.verticalLayout_19.addWidget(self.label_28)
-
-        self.pushButton_24 = QPushButton(self.gridWidget_2)
-        self.pushButton_24.setObjectName(u"pushButton_24")
-        sizePolicy6.setHeightForWidth(self.pushButton_24.sizePolicy().hasHeightForWidth())
-        self.pushButton_24.setSizePolicy(sizePolicy6)
-        self.pushButton_24.setMinimumSize(QSize(0, 0))
-        self.pushButton_24.setMaximumSize(QSize(16777215, 16777215))
-
-        self.verticalLayout_19.addWidget(self.pushButton_24)
-
-
-        self.gridLayout_3.addLayout(self.verticalLayout_19, 0, 0, 1, 1)
-
-        self.verticalLayout_20 = QVBoxLayout()
-        self.verticalLayout_20.setObjectName(u"verticalLayout_20")
-        self.pushButton_25 = QPushButton(self.gridWidget_2)
-        self.pushButton_25.setObjectName(u"pushButton_25")
-        sizePolicy6.setHeightForWidth(self.pushButton_25.sizePolicy().hasHeightForWidth())
-        self.pushButton_25.setSizePolicy(sizePolicy6)
-        self.pushButton_25.setMinimumSize(QSize(0, 0))
-        self.pushButton_25.setMaximumSize(QSize(16777215, 16777215))
-        self.pushButton_25.setStyleSheet(u"font: 10px \"MS Shell Dlg 2\";")
-
-        self.verticalLayout_20.addWidget(self.pushButton_25)
-
-        self.label_29 = QLabel(self.gridWidget_2)
-        self.label_29.setObjectName(u"label_29")
-        sizePolicy3.setHeightForWidth(self.label_29.sizePolicy().hasHeightForWidth())
-        self.label_29.setSizePolicy(sizePolicy3)
-        self.label_29.setMinimumSize(QSize(0, 240))
-        self.label_29.setMaximumSize(QSize(16777215, 16777215))
-        self.label_29.setPixmap(QPixmap(u":/images/annotated_heart_sample.png"))
-        self.label_29.setScaledContents(True)
-
-        self.verticalLayout_20.addWidget(self.label_29)
-
-        self.pushButton_26 = QPushButton(self.gridWidget_2)
-        self.pushButton_26.setObjectName(u"pushButton_26")
-        sizePolicy6.setHeightForWidth(self.pushButton_26.sizePolicy().hasHeightForWidth())
-        self.pushButton_26.setSizePolicy(sizePolicy6)
-        self.pushButton_26.setMinimumSize(QSize(0, 0))
-        self.pushButton_26.setMaximumSize(QSize(16777215, 16777215))
-
-        self.verticalLayout_20.addWidget(self.pushButton_26)
-
-
-        self.gridLayout_3.addLayout(self.verticalLayout_20, 0, 1, 1, 1)
-
-        self.verticalLayout_21 = QVBoxLayout()
-        self.verticalLayout_21.setObjectName(u"verticalLayout_21")
-        self.pushButton_27 = QPushButton(self.gridWidget_2)
-        self.pushButton_27.setObjectName(u"pushButton_27")
-        sizePolicy6.setHeightForWidth(self.pushButton_27.sizePolicy().hasHeightForWidth())
-        self.pushButton_27.setSizePolicy(sizePolicy6)
-        self.pushButton_27.setMinimumSize(QSize(0, 0))
-        self.pushButton_27.setMaximumSize(QSize(16777215, 16777215))
-        self.pushButton_27.setStyleSheet(u"font: 10px \"MS Shell Dlg 2\";")
-
-        self.verticalLayout_21.addWidget(self.pushButton_27)
-
-        self.label_30 = QLabel(self.gridWidget_2)
-        self.label_30.setObjectName(u"label_30")
-        sizePolicy3.setHeightForWidth(self.label_30.sizePolicy().hasHeightForWidth())
-        self.label_30.setSizePolicy(sizePolicy3)
-        self.label_30.setMinimumSize(QSize(0, 240))
-        self.label_30.setMaximumSize(QSize(16777215, 16777215))
-        self.label_30.setPixmap(QPixmap(u":/images/annotated_heart_sample.png"))
-        self.label_30.setScaledContents(True)
-
-        self.verticalLayout_21.addWidget(self.label_30)
-
-        self.pushButton_28 = QPushButton(self.gridWidget_2)
-        self.pushButton_28.setObjectName(u"pushButton_28")
-        sizePolicy6.setHeightForWidth(self.pushButton_28.sizePolicy().hasHeightForWidth())
-        self.pushButton_28.setSizePolicy(sizePolicy6)
-        self.pushButton_28.setMinimumSize(QSize(0, 0))
-        self.pushButton_28.setMaximumSize(QSize(16777215, 16777215))
-
-        self.verticalLayout_21.addWidget(self.pushButton_28)
-
-
-        self.gridLayout_3.addLayout(self.verticalLayout_21, 1, 0, 1, 1)
-
-        self.verticalLayout_22 = QVBoxLayout()
-        self.verticalLayout_22.setObjectName(u"verticalLayout_22")
-        self.pushButton_29 = QPushButton(self.gridWidget_2)
-        self.pushButton_29.setObjectName(u"pushButton_29")
-        sizePolicy6.setHeightForWidth(self.pushButton_29.sizePolicy().hasHeightForWidth())
-        self.pushButton_29.setSizePolicy(sizePolicy6)
-        self.pushButton_29.setMinimumSize(QSize(0, 0))
-        self.pushButton_29.setMaximumSize(QSize(16777215, 16777215))
-        self.pushButton_29.setStyleSheet(u"font: 10px \"MS Shell Dlg 2\";")
-
-        self.verticalLayout_22.addWidget(self.pushButton_29)
-
-        self.label_31 = QLabel(self.gridWidget_2)
-        self.label_31.setObjectName(u"label_31")
-        sizePolicy3.setHeightForWidth(self.label_31.sizePolicy().hasHeightForWidth())
-        self.label_31.setSizePolicy(sizePolicy3)
-        self.label_31.setMinimumSize(QSize(0, 240))
-        self.label_31.setMaximumSize(QSize(16777215, 16777215))
-        self.label_31.setPixmap(QPixmap(u":/images/annotated_heart_sample.png"))
-        self.label_31.setScaledContents(True)
-
-        self.verticalLayout_22.addWidget(self.label_31)
-
-        self.pushButton_30 = QPushButton(self.gridWidget_2)
-        self.pushButton_30.setObjectName(u"pushButton_30")
-        sizePolicy6.setHeightForWidth(self.pushButton_30.sizePolicy().hasHeightForWidth())
-        self.pushButton_30.setSizePolicy(sizePolicy6)
-        self.pushButton_30.setMinimumSize(QSize(0, 0))
-        self.pushButton_30.setMaximumSize(QSize(16777215, 16777215))
-
-        self.verticalLayout_22.addWidget(self.pushButton_30)
-
-
-        self.gridLayout_3.addLayout(self.verticalLayout_22, 1, 1, 1, 1)
-
-        self.verticalLayout_23 = QVBoxLayout()
-        self.verticalLayout_23.setObjectName(u"verticalLayout_23")
-        self.pushButton_31 = QPushButton(self.gridWidget_2)
-        self.pushButton_31.setObjectName(u"pushButton_31")
-        sizePolicy6.setHeightForWidth(self.pushButton_31.sizePolicy().hasHeightForWidth())
-        self.pushButton_31.setSizePolicy(sizePolicy6)
-        self.pushButton_31.setMinimumSize(QSize(0, 0))
-        self.pushButton_31.setMaximumSize(QSize(16777215, 16777215))
-        self.pushButton_31.setStyleSheet(u"font: 10px \"MS Shell Dlg 2\";")
-
-        self.verticalLayout_23.addWidget(self.pushButton_31)
-
-        self.label_32 = QLabel(self.gridWidget_2)
-        self.label_32.setObjectName(u"label_32")
-        sizePolicy3.setHeightForWidth(self.label_32.sizePolicy().hasHeightForWidth())
-        self.label_32.setSizePolicy(sizePolicy3)
-        self.label_32.setMinimumSize(QSize(0, 240))
-        self.label_32.setMaximumSize(QSize(16777215, 16777215))
-        self.label_32.setPixmap(QPixmap(u":/images/annotated_heart_sample.png"))
-        self.label_32.setScaledContents(True)
-
-        self.verticalLayout_23.addWidget(self.label_32)
-
-        self.pushButton_32 = QPushButton(self.gridWidget_2)
-        self.pushButton_32.setObjectName(u"pushButton_32")
-        sizePolicy6.setHeightForWidth(self.pushButton_32.sizePolicy().hasHeightForWidth())
-        self.pushButton_32.setSizePolicy(sizePolicy6)
-        self.pushButton_32.setMinimumSize(QSize(0, 0))
-        self.pushButton_32.setMaximumSize(QSize(16777215, 16777215))
-
-        self.verticalLayout_23.addWidget(self.pushButton_32)
-
-
-        self.gridLayout_3.addLayout(self.verticalLayout_23, 0, 2, 1, 1)
-
-        self.verticalLayout_24 = QVBoxLayout()
-        self.verticalLayout_24.setObjectName(u"verticalLayout_24")
-        self.pushButton_33 = QPushButton(self.gridWidget_2)
-        self.pushButton_33.setObjectName(u"pushButton_33")
-        sizePolicy6.setHeightForWidth(self.pushButton_33.sizePolicy().hasHeightForWidth())
-        self.pushButton_33.setSizePolicy(sizePolicy6)
-        self.pushButton_33.setMinimumSize(QSize(0, 0))
-        self.pushButton_33.setMaximumSize(QSize(16777215, 16777215))
-        self.pushButton_33.setStyleSheet(u"font: 10px \"MS Shell Dlg 2\";")
-
-        self.verticalLayout_24.addWidget(self.pushButton_33)
-
-        self.label_33 = QLabel(self.gridWidget_2)
-        self.label_33.setObjectName(u"label_33")
-        sizePolicy3.setHeightForWidth(self.label_33.sizePolicy().hasHeightForWidth())
-        self.label_33.setSizePolicy(sizePolicy3)
-        self.label_33.setMinimumSize(QSize(0, 240))
-        self.label_33.setMaximumSize(QSize(16777215, 16777215))
-        self.label_33.setPixmap(QPixmap(u":/images/annotated_heart_sample.png"))
-        self.label_33.setScaledContents(True)
-
-        self.verticalLayout_24.addWidget(self.label_33)
-
-        self.pushButton_34 = QPushButton(self.gridWidget_2)
-        self.pushButton_34.setObjectName(u"pushButton_34")
-        sizePolicy6.setHeightForWidth(self.pushButton_34.sizePolicy().hasHeightForWidth())
-        self.pushButton_34.setSizePolicy(sizePolicy6)
-        self.pushButton_34.setMinimumSize(QSize(0, 0))
-        self.pushButton_34.setMaximumSize(QSize(16777215, 16777215))
-
-        self.verticalLayout_24.addWidget(self.pushButton_34)
-
-
-        self.gridLayout_3.addLayout(self.verticalLayout_24, 1, 2, 1, 1)
-
-        self.verticalLayout_25 = QVBoxLayout()
-        self.verticalLayout_25.setObjectName(u"verticalLayout_25")
-        self.pushButton_35 = QPushButton(self.gridWidget_2)
-        self.pushButton_35.setObjectName(u"pushButton_35")
-        sizePolicy6.setHeightForWidth(self.pushButton_35.sizePolicy().hasHeightForWidth())
-        self.pushButton_35.setSizePolicy(sizePolicy6)
-        self.pushButton_35.setMinimumSize(QSize(0, 0))
-        self.pushButton_35.setMaximumSize(QSize(16777215, 16777215))
-        self.pushButton_35.setStyleSheet(u"font: 10px \"MS Shell Dlg 2\";")
-
-        self.verticalLayout_25.addWidget(self.pushButton_35)
-
-        self.label_34 = QLabel(self.gridWidget_2)
-        self.label_34.setObjectName(u"label_34")
-        sizePolicy3.setHeightForWidth(self.label_34.sizePolicy().hasHeightForWidth())
-        self.label_34.setSizePolicy(sizePolicy3)
-        self.label_34.setMinimumSize(QSize(0, 240))
-        self.label_34.setMaximumSize(QSize(16777215, 16777215))
-        self.label_34.setPixmap(QPixmap(u":/images/annotated_heart_sample.png"))
-        self.label_34.setScaledContents(True)
-
-        self.verticalLayout_25.addWidget(self.label_34)
-
-        self.pushButton_36 = QPushButton(self.gridWidget_2)
-        self.pushButton_36.setObjectName(u"pushButton_36")
-        sizePolicy6.setHeightForWidth(self.pushButton_36.sizePolicy().hasHeightForWidth())
-        self.pushButton_36.setSizePolicy(sizePolicy6)
-        self.pushButton_36.setMinimumSize(QSize(0, 0))
-        self.pushButton_36.setMaximumSize(QSize(16777215, 16777215))
-
-        self.verticalLayout_25.addWidget(self.pushButton_36)
-
-
-        self.gridLayout_3.addLayout(self.verticalLayout_25, 2, 0, 1, 1)
-
-        self.verticalLayout_26 = QVBoxLayout()
-        self.verticalLayout_26.setObjectName(u"verticalLayout_26")
-        self.pushButton_37 = QPushButton(self.gridWidget_2)
-        self.pushButton_37.setObjectName(u"pushButton_37")
-        sizePolicy6.setHeightForWidth(self.pushButton_37.sizePolicy().hasHeightForWidth())
-        self.pushButton_37.setSizePolicy(sizePolicy6)
-        self.pushButton_37.setMinimumSize(QSize(0, 0))
-        self.pushButton_37.setMaximumSize(QSize(16777215, 16777215))
-        self.pushButton_37.setStyleSheet(u"font: 10px \"MS Shell Dlg 2\";")
-
-        self.verticalLayout_26.addWidget(self.pushButton_37)
-
-        self.label_35 = QLabel(self.gridWidget_2)
-        self.label_35.setObjectName(u"label_35")
-        sizePolicy7.setHeightForWidth(self.label_35.sizePolicy().hasHeightForWidth())
-        self.label_35.setSizePolicy(sizePolicy7)
-        self.label_35.setMinimumSize(QSize(0, 240))
-        self.label_35.setMaximumSize(QSize(16777215, 16777215))
-        self.label_35.setPixmap(QPixmap(u":/images/annotated_heart_sample.png"))
-        self.label_35.setScaledContents(True)
-
-        self.verticalLayout_26.addWidget(self.label_35)
-
-        self.pushButton_38 = QPushButton(self.gridWidget_2)
-        self.pushButton_38.setObjectName(u"pushButton_38")
-        sizePolicy6.setHeightForWidth(self.pushButton_38.sizePolicy().hasHeightForWidth())
-        self.pushButton_38.setSizePolicy(sizePolicy6)
-        self.pushButton_38.setMinimumSize(QSize(0, 0))
-        self.pushButton_38.setMaximumSize(QSize(16777215, 16777215))
-
-        self.verticalLayout_26.addWidget(self.pushButton_38)
-
-
-        self.gridLayout_3.addLayout(self.verticalLayout_26, 2, 1, 1, 1)
-
-
-        self.verticalLayout_18.addWidget(self.gridWidget_2)
-
-        self.scrollArea_2.setWidget(self.scrollAreaWidgetContents_4)
-
-        self.verticalLayout_27.addWidget(self.scrollArea_2)
-
-        self.tabWidget.addTab(self.tab_2, "")
 
         self.verticalLayout_12.addWidget(self.tabWidget)
 
@@ -1030,13 +681,14 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"3D Echocardiography Assistant", None))
         self.label_24.setText(QCoreApplication.translate("MainWindow", u"Patient Info:", None))
-        self.label_26.setText(QCoreApplication.translate("MainWindow", u"Height: 170cm", None))
-        self.label_25.setText(QCoreApplication.translate("MainWindow", u"Weight: 60kg", None))
+        self.label_26.setText(QCoreApplication.translate("MainWindow", u"Height: 0 cm", None))
+        self.label_25.setText(QCoreApplication.translate("MainWindow", u"Weight: 0 kg", None))
         self.label_17.setText(QCoreApplication.translate("MainWindow", u"DICOM File (Video) Info:", None))
-        self.label_16.setText(QCoreApplication.translate("MainWindow", u"Video - Number of Frames: ", None))
-        self.label_15.setText(QCoreApplication.translate("MainWindow", u"Video - Average Frame Time: ", None))
-        self.label_9.setText(QCoreApplication.translate("MainWindow", u"Video - FPS: ", None))
-        self.label_14.setText(QCoreApplication.translate("MainWindow", u"Video - Total Duration: ", None))
+        self.label_36.setText(QCoreApplication.translate("MainWindow", u"File: ", None))
+        self.label_16.setText(QCoreApplication.translate("MainWindow", u"Number of Frames: ", None))
+        self.label_15.setText(QCoreApplication.translate("MainWindow", u"Average Frame Time: ", None))
+        self.label_9.setText(QCoreApplication.translate("MainWindow", u"FPS: ", None))
+        self.label_14.setText(QCoreApplication.translate("MainWindow", u"Total Duration: ", None))
         self.label_18.setText(QCoreApplication.translate("MainWindow", u"Press W to zoom in, S to zoom out", None))
         self.label_19.setText(QCoreApplication.translate("MainWindow", u"Press Q to move camera upward, E to move camera downward", None))
         self.label_20.setText(QCoreApplication.translate("MainWindow", u"Press A to move camera leftward, D to move camera rightward", None))
@@ -1075,34 +727,6 @@ class Ui_MainWindow(object):
         self.pushButton.setText(QCoreApplication.translate("MainWindow", u"Transverse Section at Tricuspid Valve Level", None))
         self.label.setText("")
         self.pushButton_20.setText(QCoreApplication.translate("MainWindow", u"Export as PNG", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("MainWindow", u"Single frame predictions", None))
-        self.label_27.setText(QCoreApplication.translate("MainWindow", u"Click view name to highlight cross section:", None))
-        self.pushButton_22.setText(QCoreApplication.translate("MainWindow", u"A2C", None))
-        self.pushButton_12.setText("")
-        self.pushButton_23.setText("")
-        self.label_28.setText("")
-        self.pushButton_24.setText(QCoreApplication.translate("MainWindow", u"Export as PNG", None))
-        self.pushButton_25.setText(QCoreApplication.translate("MainWindow", u"A4C", None))
-        self.label_29.setText("")
-        self.pushButton_26.setText(QCoreApplication.translate("MainWindow", u"Export as PNG", None))
-        self.pushButton_27.setText(QCoreApplication.translate("MainWindow", u"SAXM", None))
-        self.label_30.setText("")
-        self.pushButton_28.setText(QCoreApplication.translate("MainWindow", u"Export as PNG", None))
-        self.pushButton_29.setText(QCoreApplication.translate("MainWindow", u"SAXMV", None))
-        self.label_31.setText("")
-        self.pushButton_30.setText(QCoreApplication.translate("MainWindow", u"Export as PNG", None))
-        self.pushButton_31.setText(QCoreApplication.translate("MainWindow", u"ALAX", None))
-        self.label_32.setText("")
-        self.pushButton_32.setText(QCoreApplication.translate("MainWindow", u"Export as PNG", None))
-        self.pushButton_33.setText(QCoreApplication.translate("MainWindow", u"6", None))
-        self.label_33.setText("")
-        self.pushButton_34.setText(QCoreApplication.translate("MainWindow", u"Export as PNG", None))
-        self.pushButton_35.setText(QCoreApplication.translate("MainWindow", u"7", None))
-        self.label_34.setText("")
-        self.pushButton_36.setText(QCoreApplication.translate("MainWindow", u"Export as PNG", None))
-        self.pushButton_37.setText(QCoreApplication.translate("MainWindow", u"Transverse Section at Tricuspid Valve Level", None))
-        self.label_35.setText("")
-        self.pushButton_38.setText(QCoreApplication.translate("MainWindow", u"Export as PNG", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("MainWindow", u"Advanced predictions", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("MainWindow", u"View Predictions", None))
     # retranslateUi
 

@@ -20,7 +20,7 @@ class DataManager:
             return
         self.__initialized = True
 
-        self.VERSION = "v1.0.240709"
+        self.VERSION = "v1.0.240729"
 
         self.frame_index_to_pred_result = {}
         self.frame_index_to_center_images = {}  # for planes x=0, y=0 and z=0
@@ -30,6 +30,7 @@ class DataManager:
 
         # self.view_to_pred_result_width = {}
 
+        self._filename: string="unknown file"
         self._dicom_number_of_frames: int = -1
         self._dicom_average_frame_time_in_ms: float = 60.0
         self._dicom_fps: float = -1.0
