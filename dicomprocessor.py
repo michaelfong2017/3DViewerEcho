@@ -628,7 +628,7 @@ def process_frame(frame, frame_index):
                     new_view_to_array_2d[view] = np.array(new_view_to_array_2d[view])
                 view_to_array_2d = new_view_to_array_2d
 
-            print('Landmarks(Simple): ')
+            print('Landmarks(Basic): ')
             print(view_to_array_2d)
             with open(resource_path(os.path.join("pickle", f"{frame_index}.pickle")), "wb") as file:
                 pickle.dump(view_to_array_2d, file)

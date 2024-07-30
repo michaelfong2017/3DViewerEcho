@@ -42,7 +42,7 @@ class MainWindow(QMainWindow):
 
         apical_view_menu = QMenu("Apical View", self)
 
-        action_import_selected_time_frame_1 = QAction("Simple", self)
+        action_import_selected_time_frame_1 = QAction("Basic", self)
         action_import_selected_time_frame_1.triggered.connect(self.import_dicom_and_analyze_selected)
 
         action_import_selected_time_frame_2 = QAction("Advance", self)
